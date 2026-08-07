@@ -37,12 +37,12 @@ export default function Navbar({ minimal = false }: NavbarProps) {
               >
                 Ambassador Portal
               </Link>
-              <Link
+              {/* <Link
                 href="/admin/dashboard"
                 className="font-display font-semibold text-sm text-slate-muted hover:text-bright-cyan transition-colors duration-200"
               >
                 Admin
-              </Link>
+              </Link> */}
               <Link
                 href="/create-profile"
                 className="font-display font-semibold text-sm bg-bright-cyan text-white px-6 py-3 rounded-full hover:bg-bright-cyan/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
