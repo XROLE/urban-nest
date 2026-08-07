@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ambassador Login - Roommate NG</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Plus+Jakarta+Sans:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-fixed": "#002113",
+                      "surface-container": "#eceef0",
+                      "inverse-primary": "#bcc7de",
+                      "on-primary-fixed-variant": "#3c475a",
+                      "outline-variant": "#c5c6cd",
+                      "primary-fixed-dim": "#bcc7de",
+                      "on-surface": "#191c1e",
+                      "surface": "#f7f9fb",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-secondary": "#ffffff",
+                      "secondary-fixed-dim": "#7bd0ff",
+                      "primary-container": "#1e293b",
+                      "tertiary-container": "#00301e",
+                      "primary": "#091426",
+                      "surface-container-low": "#f2f4f6",
+                      "error-container": "#ffdad6",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#2d3133",
+                      "surface-tint": "#545f73",
+                      "background": "#f7f9fb",
+                      "error": "#ba1a1a",
+                      "on-background": "#191c1e",
+                      "on-primary-container": "#8590a6",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f7f9fb",
+                      "tertiary": "#00190e",
+                      "outline": "#75777d",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed": "#d8e3fb",
+                      "on-secondary-container": "#004d6a",
+                      "secondary": "#00668a",
+                      "secondary-container": "#40c2fd",
+                      "on-secondary-fixed": "#001e2c",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "on-secondary-fixed-variant": "#004c69",
+                      "surface-container-high": "#e6e8ea",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#00a472",
+                      "secondary-fixed": "#c4e7ff",
+                      "on-surface-variant": "#45474c",
+                      "on-primary-fixed": "#111c2d",
+                      "surface-dim": "#d8dadc",
+                      "inverse-on-surface": "#eff1f3",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "surface-variant": "#e0e3e5",
+                      "tertiary-fixed": "#6ffbbe",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "24px",
+                      "lg": "48px",
+                      "max-width": "1280px",
+                      "sm": "16px",
+                      "margin-mobile": "16px",
+                      "gutter": "24px",
+                      "margin-desktop": "64px",
+                      "base": "4px",
+                      "xl": "80px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "button": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-lg-mobile": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-bold": [
+                              "14px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-xl": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "800"
+                              }
+                      ],
+                      "button": [
+                              "16px",
+                              {
+                                      "lineHeight": "1",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col md:flex-row">
+<!-- Left Side: Lifestyle Image -->
+<div class="hidden md:block md:w-1/2 relative bg-surface-container">
+<img alt="Lifestyle" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLsFfYkeUVmZC0bPXUlJ0hFvEZX8VATFHtWP_EnlhDPXUJDpXjWHaofmT8FNKbROg6QGbvmsbv9if_BT0iu40ZgLI9PXGmX2LbxVS4W0ijJKNGAUlYUHpWC94RFPRpbnfe7k9f8ozlbId64C644pCs-bcMquVrV2AnYvtSCkdSinHpNHfnor9qL_4vGOjLYKt1L36dqdytGloxWl510ciTdYg7EfmrBV-mx2oFwYiV77D1etiM_7Z7cq3KE"/>
+<div class="absolute inset-0 bg-primary/20"></div> <!-- Subtle overlay -->
+</div>
+<!-- Right Side: Login Form -->
+<div class="w-full md:w-1/2 flex flex-col min-h-screen bg-surface-container-lowest">
+<!-- Header / Nav Shell Injection -->
+<nav class="bg-surface text-secondary font-body-md docked full-width top-0 shadow-sm flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto h-16 transition-all duration-200 ease-in-out">
+<div class="font-headline-md text-headline-md font-bold text-primary">Roommate NG</div>
+<div class="flex gap-4">
+<a class="text-secondary font-bold border-b-2 border-secondary pb-1 hover:text-secondary-container transition-colors" href="#">Back to Main Site</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop">
+<div class="w-full max-w-[400px]">
+<div class="mb-lg">
+<h1 class="font-headline-lg text-headline-lg text-primary-container mb-xs">Ambassador Login</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Access your referral dashboard and track your growth.</p>
+</div>
+<form class="space-y-sm">
+<div>
+<label class="block font-label-bold text-label-bold text-on-surface mb-xs" for="email">Email Address</label>
+<input class="w-full rounded-full border border-outline-variant bg-surface-container-lowest px-sm py-3 text-on-surface focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/20 transition-all font-body-md text-body-md outline-none" id="email" placeholder="you@example.com" type="email"/>
+</div>
+<div>
+<div class="flex justify-between mb-xs">
+<label class="block font-label-bold text-label-bold text-on-surface" for="password">Password</label>
+<a class="font-body-sm text-body-sm text-secondary hover:text-secondary-container" href="#">Forgot password?</a>
+</div>
+<div class="relative">
+<input class="w-full rounded-full border border-outline-variant bg-surface-container-lowest px-sm py-3 text-on-surface focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/20 transition-all font-body-md text-body-md outline-none" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<button class="w-full mt-md rounded-full bg-secondary-container text-on-secondary-fixed font-button text-button py-3 hover:bg-secondary hover:text-on-secondary transition-colors shadow-sm hover:shadow-md active:scale-[0.98]" type="button">
+                        Sign In
+                    </button>
+</form>
+<div class="mt-lg">
+<div class="relative flex items-center py-5">
+<div class="flex-grow border-t border-outline-variant"></div>
+<span class="flex-shrink-0 mx-4 font-body-sm text-body-sm text-on-surface-variant">New to the program?</span>
+<div class="flex-grow border-t border-outline-variant"></div>
+</div>
+<div class="text-center">
+<a class="font-button text-button text-secondary hover:text-secondary-container transition-colors" href="#">Become an Ambassador</a>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Shell Injection -->
+<footer class="bg-surface-container-low text-on-surface-variant font-body-sm full-width border-t border-outline-variant flat no shadows transition-opacity duration-150 w-full py-md px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto flex flex-col md:flex-row justify-between items-center gap-base">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>Secure Ambassador Portal</span>
+</div>
+<div class="flex gap-4">
+<a class="hover:text-secondary underline" href="#">Privacy Policy</a>
+<a class="hover:text-secondary underline" href="#">Terms of Service</a>
+<a class="hover:text-secondary underline" href="#">Support</a>
+</div>
+</footer>
+</div>
+</body></html>

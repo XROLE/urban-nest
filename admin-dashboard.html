@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate NG Admin Portal - Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#191c1e",
+                        "inverse-primary": "#bcc7de",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#bcc7de",
+                        "secondary-fixed-dim": "#7bd0ff",
+                        "outline": "#75777d",
+                        "outline-variant": "#c5c6cd",
+                        "on-primary-fixed-variant": "#3c475a",
+                        "surface-container-high": "#e6e8ea",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#00301e",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#6ffbbe",
+                        "primary-fixed": "#d8e3fb",
+                        "surface-tint": "#545f73",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary-fixed": "#c4e7ff",
+                        "inverse-surface": "#2d3133",
+                        "primary": "#091426",
+                        "surface-container": "#eceef0",
+                        "background": "#f7f9fb",
+                        "tertiary": "#00190e",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#004c69",
+                        "on-tertiary-container": "#00a472",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "on-surface": "#191c1e",
+                        "on-secondary-fixed": "#001e2c",
+                        "surface-container-low": "#f2f4f6",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary-container": "#004d6a",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary-container": "#8590a6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#111c2d",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#1e293b",
+                        "on-surface-variant": "#45474c",
+                        "secondary": "#00668a",
+                        "surface-bright": "#f7f9fb",
+                        "secondary-container": "#40c2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "max-width": "1280px",
+                        "gutter": "24px",
+                        "margin-desktop": "64px",
+                        "xl": "80px",
+                        "md": "24px",
+                        "base": "4px",
+                        "sm": "16px",
+                        "lg": "48px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "headline-lg-mobile": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "label-bold": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-xl": ["Plus Jakarta Sans"],
+                        "button": ["Plus Jakarta Sans"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "label-bold": ["14px", { "lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "700" }],
+                        "headline-xl": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "button": ["16px", { "lineHeight": "1", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-surface'); }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-filled { font-variation-settings: 'FILL' 1; }
+        
+        /* Ambient shadow utility for premium feel */
+        .ambient-shadow { box-shadow: 0px 4px 12px rgba(30, 41, 59, 0.05); }
+        .ambient-shadow-hover:hover { box-shadow: 0px 12px 24px rgba(30, 41, 59, 0.1); transform: translateY(-2px); transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim text-primary dark:text-primary-fixed-dim font-label-bold text-label-bold flex justify-between items-center h-16 px-md w-[calc(100%-16rem)] ml-64 docked full-width top-0 z-50 shadow-sm border-b-0 border-transparent">
+<div class="flex items-center gap-sm">
+<h1 class="font-headline-md text-headline-md text-primary font-bold tracking-tight">Roommate NG</h1>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 rounded-full border border-outline-variant bg-surface-container-lowest focus:outline-none focus:border-secondary-container focus:ring-2 focus:ring-secondary-container/20 text-body-sm w-64" placeholder="Search profiles, matches..." type="text"/>
+</div>
+<div class="flex items-center gap-xs">
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors group">
+<span class="material-symbols-outlined group-hover:text-secondary transition-colors">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-low text-on-surface-variant transition-colors group">
+<span class="material-symbols-outlined group-hover:text-secondary transition-colors">help</span>
+</button>
+</div>
+<div class="flex items-center gap-xs ml-sm border-l border-outline-variant pl-sm cursor-pointer hover:opacity-80 transition-opacity">
+<img alt="Admin Avatar" class="w-8 h-8 rounded-full object-cover" data-alt="A professional headshot of a corporate administrator in a modern office setting. The lighting is bright and clean, typical of a professional environment. The subject is wearing a crisp business casual outfit. The background is slightly blurred showing modern architectural elements. The mood is confident and reliable, fitting for an administrative role on a premium real estate platform. Colors are natural with neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuATvbxGw2qFHShYNxx3kcAuioT84HQ73H36AWuf1lBhlyveo_ss2b4AWl1haWb8_HagNuNjnoGQzHT7E_JbLrIb5Tj0DlyGliIi4t3YUFMQevRXWUfFmM1EWqPS-W-ou5wYJUmRK6cw7GB7ax_IQjDnuT0XnYwoQgj2giLIGAVY4Fh5ylmtJhPY738vPze0_yv24-qc3jvKL2XRNReBJW35TN1X3Ou3fGTDzLvB3S6fwRpxxGqUNxE4"/>
+<span class="text-primary font-semibold ml-2">Admin Profile</span>
+<span class="material-symbols-outlined text-outline">expand_more</span>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="bg-primary dark:bg-primary text-secondary-fixed dark:text-secondary-fixed-dim font-body-md text-body-md h-screen w-64 fixed left-0 top-0 shadow-md flex flex-col h-full py-sm z-40">
+<div class="px-md py-sm mb-lg flex flex-col items-center">
+<img alt="Roommate NG Logo" class="w-16 h-16 rounded-xl object-contain bg-surface-container-lowest mb-sm" data-alt="A minimalist, highly legible company logo mark for Roommate NG. The design should feature a stylized house or interconnected geometric shapes symbolizing co-living. The color palette must be predominantly pristine white on a dark slate blue background, ensuring high contrast. The style is modern, tech-forward, and trustworthy, suitable for a premium real estate application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYPM4nakQrprpwWL42R0PIJKHvt5nvqkYDVf9Ny09zGbumQpTtbda2czJj37OsWhjjiO7jdot5-Gobsu9LOjfscgsJTeG52oTr0cnkS_lSsHX5bGEvuBWCaLULPC1ZZY8hldRYnCbbkd7fc2PQdADQn8Lt72qjQ_CSyH8C9b4x35i0j9GnoKRmPOTp0oHv6kWpr2dmAltJSDhqqIshYbJHOEBXZ8SQUad45s717-kstsoZnJAE0fOR"/>
+<div class="font-headline-md text-headline-md font-bold text-on-primary text-center leading-tight">Roommate NG</div>
+<div class="text-xs text-primary-fixed-dim mt-1 font-semibold tracking-wider">ADMIN</div>
+</div>
+<nav class="flex-1 px-xs flex flex-col gap-1">
+<a class="flex items-center gap-sm py-3 px-4 text-secondary-fixed-dim font-bold border-l-4 border-secondary-fixed-dim pl-4 bg-primary-container transition-colors" href="#">
+<span class="material-symbols-outlined icon-filled">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-sm py-3 px-4 text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-secondary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span>Profiles</span>
+</a>
+<a class="flex items-center gap-sm py-3 px-4 text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-secondary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Matches</span>
+</a>
+<a class="flex items-center gap-sm py-3 px-4 text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-secondary-fixed transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span>Payments</span>
+</a>
+<a class="flex items-center gap-sm py-3 px-4 text-on-primary-fixed-variant pl-5 hover:bg-primary-container hover:text-secondary-fixed transition-all duration-200 ease-in-out mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-4 pb-4 pt-8">
+<button class="w-full py-3 rounded-full bg-secondary-container text-on-secondary-container font-button text-button hover:bg-secondary hover:text-on-secondary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                Generate Report
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-md pt-lg pb-xl bg-background w-[calc(100%-16rem)] max-w-max-width mx-auto">
+<div class="mb-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-xs">Operational Dashboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time overview of roommate matching operations.</p>
+</div>
+<!-- 1. Overview Stat Cards (Bento style) -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mb-lg">
+<div class="bg-surface-container-lowest rounded-xl p-md ambient-shadow border border-outline-variant flex flex-col justify-between">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-primary-container/10 rounded-lg text-primary-container">
+<span class="material-symbols-outlined">person</span>
+</div>
+<span class="text-tertiary-fixed-dim font-label-bold text-sm bg-tertiary-fixed-dim/10 px-2 py-1 rounded-full">+12 today</span>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-background">254</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Total Profiles</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-md ambient-shadow border border-outline-variant flex flex-col justify-between">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-secondary-container/20 rounded-lg text-secondary">
+<span class="material-symbols-outlined">group_add</span>
+</div>
+<span class="text-outline font-label-bold text-sm bg-surface-container px-2 py-1 rounded-full">Awaiting review</span>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-background">48</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Potential Matches</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-md ambient-shadow border border-outline-variant flex flex-col justify-between">
+<div class="flex justify-between items-start mb-sm">
+<div class="p-2 bg-error-container/50 rounded-lg text-error">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+</div>
+<div>
+<div class="font-headline-xl text-headline-xl text-on-background">12</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Waiting Payment</div>
+</div>
+</div>
+<div class="bg-primary rounded-xl p-md ambient-shadow flex flex-col justify-between relative overflow-hidden">
+<!-- Abstract decorative bg -->
+<div class="absolute -right-10 -top-10 w-32 h-32 bg-tertiary-fixed-dim/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex justify-between items-start mb-sm relative z-10">
+<div class="p-2 bg-surface-container-lowest/10 rounded-lg text-surface-container-lowest">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<span class="text-tertiary-fixed-dim font-label-bold text-sm flex items-center gap-1"><span class="material-symbols-outlined text-sm">trending_up</span> +5%</span>
+</div>
+<div class="relative z-10">
+<div class="font-headline-xl text-headline-xl text-tertiary-fixed-dim">₦185K</div>
+<div class="font-body-sm text-body-sm text-inverse-primary mt-1">Total Revenue</div>
+</div>
+</div>
+</section>
+<!-- 4. Status Pipeline Tracker -->
+<section class="mb-lg bg-surface-container-lowest rounded-xl p-md ambient-shadow border border-outline-variant">
+<h3 class="font-label-bold text-label-bold text-on-surface-variant mb-4 uppercase tracking-wider">Global Operations Pipeline</h3>
+<div class="flex items-center justify-between text-body-sm font-semibold relative pt-2">
+<!-- Connecting Line -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-container-high -z-10 -translate-y-1/2"></div>
+<!-- Stages -->
+<div class="flex flex-col items-center gap-2 group cursor-pointer bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">fiber_new</span></div>
+<span class="text-secondary whitespace-nowrap">New</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-outline-variant text-surface-container-lowest flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">search</span></div>
+<span class="text-outline whitespace-nowrap">Reviewing</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed-dim text-on-tertiary-fixed flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">handshake</span></div>
+<span class="text-tertiary-fixed-dim font-bold whitespace-nowrap">Potential Match Found</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-outline-variant text-surface-container-lowest flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">hourglass_empty</span></div>
+<span class="text-outline whitespace-nowrap">Waiting Approval</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-error-container text-error flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">payment</span></div>
+<span class="text-error whitespace-nowrap">Payment Pending</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-outline-variant text-surface-container-lowest flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">check_circle</span></div>
+<span class="text-outline whitespace-nowrap">Paid</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-outline-variant text-surface-container-lowest flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">link</span></div>
+<span class="text-outline whitespace-nowrap">Connected</span>
+</div>
+<div class="flex flex-col items-center gap-2 bg-surface-container-lowest px-2">
+<div class="w-6 h-6 rounded-full bg-outline-variant text-surface-container-lowest flex items-center justify-center border-2 border-surface-container-lowest"><span class="material-symbols-outlined text-[14px]">done_all</span></div>
+<span class="text-outline whitespace-nowrap">Closed</span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-md">
+<!-- 2. Roommate Profiles Table Section -->
+<section class="xl:col-span-2 bg-surface-container-lowest rounded-xl ambient-shadow border border-outline-variant overflow-hidden flex flex-col h-[600px]">
+<div class="p-md border-b border-surface-container flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-surface-bright">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-background">Active Profiles</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Manage and filter user profiles awaiting matching.</p>
+</div>
+<button class="px-4 py-2 rounded-full bg-secondary-container text-on-secondary-container font-button text-button hover:bg-secondary hover:text-on-secondary transition-colors flex items-center gap-2 ambient-shadow-hover">
+<span class="material-symbols-outlined text-sm">auto_awesome</span>
+                        Suggested Matches
+                    </button>
+</div>
+<!-- Filters -->
+<div class="p-3 border-b border-surface-container bg-surface flex flex-wrap gap-2 items-center">
+<span class="material-symbols-outlined text-outline text-sm mr-2">filter_list</span>
+<select class="text-body-sm border-outline-variant rounded-full bg-surface-container-lowest py-1 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>Location (All)</option>
+<option>Lekki</option>
+<option>Yaba</option>
+</select>
+<select class="text-body-sm border-outline-variant rounded-full bg-surface-container-lowest py-1 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>Budget (All)</option>
+<option>&lt; ₦500k</option>
+<option>&gt; ₦1M</option>
+</select>
+<select class="text-body-sm border-outline-variant rounded-full bg-surface-container-lowest py-1 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>Gender (All)</option>
+<option>Male</option>
+<option>Female</option>
+</select>
+<select class="text-body-sm border-outline-variant rounded-full bg-surface-container-lowest py-1 pl-3 pr-8 focus:ring-secondary focus:border-secondary">
+<option>Status (Reviewing)</option>
+<option>New</option>
+<option>Matched</option>
+</select>
+</div>
+<!-- Dense Table -->
+<div class="overflow-y-auto flex-1 p-0">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface sticky top-0 z-10 border-b border-surface-container font-label-bold text-label-bold text-on-surface-variant">
+<tr>
+<th class="p-3 font-semibold">Name</th>
+<th class="p-3 font-semibold">Area</th>
+<th class="p-3 font-semibold">Budget</th>
+<th class="p-3 font-semibold">Move-in</th>
+<th class="p-3 font-semibold hidden md:table-cell">Occupation</th>
+<th class="p-3 font-semibold text-center">Status</th>
+<th class="p-3 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="text-body-sm font-body-sm divide-y divide-surface-container">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-3 flex items-center gap-2">
+<img alt="User" class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar placeholder image for a young professional named John D. The portrait is simple, well-lit, showing a friendly expression, typical for a user profile on a housing app. The background is a solid muted color." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIopBOBWR9yPzhvo4y9dGsPOK5TspoxEhSzngVjNOvwb0obkbQCG0PiG6y7FT075--_LPnc3ZLiJqmN-oq8g3xsTkNQu4H-R6gwJv7WlnV2e-ifI-Hri3xrWB84cIYLs9WVixQj-U9nKIeXMS10wPEtbKaCp9jIPuYacvtopeYUkQ-EQuU26SquFTC1zDVUYD7L0WEVXT0KERG0w48d5hp6DVOdMHU62Y_4rKbW8zvSuc9P04ohcpf"/>
+<span class="font-medium text-on-background">John D.</span>
+</td>
+<td class="p-3 text-on-surface-variant">Lekki Phase 1</td>
+<td class="p-3 font-medium text-on-background">₦800k</td>
+<td class="p-3 text-on-surface-variant">Imm.</td>
+<td class="p-3 text-on-surface-variant hidden md:table-cell">Software Eng.</td>
+<td class="p-3 text-center">
+<span class="inline-block px-2 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">Reviewing</span>
+</td>
+<td class="p-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors text-xs font-semibold">Details</button>
+<button class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary transition-colors text-xs font-semibold">Match</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-3 flex items-center gap-2">
+<img alt="User" class="w-8 h-8 rounded-full object-cover" data-alt="A small circular avatar placeholder image for a professional woman named Sarah K. She has a confident, approachable look suitable for a real estate platform profile. Neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA2JNNU6Domy5YhLLGXKCTXdwft4hAKyL3iXZlEGK_5Yks-haSp2nm5OElluZvDOhas8xjY9-JY6wlfB1ejjg_CszXT7id_xTeGRQTBEvpzekh0rkVw5lyg-McDDkiyyMROhvN0mBZyIkIS9GEB0EaSBIxJttfdtgxn7F2wPiP5KYdvxPy21lPLg7sNbAc0BJ0b-PrUoTHmnP9BIDIXnJeXO9qWu6CRsRTR6nyFe-07SFYcL4fziEjU"/>
+<span class="font-medium text-on-background">Sarah K.</span>
+</td>
+<td class="p-3 text-on-surface-variant">Yaba</td>
+<td class="p-3 font-medium text-on-background">₦450k</td>
+<td class="p-3 text-on-surface-variant">2 weeks</td>
+<td class="p-3 text-on-surface-variant hidden md:table-cell">Marketer</td>
+<td class="p-3 text-center">
+<span class="inline-block px-2 py-1 rounded-full bg-tertiary-fixed-dim/20 text-tertiary-container text-[10px] font-bold uppercase tracking-wider">Matched</span>
+</td>
+<td class="p-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors text-xs font-semibold">View Pair</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">DE</div>
+<span class="font-medium text-on-background">David E.</span>
+</td>
+<td class="p-3 text-on-surface-variant">Lekki Phase 1</td>
+<td class="p-3 font-medium text-on-background">₦850k</td>
+<td class="p-3 text-on-surface-variant">Imm.</td>
+<td class="p-3 text-on-surface-variant hidden md:table-cell">Data Analyst</td>
+<td class="p-3 text-center">
+<span class="inline-block px-2 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">Reviewing</span>
+</td>
+<td class="p-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors text-xs font-semibold">Details</button>
+<button class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary transition-colors text-xs font-semibold">Match</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="p-3 flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-bold text-xs">MO</div>
+<span class="font-medium text-on-background">Michael O.</span>
+</td>
+<td class="p-3 text-on-surface-variant">Ikeja GRA</td>
+<td class="p-3 font-medium text-on-background">₦1.2M</td>
+<td class="p-3 text-on-surface-variant">1 month</td>
+<td class="p-3 text-on-surface-variant hidden md:table-cell">Consultant</td>
+<td class="p-3 text-center">
+<span class="inline-block px-2 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">New</span>
+</td>
+<td class="p-3 text-right">
+<div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="px-2 py-1 rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors text-xs font-semibold">Details</button>
+<button class="px-2 py-1 rounded bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-on-secondary transition-colors text-xs font-semibold">Match</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-3 border-t border-surface-container bg-surface-bright flex justify-between items-center text-xs text-on-surface-variant">
+<span>Showing 1-4 of 254 profiles</span>
+<div class="flex gap-1">
+<button class="p-1 rounded hover:bg-surface-container"><span class="material-symbols-outlined text-sm">chevron_left</span></button>
+<button class="p-1 rounded hover:bg-surface-container"><span class="material-symbols-outlined text-sm">chevron_right</span></button>
+</div>
+</div>
+</section>
+<!-- 3. Matchmaker Panel -->
+<section class="xl:col-span-1 bg-surface-container-lowest rounded-xl ambient-shadow border border-outline-variant overflow-hidden flex flex-col h-[600px] relative">
+<!-- Subtle glow effect at top -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-container to-tertiary-fixed-dim"></div>
+<div class="p-md border-b border-surface-container">
+<h3 class="font-headline-md text-headline-md text-on-background mb-1">Match Analysis</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Comparing target profile with top suggestion.</p>
+</div>
+<div class="flex-1 p-md overflow-y-auto flex flex-col gap-md">
+<!-- Visual Split Screen Card -->
+<div class="flex justify-between items-center relative p-4 bg-surface rounded-xl border border-surface-container-high">
+<!-- Connect Line -->
+<div class="absolute top-1/2 left-0 w-full border-t border-dashed border-outline-variant -z-0"></div>
+<!-- Target: John D. -->
+<div class="flex flex-col items-center gap-2 z-10 bg-surface px-2">
+<img alt="John D" class="w-12 h-12 rounded-full border-2 border-surface-container-lowest shadow-sm object-cover" data-alt="Small avatar of John D, same as in the table row, focused on his professional smiling face in a neutral setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEl9qxR71kUhMX-BuaAYUKK6FL2mfOBSUTR2LIUTQP1KHpzjpKxi5C9cVFmdv48oMZzm7FMNWOKcb_vCOiV6WKxxATGhT_sgB9143ju7XrtlUgtdeIPOCtlPL_h-EGwDQtttCtRFc80uKHOxaW9Ziixre4RXG4RWWYiN6M2wptVHUF_E62OMApqhu91D3O8yBzYd1x8fojtRGlGBMjjvfoLID8RnWLbR1m47hR_1bmaF1MVEinK1gT"/>
+<div class="text-center">
+<div class="font-label-bold text-sm text-on-background">John D.</div>
+<div class="text-[10px] text-on-surface-variant uppercase tracking-wider">Target</div>
+</div>
+</div>
+<!-- Match Score Badge -->
+<div class="z-10 bg-tertiary-container text-tertiary-fixed-dim font-bold text-lg px-3 py-1 rounded-full shadow-md border-2 border-surface-container-lowest flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">bolt</span> 92%
+                        </div>
+<!-- Match: David E. -->
+<div class="flex flex-col items-center gap-2 z-10 bg-surface px-2">
+<div class="w-12 h-12 rounded-full border-2 border-secondary-container bg-primary-container text-on-primary-container flex items-center justify-center font-bold shadow-sm">DE</div>
+<div class="text-center">
+<div class="font-label-bold text-sm text-on-background">David E.</div>
+<div class="text-[10px] text-secondary uppercase tracking-wider">Suggestion</div>
+</div>
+</div>
+</div>
+<!-- Checklist Comparison -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-4">
+<h4 class="font-label-bold text-sm text-on-surface-variant mb-3 uppercase tracking-wider border-b border-surface-container pb-2">Compatibility Checklist</h4>
+<ul class="space-y-3">
+<li class="flex justify-between items-center">
+<span class="font-body-sm text-on-background">Area (Lekki Phase 1)</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim icon-filled text-lg">check_circle</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-sm text-on-background">Budget (± ₦50k diff)</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim icon-filled text-lg">check_circle</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-sm text-on-background">Move-in (Immediate)</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim icon-filled text-lg">check_circle</span>
+</li>
+<li class="flex justify-between items-center">
+<span class="font-body-sm text-on-background">Occupation/Lifestyle</span>
+<span class="material-symbols-outlined text-tertiary-fixed-dim icon-filled text-lg">check_circle</span>
+</li>
+<li class="flex justify-between items-center opacity-60">
+<span class="font-body-sm text-on-background">Shared Interests</span>
+<span class="material-symbols-outlined text-outline text-lg">help</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="p-md border-t border-surface-container bg-surface-bright">
+<button class="w-full py-3 rounded-full bg-secondary-container text-on-secondary-container font-button text-button hover:bg-secondary hover:text-on-secondary transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">send</span>
+                        Create Match &amp; Trigger Outreach
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-surface-dim text-on-tertiary-fixed-variant font-body-sm text-body-sm fixed bottom-0 right-0 w-[calc(100%-16rem)] ml-64 border-t border-outline-variant flex justify-between items-center px-md py-xs z-30 flat no shadows">
+<div>© 2024 Roommate NG Admin Portal</div>
+<div class="flex gap-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100 flex items-center gap-1" href="#"><span class="material-symbols-outlined text-xs text-tertiary-container">link</span> Paystack Webhook Connected</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100 flex items-center gap-1" href="#"><span class="material-symbols-outlined text-xs text-tertiary-fixed-dim">check_circle</span> System Status: Optimal</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors opacity-80 hover:opacity-100" href="#">Support</a>
+</div>
+</footer>
+</body></html>

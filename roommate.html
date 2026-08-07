@@ -1,0 +1,316 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Roommate NG - Find Your Ideal Roommate</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "dark-slate": "#1E293B",
+                            "bright-cyan": "#29B6F6",
+                            "mint": "#10B981",
+                            "warm-gray": "#F8FAFC",
+                            "slate-light": "#334155",
+                            "slate-muted": "#64748B",
+                            "sky-blue": "#38BDF8"
+                        },
+                        fontFamily: {
+                            "display": ["Plus Jakarta Sans", "sans-serif"],
+                            "body": ["Inter", "sans-serif"]
+                        }
+                    }
+                }
+            }
+        </script>
+    <style>
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .icon-filled {
+                font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+        </style>
+    </head>
+    <body class="bg-warm-gray text-slate-light font-body antialiased selection:bg-bright-cyan/20 selection:text-dark-slate">
+    <!-- 1. Header -->
+    <nav class="bg-warm-gray/80 backdrop-blur-md w-full top-0 sticky z-50 transition-all duration-300 border-b border-slate-200/50">
+    <div class="flex justify-between items-center px-4 md:px-16 py-4 max-w-[1280px] mx-auto">
+    <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-bright-cyan text-3xl icon-filled">home</span>
+    <span class="font-display text-2xl font-bold text-dark-slate">Roommate NG</span>
+    </div>
+    <div class="hidden md:flex items-center gap-8">
+    <a class="font-display font-semibold text-sm text-slate-muted hover:text-bright-cyan transition-colors duration-200" href="#how-it-works">How It Works</a>
+    <a class="font-display font-semibold text-sm bg-bright-cyan text-white px-6 py-3 rounded-full hover:bg-bright-cyan/90 transition-colors shadow-sm hover:shadow-md" href="#create-profile">Create Profile</a>
+    </div>
+    <button class="md:hidden text-dark-slate">
+    <span class="material-symbols-outlined text-3xl">menu</span>
+    </button>
+    </div>
+    </nav>
+    <main>
+    <!-- 2. Hero Section -->
+    <section class="px-4 md:px-16 py-20 max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[80vh]">
+    <div class="space-y-6">
+    <h1 class="font-display text-5xl md:text-6xl font-extrabold text-dark-slate leading-tight tracking-tight">Looking for a roommate to beat high rent together?</h1>
+    <p class="font-body text-lg text-slate-muted leading-relaxed max-w-lg">Tell us what you're looking for, and we'll introduce you to people with similar housing preferences. You decide if they're the right fit before moving forward.</p>
+    <div class="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+    <a class="inline-block font-display font-semibold text-base bg-bright-cyan text-white px-8 py-4 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-1" href="#create-profile">Create Your Roommate Profile</a>
+    <a class="font-display font-semibold text-slate-muted hover:text-bright-cyan flex items-center gap-1 transition-colors" href="#how-it-works">How It Works <span class="material-symbols-outlined text-sm">arrow_downward</span></a>
+    </div>
+    </div>
+    <div class="relative w-full h-[500px] rounded-3xl bg-slate-100 border border-slate-200 shadow-xl flex items-center justify-center overflow-hidden group">
+    <div class="absolute inset-0 bg-cover bg-center w-full h-full opacity-90 transition-transform duration-700 group-hover:scale-105" style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuChiT3CMljE7-cFoaK_jIMbiEaDSlVAPY4q75z6bVUaGGcRqkpPU4PmH9pJ3wiJu3DAIQqAhMfQYVNgGEbb2UAJmBTS9mkVxwPzsGYisooMGtm7DgwhOneeS4GX7oGb-dcOs9XYulAZCQBE51qSAMu4qGthw0eoJuuE0gnAsnTZ-nq2AYY1r6egpXpDxE4Qf-lmOajU37XpNQhm40Dlv_Yosq193FrLZHDBE0r_VTlWJmFZJZCOnMZL&quot;);"></div>
+    <!-- Overlay Card -->
+    <div class="absolute bottom-8 left-8 right-8 bg-white/95 backdrop-blur-md p-6 rounded-2xl border border-white shadow-2xl transform translate-y-2 group-hover:translate-y-0 transition-all duration-500">
+    <div class="flex items-center justify-between">
+    <div>
+    <h3 class="font-display font-bold text-sm text-dark-slate mb-1">Potential Match Found</h3>
+    <p class="font-body text-sm text-slate-muted">Lagos Island • 2 Bed / 2 Bath</p>
+    </div>
+    <div class="bg-mint/10 text-mint px-3 py-1.5 rounded-full flex items-center gap-1 border border-mint/20">
+    <span class="material-symbols-outlined text-[16px] icon-filled">verified</span>
+    <span class="font-display font-bold text-[12px]">98% Match</span>
+    </div>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- 3. "Is this you?" Section -->
+    <section class="bg-warm-gray py-24 px-4 md:px-16 border-y border-slate-100">
+    <div class="max-w-[1280px] mx-auto">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-dark-slate text-center mb-16">Is this you?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- Card 1 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">school</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">NYSC</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Looking for a safe, affordable place near your PPA with like-minded corpers.</p>
+    </div>
+    <!-- Card 2 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">work</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">New Job</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Just landed a job in a new city and need a convenient spot without breaking the bank.</p>
+    </div>
+    <!-- Card 3 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">savings</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Beating High Rent</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Want to live in a premium location by splitting costs with a reliable flatmate.</p>
+    </div>
+    <!-- Card 4 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">group_off</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Group Fatigue</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Tired of unreliable groups and want just one compatible person to share with.</p>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- 4. "How It Works" Section -->
+    <section class="py-24 px-4 md:px-16 max-w-[1280px] mx-auto" id="how-it-works">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-dark-slate text-center mb-16">How It Works</h2>
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+    <div class="hidden md:block absolute top-12 left-1/8 right-1/8 h-0.5 bg-slate-200 z-0"></div>
+    <div class="relative z-10 text-center">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-warm-gray shadow-md">
+    <span class="material-symbols-outlined text-4xl text-bright-cyan">person_add</span>
+    </div>
+    <h3 class="font-display font-bold text-xl text-dark-slate mb-3">1. Create Profile</h3>
+    <p class="text-sm text-slate-muted px-4">Tell us about yourself, your budget, and preferred locations.</p>
+    </div>
+    <div class="relative z-10 text-center">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-warm-gray shadow-md">
+    <span class="material-symbols-outlined text-4xl text-bright-cyan">tune</span>
+    </div>
+    <h3 class="font-display font-bold text-xl text-dark-slate mb-3">2. Review Preferences</h3>
+    <p class="text-sm text-slate-muted px-4">Set your dealbreakers and what you value in a roommate.</p>
+    </div>
+    <div class="relative z-10 text-center">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-warm-gray shadow-md">
+    <span class="material-symbols-outlined text-4xl text-bright-cyan">mail</span>
+    </div>
+    <h3 class="font-display font-bold text-xl text-dark-slate mb-3">3. Receive Summaries</h3>
+    <p class="text-sm text-slate-muted px-4">Get curated matches sent directly to your inbox based on compatibility.</p>
+    </div>
+    <div class="relative z-10 text-center">
+    <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-warm-gray shadow-md">
+    <span class="material-symbols-outlined text-4xl text-bright-cyan">handshake</span>
+    </div>
+    <h3 class="font-display font-bold text-xl text-dark-slate mb-3">4. Connect Directly</h3>
+    <p class="text-sm text-slate-muted px-4">Chat with matches and decide if it's the right fit before committing.</p>
+    </div>
+    </div>
+    </section>
+    <!-- 5. "Designed for People Moving Forward" Section -->
+    <section class="bg-warm-gray py-24 px-4 md:px-16 border-y border-slate-100">
+    <div class="max-w-[1280px] mx-auto">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-dark-slate text-center mb-16">Is this you?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- Card 1 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">school</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">NYSC</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Looking for a safe, affordable place near your PPA with like-minded corpers.</p>
+    </div>
+    <!-- Card 2 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">work</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">New Job</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Just landed a job in a new city and need a convenient spot without breaking the bank.</p>
+    </div>
+    <!-- Card 3 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">savings</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Beating High Rent</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Want to live in a premium location by splitting costs with a reliable flatmate.</p>
+    </div>
+    <!-- Card 4 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">group_off</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Group Fatigue</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Tired of unreliable groups and want just one compatible person to share with.</p>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- 6. Trust & Transparency Section -->
+    <section class="py-24 px-4 md:px-16 max-w-[1280px] mx-auto">
+    <div class="bg-dark-slate rounded-3xl p-8 md:p-16 flex flex-col md:flex-row items-center gap-12 shadow-2xl">
+    <div class="flex-1 space-y-6 text-white">
+    <h2 class="font-display text-3xl md:text-4xl font-bold leading-tight">What happens after you create your profile?</h2>
+    <p class="text-slate-300 text-lg">We believe in complete transparency. Here's exactly what you can expect when you join our community.</p>
+    </div>
+    <div class="flex-1 w-full space-y-4">
+    <div class="flex items-start gap-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+    <span class="material-symbols-outlined text-bright-cyan mt-1">check_circle</span>
+    <div>
+    <h4 class="font-display font-bold text-white mb-1">Secure Data Handling</h4>
+    <p class="text-sm text-slate-300">Your personal details are kept private and never shared publicly.</p>
+    </div>
+    </div>
+    <div class="flex items-start gap-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+    <span class="material-symbols-outlined text-bright-cyan mt-1">check_circle</span>
+    <div>
+    <h4 class="font-display font-bold text-white mb-1">Curated Matching</h4>
+    <p class="text-sm text-slate-300">Our algorithm reviews preferences and only suggests high-compatibility matches.</p>
+    </div>
+    </div>
+    <div class="flex items-start gap-4 bg-white/5 p-6 rounded-2xl border border-white/10">
+    <span class="material-symbols-outlined text-bright-cyan mt-1">check_circle</span>
+    <div>
+    <h4 class="font-display font-bold text-white mb-1">No Pressure</h4>
+    <p class="text-sm text-slate-300">You review summaries anonymously and choose who you want to connect with.</p>
+    </div>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- 7. FAQ Section -->
+    <section class="bg-warm-gray py-24 px-4 md:px-16 border-y border-slate-100">
+    <div class="max-w-[1280px] mx-auto">
+    <h2 class="font-display text-3xl md:text-4xl font-bold text-dark-slate text-center mb-16">Is this you?</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+    <!-- Card 1 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">school</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">NYSC</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Looking for a safe, affordable place near your PPA with like-minded corpers.</p>
+    </div>
+    <!-- Card 2 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">work</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">New Job</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Just landed a job in a new city and need a convenient spot without breaking the bank.</p>
+    </div>
+    <!-- Card 3 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">savings</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Beating High Rent</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Want to live in a premium location by splitting costs with a reliable flatmate.</p>
+    </div>
+    <!-- Card 4 -->
+    <div class="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300">
+    <div class="w-16 h-16 bg-bright-cyan/10 rounded-2xl flex items-center justify-center mb-8">
+    <span class="material-symbols-outlined text-3xl text-bright-cyan">group_off</span>
+    </div>
+    <h3 class="font-display font-extrabold text-2xl text-dark-slate mb-4">Group Fatigue</h3>
+    <p class="font-body text-base text-slate-muted leading-relaxed">Tired of unreliable groups and want just one compatible person to share with.</p>
+    </div>
+    </div>
+    </div>
+    </section>
+    <!-- 8. Final CTA Section -->
+    <section class="bg-dark-slate py-20 px-4 md:px-16 text-center">
+    <div class="max-w-[800px] mx-auto space-y-8">
+    <h2 class="font-display text-4xl font-extrabold text-white">Ready to find your perfect roommate?</h2>
+    <p class="text-slate-300 text-lg">Join thousands of others splitting rent and living better.</p>
+    <a class="inline-block font-display font-semibold text-lg bg-bright-cyan text-white px-10 py-5 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-1" href="#create-profile">Create Your Roommate Profile</a>
+    </div>
+    </section>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-dark-slate border-t border-slate-800 px-4 md:px-16 py-12">
+    <div class="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
+    <div class="md:col-span-4 space-y-4">
+    <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-bright-cyan text-2xl icon-filled">home</span>
+    <span class="font-display text-xl font-bold text-white">Roommate NG</span>
+    </div>
+    <p class="font-body text-sm text-slate-400 max-w-xs">Building better living experiences through thoughtful connections.</p>
+    </div>
+    <div class="md:col-span-8 flex flex-col sm:flex-row justify-end gap-8 md:gap-16">
+    <div class="flex flex-col gap-3">
+    <a class="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors" href="#">Privacy Policy</a>
+    <a class="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors" href="#">Terms of Service</a>
+    </div>
+    <div class="flex flex-col gap-3">
+    <a class="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors" href="#">Safety Tips</a>
+    <a class="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors" href="#">Contact Us</a>
+    </div>
+    </div>
+    <div class="md:col-span-12 mt-8 pt-8 border-t border-slate-800 text-center">
+    <p class="font-body text-sm text-slate-500">© 2024 Roommate NG. All rights reserved.</p>
+    </div>
+    </div>
+    </footer>
+    <!-- BottomNavBar (Mobile Only) -->
+    <div class="bg-white/90 backdrop-blur-md shadow-[0_-4px_12px_rgba(30,41,59,0.05)] md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center items-center pb-safe border-t border-slate-200">
+    <a class="flex flex-row items-center justify-center bg-bright-cyan text-white rounded-full px-8 py-3 w-full mx-4 my-3 hover:bg-bright-cyan/90 active:scale-95 transition-all shadow-md" href="#create-profile">
+    <span class="material-symbols-outlined mr-2">person_add</span>
+    <span class="font-display font-semibold text-sm">Create Profile</span>
+    </a>
+    </div>
+    
+    
+    
+    
+    </body></html>

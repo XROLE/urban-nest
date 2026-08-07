@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate NG - Step 3: Lifestyle &amp; Compatibility</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS with specific configuration from JSON -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#d8e3fb",
+                    "on-secondary-fixed": "#001e2c",
+                    "on-secondary-container": "#004d6a",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#00a472",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-variant": "#e0e3e5",
+                    "outline-variant": "#c5c6cd",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-dim": "#d8dadc",
+                    "surface-bright": "#f7f9fb",
+                    "primary-container": "#1e293b",
+                    "on-surface-variant": "#45474c",
+                    "surface-tint": "#545f73",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "outline": "#75777d",
+                    "on-secondary-fixed-variant": "#004c69",
+                    "inverse-primary": "#bcc7de",
+                    "on-surface": "#191c1e",
+                    "on-primary-fixed": "#111c2d",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#40c2fd",
+                    "tertiary": "#00190e",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#c4e7ff",
+                    "primary": "#091426",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "secondary": "#00668a",
+                    "tertiary-container": "#00301e",
+                    "surface": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "primary-fixed-dim": "#bcc7de",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-fixed": "#6ffbbe",
+                    "on-primary-container": "#8590a6",
+                    "secondary-fixed-dim": "#7bd0ff",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "sm": "16px",
+                    "xl": "80px",
+                    "md": "24px",
+                    "gutter": "24px",
+                    "max-width": "1280px",
+                    "xs": "8px",
+                    "base": "4px",
+                    "lg": "48px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-xl": ["Plus Jakarta Sans"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "button": ["Plus Jakarta Sans"],
+                    "headline-lg-mobile": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "headline-xl": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-bold": ["14px", {"lineHeight": "1", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "button": ["16px", {"lineHeight": "1", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+        
+        /* Custom Styles for Interactive Elements */
+        .pill-checkbox:checked + label {
+            background-color: theme('colors.primary');
+            color: theme('colors.on-primary');
+            border-color: theme('colors.primary');
+        }
+        .cleanliness-radio:checked + label {
+            background-color: theme('colors.secondary-container');
+            color: theme('colors.on-secondary-container');
+            border-color: theme('colors.secondary-container');
+        }
+        
+        /* Focus styles for inputs */
+        input[type="text"]:focus, input[type="email"]:focus, select:focus, textarea:focus {
+            box-shadow: 0 0 0 4px theme('colors.secondary-fixed-dim');
+            border-color: theme('colors.secondary-container');
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex flex-col">
+<!-- TopNavBar (Shared Component) - Rendered for context, but navigation links are minimal as it's a linear flow -->
+<header class="bg-surface border-b border-surface-variant shadow-sm w-full top-0">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 md:h-20 w-full max-w-max-width mx-auto">
+<!-- Brand Logo -->
+<a class="text-headline-md font-headline-md text-primary font-bold flex items-center gap-2" href="#">
+                Roommate NG
+            </a>
+<!-- Navigation Links - Suppressed for transactional flow, keeping only 'Back to Home' -->
+<nav class="hidden md:flex gap-gutter">
+<a class="text-on-surface-variant font-button hover:text-secondary transition-colors duration-200" href="#">
+                    Back to Home
+                </a>
+</nav>
+<button class="md:hidden text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex items-center justify-center py-lg md:py-xl px-margin-mobile md:px-margin-desktop">
+<div class="w-full max-w-2xl">
+<!-- Progress Header -->
+<div class="mb-md md:mb-lg text-center">
+<p class="text-body-sm font-label-bold text-on-surface-variant mb-xs md:mb-sm uppercase tracking-widest">Step 3 of 3</p>
+<h1 class="text-headline-md md:text-headline-lg font-headline-md md:font-headline-lg text-primary mb-xs md:mb-sm">
+                    Final Step: Your Lifestyle
+                </h1>
+<p class="text-body-sm md:text-body-md font-body-sm md:font-body-md text-on-surface-variant max-w-lg mx-auto">
+                    Help us find roommates who match your daily rhythm.
+                </p>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-variant h-1.5 md:h-2 rounded-full mt-sm md:mt-md overflow-hidden">
+<div class="bg-tertiary-fixed h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+</div>
+</div>
+<!-- Form Card (Level 1 Surface) -->
+<form class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-sm p-md md:p-lg mb-lg">
+<!-- 1. Occupation & Schedule -->
+<div class="mb-lg">
+<h2 class="text-body-lg font-label-bold text-primary mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">work</span>
+                        Daily Routine
+                    </h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-sm md:gap-gutter">
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs" for="occupation">Occupation Status</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-sm py-2.5 text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-secondary-fixed transition-all cursor-pointer" id="occupation" name="occupation">
+<option disabled="" selected="" value="">Select status...</option>
+<option value="full_time">Full-time Professional</option>
+<option value="part_time">Part-time</option>
+<option value="student">Student</option>
+<option value="freelance">Freelance / Remote</option>
+<option value="other">Other</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs" for="schedule">Work Schedule</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border border-surface-variant rounded-lg px-sm py-2.5 text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-secondary-fixed transition-all cursor-pointer" id="schedule" name="schedule">
+<option disabled="" selected="" value="">Select schedule...</option>
+<option value="standard">Standard (9 to 5)</option>
+<option value="flexible">Flexible / Remote</option>
+<option value="shift">Shift Work</option>
+<option value="night">Night Shift</option>
+</select>
+<span class="material-symbols-outlined absolute right-sm top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[20px]">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Divider -->
+<hr class="border-surface-variant mb-lg"/>
+<!-- 2. Habits (Smoking, Pets, Sleep) -->
+<div class="mb-lg">
+<h2 class="text-body-lg font-label-bold text-primary mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">psychology</span>
+                        Habits &amp; Preferences
+                    </h2>
+<div class="space-y-md">
+<!-- Smoking -->
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs">Smoking Habit</label>
+<div class="flex flex-wrap gap-xs md:gap-sm">
+<div>
+<input checked="" class="hidden pill-checkbox" id="smoke_no" name="smoking" type="radio"/>
+<label class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-surface-variant rounded-full text-body-sm font-label-bold text-on-surface-variant cursor-pointer transition-colors bg-surface-container-lowest hover:bg-surface-container-low" for="smoke_no">
+<span class="material-symbols-outlined text-[16px]">smoke_free</span>
+                                        Non-Smoker
+                                    </label>
+</div>
+<div>
+<input class="hidden pill-checkbox" id="smoke_yes" name="smoking" type="radio"/>
+<label class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-surface-variant rounded-full text-body-sm font-label-bold text-on-surface-variant cursor-pointer transition-colors bg-surface-container-lowest hover:bg-surface-container-low" for="smoke_yes">
+<span class="material-symbols-outlined text-[16px]">smoking_rooms</span>
+                                        Smoker
+                                    </label>
+</div>
+</div>
+</div>
+<!-- Pets -->
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs">Pet Friendly?</label>
+<div class="flex flex-wrap gap-xs md:gap-sm">
+<div>
+<input checked="" class="hidden pill-checkbox" id="pet_love" name="pets" type="radio"/>
+<label class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-surface-variant rounded-full text-body-sm font-label-bold text-on-surface-variant cursor-pointer transition-colors bg-surface-container-lowest hover:bg-surface-container-low" for="pet_love">
+<span class="material-symbols-outlined text-[16px]">pets</span>
+                                        Yes, I love pets
+                                    </label>
+</div>
+<div>
+<input class="hidden pill-checkbox" id="pet_no" name="pets" type="radio"/>
+<label class="inline-flex items-center gap-1.5 px-3 py-1.5 border border-surface-variant rounded-full text-body-sm font-label-bold text-on-surface-variant cursor-pointer transition-colors bg-surface-container-lowest hover:bg-surface-container-low" for="pet_no">
+<span class="material-symbols-outlined text-[16px]">block</span>
+                                        No pets, please
+                                    </label>
+</div>
+</div>
+</div>
+<!-- Sleep -->
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs">Sleep Schedule</label>
+<div class="flex bg-surface-container-low rounded-lg p-1 max-w-sm">
+<label class="flex-1 text-center">
+<input checked="" class="hidden peer" name="sleep" type="radio" value="early"/>
+<div class="py-1.5 px-3 rounded-md text-body-sm font-label-bold text-on-surface-variant peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">light_mode</span>
+                                        Early Bird
+                                    </div>
+</label>
+<label class="flex-1 text-center">
+<input class="hidden peer" name="sleep" type="radio" value="night"/>
+<div class="py-1.5 px-3 rounded-md text-body-sm font-label-bold text-on-surface-variant peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm transition-all cursor-pointer flex items-center justify-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">dark_mode</span>
+                                        Night Owl
+                                    </div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Divider -->
+<hr class="border-surface-variant mb-lg"/>
+<!-- 3. Cleanliness & Bio -->
+<div class="mb-md md:mb-lg">
+<h2 class="text-body-lg font-label-bold text-primary mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]" style="font-variation-settings: 'FILL' 1;">cleaning_services</span>
+                        Living Style
+                    </h2>
+<!-- Cleanliness Rating -->
+<div class="mb-sm md:mb-md">
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs">Cleanliness Level</label>
+<p class="text-xs text-on-surface-variant mb-xs md:mb-sm">How tidy do you keep your shared spaces?</p>
+<div class="flex justify-between items-center bg-surface-container-low p-2 md:p-sm rounded-lg">
+<span class="text-xs font-label-bold text-on-surface-variant hidden md:inline">Relaxed</span>
+<div class="flex gap-1 md:gap-2 mx-auto md:mx-0">
+<script>
+                                    for(let i=1; i<=5; i++) {
+                                        document.write(`
+                                            <div>
+                                                <input type="radio" id="clean_${i}" name="cleanliness" value="${i}" class="hidden cleanliness-radio" ${i===3 ? 'checked' : ''}>
+                                                <label for="clean_${i}" class="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full border border-surface-variant bg-surface-container-lowest text-body-sm md:text-body-md font-button text-on-surface-variant cursor-pointer transition-all hover:border-secondary-container">
+                                                    ${i}
+                                                </label>
+                                            </div>
+                                        `);
+                                    }
+                                </script>
+</div>
+<span class="text-xs font-label-bold text-on-surface-variant hidden md:inline">Immaculate</span>
+</div>
+<div class="flex justify-between md:hidden mt-1 px-1">
+<span class="text-[10px] font-label-bold text-on-surface-variant">Relaxed</span>
+<span class="text-[10px] font-label-bold text-on-surface-variant">Immaculate</span>
+</div>
+</div>
+<!-- Personal Bio -->
+<div>
+<label class="block text-body-sm font-label-bold text-on-surface mb-xs" for="bio">Personal Bio</label>
+<textarea class="w-full bg-surface-container-low border border-surface-variant rounded-lg p-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-fixed transition-all resize-none" id="bio" maxlength="200" name="bio" placeholder="A quick blurb about yourself, your hobbies, or what makes you a great roommate..." rows="3"></textarea>
+<div class="text-right mt-1">
+<span class="text-xs text-on-surface-variant">0 / 200</span>
+</div>
+</div>
+</div>
+<!-- Consent Checkbox -->
+<div class="bg-surface-container-low p-sm rounded-lg mb-lg border border-surface-variant">
+<label class="flex items-start gap-xs md:gap-sm cursor-pointer">
+<div class="relative flex items-center justify-center pt-0.5">
+<input class="w-4 h-4 md:w-5 md:h-5 appearance-none border border-outline rounded-sm checked:bg-secondary-container checked:border-secondary-container transition-colors peer cursor-pointer" required="" type="checkbox"/>
+<span class="material-symbols-outlined absolute text-on-secondary-container opacity-0 peer-checked:opacity-100 pointer-events-none text-[14px] md:text-[16px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="text-xs md:text-body-sm text-on-surface-variant leading-relaxed">
+                            I confirm that the information provided is accurate and agree to the <a class="text-secondary hover:underline font-label-bold" href="#">Terms of Service</a> and <a class="text-secondary hover:underline font-label-bold" href="#">Privacy Policy</a>. I understand this info will be used to match me with potential roommates.
+                        </span>
+</label>
+</div>
+<!-- Actions -->
+<div class="flex flex-col-reverse md:flex-row justify-between items-center gap-sm md:gap-md mt-lg">
+<button class="w-full md:w-auto px-lg py-2.5 rounded-full border border-primary text-primary font-button text-body-sm hover:bg-surface-container-low transition-colors text-center" type="button">
+                        Back
+                    </button>
+<button class="w-full md:w-auto px-xl py-2.5 rounded-full bg-secondary-container text-on-secondary-container font-button text-body-sm hover:bg-secondary-fixed transition-colors shadow-sm hover:shadow-md text-center" type="submit">
+                        Complete My Profile
+                    </button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="bg-surface-container-low w-full bottom-0 border-t border-surface-variant">
+<div class="flex flex-col md:flex-row justify-between items-center py-sm md:py-md px-margin-mobile md:px-margin-desktop w-full max-w-max-width mx-auto">
+<div class="text-body-sm font-label-bold text-on-surface mb-sm md:mb-0">
+                Roommate NG
+            </div>
+<div class="flex flex-wrap justify-center gap-sm md:gap-md mb-sm md:mb-0">
+<a class="text-on-surface-variant text-xs md:text-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant text-xs md:text-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-on-surface-variant text-xs md:text-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Security Standards</a>
+<a class="text-on-surface-variant text-xs md:text-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Help Center</a>
+</div>
+<div class="text-on-surface-variant text-xs md:text-body-sm text-center md:text-right">
+                © 2024 Roommate NG. Your data is encrypted and secure.
+            </div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Roommate NG - Step 1: Personal Information</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#d8e3fb",
+                    "on-secondary-fixed": "#001e2c",
+                    "on-secondary-container": "#004d6a",
+                    "on-background": "#191c1e",
+                    "background": "#f7f9fb",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-container": "#00a472",
+                    "on-tertiary-fixed": "#002113",
+                    "surface-variant": "#e0e3e5",
+                    "outline-variant": "#c5c6cd",
+                    "on-primary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005236",
+                    "surface-dim": "#d8dadc",
+                    "surface-bright": "#f7f9fb",
+                    "primary-container": "#1e293b",
+                    "on-surface-variant": "#45474c",
+                    "surface-tint": "#545f73",
+                    "tertiary-fixed-dim": "#4edea3",
+                    "outline": "#75777d",
+                    "on-secondary-fixed-variant": "#004c69",
+                    "inverse-primary": "#bcc7de",
+                    "on-surface": "#191c1e",
+                    "on-primary-fixed": "#111c2d",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#40c2fd",
+                    "tertiary": "#00190e",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed": "#c4e7ff",
+                    "primary": "#091426",
+                    "error": "#ba1a1a",
+                    "inverse-on-surface": "#eff1f3",
+                    "on-primary-fixed-variant": "#3c475a",
+                    "secondary": "#00668a",
+                    "tertiary-container": "#00301e",
+                    "surface": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#eceef0",
+                    "primary-fixed-dim": "#bcc7de",
+                    "surface-container-highest": "#e0e3e5",
+                    "surface-container-high": "#e6e8ea",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-fixed": "#6ffbbe",
+                    "on-primary-container": "#8590a6",
+                    "secondary-fixed-dim": "#7bd0ff",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "64px",
+                    "sm": "16px",
+                    "xl": "80px",
+                    "md": "24px",
+                    "gutter": "24px",
+                    "max-width": "1280px",
+                    "xs": "8px",
+                    "base": "4px",
+                    "lg": "48px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "headline-xl": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "label-bold": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "button": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg-mobile": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "headline-lg": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "headline-xl": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "800"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-bold": [
+                            "14px",
+                            {
+                                    "lineHeight": "1",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "button": [
+                            "16px",
+                            {
+                                    "lineHeight": "1",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-surface border-b border-surface-variant w-full shadow-sm sticky top-0 z-50">
+<div class="flex justify-between items-center px-margin-desktop h-20 w-full max-w-max-width mx-auto">
+<div class="text-headline-md font-headline-md text-primary font-bold">Roommate NG</div>
+<nav class="hidden md:flex gap-md items-center">
+<a class="text-on-surface-variant font-button hover:text-secondary transition-colors duration-200 scale-95 active:opacity-80 transition-transform" href="#">Back to Home</a>
+</nav>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow w-full max-w-max-width mx-auto px-margin-mobile md:px-margin-desktop py-lg">
+<!-- Progress Bar -->
+<div class="mb-lg">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-bold text-label-bold text-primary">Step 1 of 3</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">33% complete</span>
+</div>
+<div class="w-full bg-surface-variant rounded-full h-2">
+<div class="bg-secondary-container h-2 rounded-full" style="width: 33%"></div>
+</div>
+</div>
+<!-- Headers -->
+<div class="mb-lg text-center md:text-left">
+<h1 class="font-headline-lg text-headline-lg md:font-headline-xl md:text-headline-xl text-primary mb-xs">Tell us about yourself</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">We use this to build your basic identity on the platform.</p>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-surface-variant shadow-[0_4px_12px_rgba(30,41,59,0.05)] p-md md:p-lg w-full max-w-2xl mx-auto md:mx-0">
+<form action="#" class="space-y-md" method="POST">
+<!-- Full Name -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="fullName">Full Name</label>
+<input class="w-full rounded-full border-outline-variant px-sm py-3 font-body-md text-body-md focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-surface-container-low" id="fullName" name="fullName" placeholder="e.g. Jane Doe" type="text"/>
+</div>
+<!-- Email Address -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="email">Email Address</label>
+<input class="w-full rounded-full border-outline-variant px-sm py-3 font-body-md text-body-md focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-surface-container-low" id="email" name="email" placeholder="jane@example.com" type="email"/>
+</div>
+<!-- WhatsApp Number -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="whatsapp">WhatsApp Number</label>
+<div class="flex">
+<select class="rounded-l-full border-outline-variant border-r-0 px-sm py-3 font-body-md text-body-md bg-surface-container-low focus:ring-2 focus:ring-secondary-container focus:border-secondary-container">
+<option>+234</option>
+<option>+1</option>
+<option>+44</option>
+</select>
+<input class="w-full rounded-r-full border-outline-variant px-sm py-3 font-body-md text-body-md focus:ring-2 focus:ring-secondary-container focus:border-secondary-container bg-surface-container-low" id="whatsapp" name="whatsapp" placeholder="801 234 5678" type="tel"/>
+</div>
+</div>
+<!-- Gender -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs">Gender</label>
+<div class="flex space-x-2">
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="gender" type="radio" value="male"/>
+<div class="text-center rounded-full border border-outline-variant py-3 font-body-md text-body-md peer-checked:bg-tertiary-fixed peer-checked:text-on-tertiary-fixed peer-checked:border-tertiary-fixed transition-colors bg-surface-container-low hover:bg-surface-variant">Male</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="gender" type="radio" value="female"/>
+<div class="text-center rounded-full border border-outline-variant py-3 font-body-md text-body-md peer-checked:bg-tertiary-fixed peer-checked:text-on-tertiary-fixed peer-checked:border-tertiary-fixed transition-colors bg-surface-container-low hover:bg-surface-variant">Female</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="gender" type="radio" value="other"/>
+<div class="text-center rounded-full border border-outline-variant py-3 font-body-md text-body-md peer-checked:bg-tertiary-fixed peer-checked:text-on-tertiary-fixed peer-checked:border-tertiary-fixed transition-colors bg-surface-container-low hover:bg-surface-variant">Other</div>
+</label>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Age Range -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="age">Age Range</label>
+<select class="w-full rounded-full border-outline-variant px-sm py-3 font-body-md text-body-md bg-surface-container-low focus:ring-2 focus:ring-secondary-container focus:border-secondary-container" id="age" name="age">
+<option>18 - 24</option>
+<option>25 - 34</option>
+<option>35 - 44</option>
+<option>45+</option>
+</select>
+</div>
+<!-- Religion -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="religion">Religion</label>
+<select class="w-full rounded-full border-outline-variant px-sm py-3 font-body-md text-body-md bg-surface-container-low focus:ring-2 focus:ring-secondary-container focus:border-secondary-container" id="religion" name="religion">
+<option>Prefer not to say</option>
+<option>Christianity</option>
+<option>Islam</option>
+<option>Other</option>
+</select>
+</div>
+</div>
+<!-- Marital Status -->
+<div>
+<label class="block font-label-bold text-label-bold text-primary mb-xs" for="maritalStatus">Marital Status</label>
+<select class="w-full rounded-full border-outline-variant px-sm py-3 font-body-md text-body-md bg-surface-container-low focus:ring-2 focus:ring-secondary-container focus:border-secondary-container" id="maritalStatus" name="maritalStatus">
+<option>Single</option>
+<option>Married</option>
+<option>Divorced</option>
+<option>Widowed</option>
+</select>
+</div>
+<!-- Submit Button -->
+<div class="pt-sm">
+<button class="w-full flex justify-center items-center rounded-full bg-secondary-container text-on-secondary-container py-4 font-button text-button hover:bg-secondary-fixed transition-colors duration-200" type="submit">
+                        Continue to Housing Needs
+                        <span class="material-symbols-outlined ml-2" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-surface-variant w-full mt-auto">
+<div class="flex flex-col md:flex-row justify-between items-center py-md px-margin-desktop w-full max-w-max-width mx-auto">
+<div class="text-label-bold font-label-bold text-on-surface mb-sm md:mb-0">Roommate NG</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant text-center md:text-left mb-sm md:mb-0">© 2024 Roommate NG Co-Living. Your data is encrypted and secure.</div>
+<nav class="flex gap-sm md:gap-md">
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Terms of Service</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Security Standards</a>
+<a class="text-on-surface-variant font-body-sm hover:text-primary transition-colors opacity-90 hover:opacity-100" href="#">Help Center</a>
+</nav>
+</div>
+</footer>
+</body></html>
