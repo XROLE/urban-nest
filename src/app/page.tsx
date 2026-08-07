@@ -110,9 +110,9 @@ export default function Home() {
 
           <div className="relative w-full h-[380px] md:h-[480px] rounded-3xl bg-slate-100 border border-slate-200 shadow-xl flex items-center justify-center overflow-hidden group">
             <div
-              className="absolute inset-0 bg-cover bg-center w-full h-full opacity-90 transition-transform duration-700 group-hover:scale-105"
+              className="absolute inset-0 bg-cover bg-center w-full h-full opacity-100 transition-transform duration-700 group-hover:scale-105"
               style={{
-                backgroundImage: `url("https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1200&auto=format&fit=crop")`,
+                backgroundImage: `url("/hero-roommates.png")`,
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-dark-slate/60 via-transparent to-transparent" />
