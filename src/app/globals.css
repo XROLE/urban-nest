@@ -141,3 +141,13 @@ body {
   color: #004d6a;
   border-color: #40c2fd;
 }
+
+/* Hide mobile sticky CTA on devices with iPhone 13 Pro screen height (844px) and below */
+@media (max-height: 844px) {
+  .hide-on-short-screens {
+    display: none !important;
+  }
+  .main-content-mobile {
+    padding-bottom: 0 !important;
+  }
+}

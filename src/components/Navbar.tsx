@@ -12,7 +12,7 @@ export default function Navbar({ minimal = false }: NavbarProps) {
 
   return (
     <nav className="bg-warm-gray/80 backdrop-blur-md w-full top-0 sticky z-50 transition-all duration-300 border-b border-slate-200/50">
-      <div className="flex justify-between items-center px-4 md:px-16 py-4 max-w-[1280px] mx-auto">
+      <div className="flex justify-between items-center px-4 md:px-16 py-3 md:py-4 max-w-[1280px] mx-auto">
         <Link href="/" className="flex items-center gap-2 group">
           <span className="material-symbols-outlined text-bright-cyan text-3xl icon-filled group-hover:scale-110 transition-transform">
             home

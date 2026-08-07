@@ -72,43 +72,43 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-warm-gray">
       <Navbar />
 
-      <main className="flex-grow pb-16 md:pb-0">
+      <main className="flex-grow pb-16 md:pb-0 main-content-mobile">
         {/* 1. Hero Section */}
-        <section className="px-4 md:px-16 py-12 md:py-20 max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center min-h-[80vh]">
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 bg-bright-cyan/10 text-bright-cyan px-4 py-1.5 rounded-full border border-bright-cyan/20">
+        <section className="px-4 sm:px-8 md:px-16 py-8 sm:py-12 md:py-20 max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+          <div className="space-y-5 sm:space-y-6">
+            <div className="inline-flex items-center gap-1.5 bg-bright-cyan/10 text-bright-cyan px-3.5 sm:px-4 py-1.5 rounded-full border border-bright-cyan/20">
               <span className="material-symbols-outlined text-[18px]">verified</span>
-              <span className="font-display font-semibold text-xs md:text-sm">
+              <span className="font-display font-semibold text-xs sm:text-sm">
                 Nigeria&apos;s #1 Co-Living Matchmaker
               </span>
             </div>
-            
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark-slate leading-tight tracking-tight">
+
+            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-extrabold text-dark-slate leading-[1.12] tracking-tight">
               Looking for a roommate to beat high rent together?
             </h1>
-            
+
             <p className="font-body text-base md:text-lg text-slate-muted leading-relaxed max-w-lg">
               Tell us what you&apos;re looking for, and we&apos;ll introduce you to people with similar housing preferences. You decide if they&apos;re the right fit before moving forward.
             </p>
 
-            <div className="pt-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-6">
               <Link
                 href="/create-profile"
-                className="w-full sm:w-auto text-center font-display font-semibold text-base bg-bright-cyan text-white px-8 py-4 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-1"
+                className="w-full sm:w-auto text-center font-display font-semibold text-base bg-bright-cyan text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-0.5"
               >
                 Create Your Profile
               </Link>
-              
+
               <a
                 href="#how-it-works"
-                className="font-display font-semibold text-slate-muted hover:text-bright-cyan flex items-center gap-1 transition-colors py-2"
+                className="font-display font-semibold text-sm text-slate-muted hover:text-bright-cyan flex items-center justify-center sm:justify-start gap-1 transition-colors py-2"
               >
                 How It Works <span className="material-symbols-outlined text-sm">arrow_downward</span>
               </a>
             </div>
           </div>
 
-          <div className="relative w-full h-[380px] md:h-[480px] rounded-3xl bg-slate-100 border border-slate-200 shadow-xl flex items-center justify-center overflow-hidden group">
+          <div className="relative w-full h-[240px] sm:h-[360px] md:h-[480px] rounded-2xl sm:rounded-3xl bg-slate-100 border border-slate-200 shadow-xl flex items-center justify-center overflow-hidden group">
             <div
               className="absolute inset-0 bg-cover bg-center w-full h-full opacity-100 transition-transform duration-700 group-hover:scale-105"
               style={{
@@ -118,21 +118,21 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-t from-dark-slate/60 via-transparent to-transparent" />
 
             {/* Floating Card Overlay */}
-            <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-6 rounded-2xl border border-white/80 shadow-2xl transform translate-y-1 group-hover:translate-y-0 transition-all duration-500">
-              <div className="flex items-center justify-between">
+            <div className="absolute bottom-3 sm:bottom-6 left-3 sm:left-6 right-3 sm:right-6 bg-white/95 backdrop-blur-md p-3.5 sm:p-6 rounded-xl sm:rounded-2xl border border-white/80 shadow-2xl transform translate-y-1 group-hover:translate-y-0 transition-all duration-500">
+              <div className="flex items-center justify-between gap-2">
                 <div>
-                  <h3 className="font-display font-bold text-sm text-dark-slate mb-1">
+                  <h3 className="font-display font-bold text-xs sm:text-sm text-dark-slate mb-0.5">
                     Potential Match Found
                   </h3>
-                  <p className="font-body text-xs md:text-sm text-slate-muted">
-                    Lekki Phase 1 • 2 Bed / 2 Bath
+                  <p className="font-body text-[11px] sm:text-sm text-slate-muted">
+                    Montgomeri Yaba • 1 Bed / 1 Bath
                   </p>
                 </div>
-                <div className="bg-mint/10 text-mint px-3 py-1.5 rounded-full flex items-center gap-1 border border-mint/20">
-                  <span className="material-symbols-outlined text-[16px] icon-filled">
+                <div className="bg-mint/10 text-mint px-2.5 py-1 rounded-full flex items-center gap-1 border border-mint/20 shrink-0">
+                  <span className="material-symbols-outlined text-[14px] sm:text-[16px] icon-filled">
                     verified
                   </span>
-                  <span className="font-display font-bold text-xs">98% Match</span>
+                  <span className="font-display font-bold text-[10px] sm:text-xs">98% Match</span>
                 </div>
               </div>
             </div>

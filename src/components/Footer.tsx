@@ -62,12 +62,12 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
 
       {/* Mobile Sticky CTA Bar */}
       {showMobileStickyCta && (
-        <div className="bg-white/90 backdrop-blur-md shadow-[0_-4px_12px_rgba(30,41,59,0.08)] md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-center items-center border-t border-slate-200 py-3 px-4">
+        <div className="bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(30,41,59,0.1)] md:hidden hide-on-short-screens fixed bottom-0 left-0 w-full z-50 flex justify-center items-center border-t border-slate-200/80 py-2 px-3 sm:py-3 sm:px-4">
           <Link
             href="/create-profile"
-            className="flex flex-row items-center justify-center bg-bright-cyan text-white rounded-full px-8 py-3 w-full hover:bg-bright-cyan/90 active:scale-95 transition-all shadow-md font-display font-semibold text-sm gap-2"
+            className="flex flex-row items-center justify-center bg-bright-cyan text-white rounded-full px-5 py-2.5 w-full hover:bg-bright-cyan/90 active:scale-95 transition-all shadow-sm font-display font-semibold text-xs sm:text-sm gap-1.5"
           >
-            <span className="material-symbols-outlined text-xl">person_add</span>
+            <span className="material-symbols-outlined text-lg">person_add</span>
             Create Profile
           </Link>
         </div>
