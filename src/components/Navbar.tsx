@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import CreateProfileButton from '@/components/CreateProfileButton';
 
 interface NavbarProps {
   minimal?: boolean;
@@ -43,12 +44,9 @@ export default function Navbar({ minimal = false }: NavbarProps) {
               >
                 Admin
               </Link> */}
-              <Link
-                href="/create-profile"
-                className="font-display font-semibold text-sm bg-bright-cyan text-white px-6 py-3 rounded-full hover:bg-bright-cyan/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5"
-              >
+              <CreateProfileButton className="font-display font-semibold text-sm bg-bright-cyan text-white px-6 py-3 rounded-full hover:bg-bright-cyan/90 transition-all shadow-sm hover:shadow-md hover:-translate-y-0.5">
                 Create Profile
-              </Link>
+              </CreateProfileButton>
             </div>
 
             <button
@@ -98,13 +96,12 @@ export default function Navbar({ minimal = false }: NavbarProps) {
             Admin Portal
           </Link>
           <div className="pt-2">
-            <Link
-              href="/create-profile"
+            <CreateProfileButton
               onClick={() => setMobileMenuOpen(false)}
               className="block w-full text-center font-display font-semibold text-base bg-bright-cyan text-white px-6 py-3 rounded-full shadow-md"
             >
               Create Profile
-            </Link>
+            </CreateProfileButton>
           </div>
         </div>
       )}

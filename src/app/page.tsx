@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import CreateProfileButton from '@/components/CreateProfileButton';
 
 export default function Home() {
   const isThisYouCards = [
@@ -92,12 +92,9 @@ export default function Home() {
             </p>
 
             <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-6">
-              <Link
-                href="/create-profile"
-                className="w-full sm:w-auto text-center font-display font-semibold text-base bg-bright-cyan text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-0.5"
-              >
+              <CreateProfileButton className="w-full sm:w-auto text-center font-display font-semibold text-base bg-bright-cyan text-white px-7 sm:px-8 py-3.5 sm:py-4 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-0.5">
                 Create Your Profile
-              </Link>
+              </CreateProfileButton>
 
               <a
                 href="#how-it-works"
@@ -252,12 +249,9 @@ export default function Home() {
             <p className="text-slate-300 text-base md:text-lg">
               Join thousands of flat-seekers splitting rent and living better.
             </p>
-            <Link
-              href="/create-profile"
-              className="inline-block font-display font-semibold text-lg bg-bright-cyan text-white px-10 py-5 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-1"
-            >
+            <CreateProfileButton className="inline-block font-display font-semibold text-lg bg-bright-cyan text-white px-10 py-5 rounded-full hover:bg-bright-cyan/90 transition-all shadow-[0_8px_16px_rgba(41,182,246,0.25)] hover:shadow-[0_12px_24px_rgba(41,182,246,0.35)] hover:-translate-y-1">
               Create Your Roommate Profile
-            </Link>
+            </CreateProfileButton>
           </div>
         </section>
       </main>
