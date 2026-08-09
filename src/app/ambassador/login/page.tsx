@@ -139,12 +139,12 @@ export default function AmbassadorLogin() {
                 <div className="flex-grow border-t border-slate-200" />
               </div>
               <div className="text-center">
-                <a
+                <Link
                   className="font-display font-semibold text-sm text-bright-cyan hover:underline"
-                  href="#"
+                  href="/ambassador/register"
                 >
                   Become an Ambassador
-                </a>
+                </Link>
               </div>
             </div>
           </div>

@@ -33,10 +33,10 @@ export default function Navbar({ minimal = false }: NavbarProps) {
                 How It Works
               </Link>
               <Link
-                href="/ambassador/login"
+                href="/ambassador/register"
                 className="font-display font-semibold text-sm text-slate-muted hover:text-bright-cyan transition-colors duration-200"
               >
-                Ambassador Portal
+                Become an Ambassador
               </Link>
               {/* <Link
                 href="/admin/dashboard"
@@ -82,11 +82,11 @@ export default function Navbar({ minimal = false }: NavbarProps) {
             How It Works
           </Link>
           <Link
-            href="/ambassador/login"
+            href="/ambassador/register"
             onClick={() => setMobileMenuOpen(false)}
             className="block font-display font-semibold text-base text-dark-slate hover:text-bright-cyan"
           >
-            Ambassador Portal
+            Become an Ambassador
           </Link>
           <Link
             href="/admin/dashboard"
