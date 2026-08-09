@@ -3,10 +3,6 @@
 import { useState } from 'react';
 import Modal from '@/components/Modal';
 
-interface CreateProfileFormProps {
-  onClose?: () => void;
-}
-
 const stepLabels = ['Personal', 'Housing', 'Lifestyle'] as const;
 
 const inputClass =
@@ -17,8 +13,11 @@ const labelClass =
 
 const selectClass = `${inputClass} appearance-none pr-10 cursor-pointer`;
 
-export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
+export default function CreateProfileForm() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Form State
   const [formData, setFormData] = useState({
@@ -27,21 +26,21 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     email: '',
     countryCode: '+234',
     whatsapp: '',
-    gender: 'male',
-    ageRange: '18 - 24',
-    religion: 'Prefer not to say',
-    maritalStatus: 'Single',
+    gender: '',
+    ageRange: '',
+    religion: '',
+    maritalStatus: '',
 
     // Step 2
     state: 'Lagos',
-    preferredArea: 'Lekki Phase 1',
-    minBudget: '400000',
-    maxBudget: '900000',
-    moveInDate: '2026-09',
+    preferredArea: '',
+    minBudget: '',
+    maxBudget: '',
+    moveInDate: '',
 
     // Step 3
-    occupation: 'full_time',
-    schedule: 'standard',
+    occupation: '',
+    schedule: '',
     bio: '',
     consent: false,
   });
@@ -124,6 +123,12 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     value: string | number | boolean
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setFieldErrors((prev) => {
+      if (!(field in prev)) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   };
 
   const filteredAreas = availableAreas.filter((area) =>
@@ -136,12 +141,150 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     setAreaDropdownOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateStep1 = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.fullName.trim()) errors.fullName = 'Full name is required.';
+    if (!formData.email.trim()) errors.email = 'Email address is required.';
+    if (!formData.gender) errors.gender = 'Please select a gender.';
+    if (!formData.whatsapp.trim())
+      errors.whatsapp = 'WhatsApp number is required.';
+    else if (!/^(\+?234)?0?[789][01]\d{8}$/.test(formData.whatsapp.replace(/[\s-]/g, '')))
+      errors.whatsapp = 'Enter a valid Nigerian phone number.';
+    if (!formData.religion) errors.religion = 'Religion is required.';
+    if (!formData.ageRange) errors.ageRange = 'Please select an age range.';
+    if (!formData.maritalStatus)
+      errors.maritalStatus = 'Marital status is required.';
+    return errors;
+  };
+
+  const validateStep2 = () => {
+    const errors: Record<string, string> = {};
+    if (!formData.preferredArea) errors.preferredArea = 'Please select an area.';
+    if (!formData.minBudget || formData.minBudget.trim() === '')
+      errors.minBudget = 'Minimum budget is required.';
+    else if (Number(formData.minBudget) < 0)
+      errors.minBudget = 'Enter a valid minimum budget.';
+    if (!formData.maxBudget || formData.maxBudget.trim() === '')
+      errors.maxBudget = 'Maximum budget is required.';
+    else if (Number(formData.maxBudget) < 0)
+      errors.maxBudget = 'Enter a valid maximum budget.';
+    if (!formData.moveInDate)
+      errors.moveInDate = 'Select a move-in month.';
+    if (
+      formData.minBudget.trim() !== '' &&
+      formData.maxBudget.trim() !== '' &&
+      Number(formData.minBudget) > Number(formData.maxBudget)
+    )
+      errors.minBudget = 'Minimum budget cannot be above maximum budget.';
+    return errors;
+  };
+
+  const buildPayload = () => {
+    const phone = `+234${formData.whatsapp.replace(/\D/g, '').replace(/^0/, '')}`;
+    return {
+      email: formData.email.trim(),
+      fullName: formData.fullName.trim(),
+      phoneNumber: phone,
+      gender: formData.gender as 'male' | 'female' | 'no_preference',
+      ageRange: formData.ageRange,
+      maritalStatus: formData.maritalStatus,
+      religion: formData.religion,
+      preferredLocations: [formData.preferredArea],
+      budgetMin: Math.round(Number(formData.minBudget)),
+      budgetMax: Math.round(Number(formData.maxBudget)),
+      expectedMoveInDate: `${formData.moveInDate}-01`,
+      occupation: formData.occupation as
+        | 'student'
+        | 'nysc'
+        | 'working_professional'
+        | 'other',
+      ...(formData.bio.trim()
+        ? { personalBio: formData.bio.trim() }
+        : {}),
+      agreedToTerms: true,
+    };
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3) {
-      setStep((step + 1) as 1 | 2 | 3);
-    } else {
-      setStep(4); // Submitted state
+    setFieldErrors({});
+    setSubmitError('');
+
+    if (step === 1) {
+      const errors = validateStep1();
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) return;
+      setStep(2);
+      return;
+    }
+
+    if (step === 2) {
+      const errors = validateStep2();
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) return;
+      setStep(3);
+      return;
+    }
+
+    if (step === 3) {
+      if (!formData.occupation) {
+        setSubmitError('Please select your occupation.');
+        return;
+      }
+      if (!formData.consent) {
+        setSubmitError('Please confirm you agree to the Terms of Service and Privacy Policy.');
+        return;
+      }
+      setSubmitting(true);
+      try {
+        const res = await fetch(
+          'https://rmts-backend.onrender.com/api/v1/profiles',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(buildPayload()),
+          }
+        );
+
+        if (!res.ok) {
+          let message = 'Something went wrong. Please try again.';
+          try {
+            const data = await res.json();
+            if (typeof data?.message === 'string') message = data.message;
+            else if (typeof data?.error === 'string') message = data.error;
+
+            const details: string[] = [];
+            if (Array.isArray(data?.errors)) {
+              data.errors.forEach((e: unknown) => {
+                if (typeof e === 'string') details.push(e);
+                else if (e && typeof e === 'object') {
+                  const err = e as { field?: string; message?: string; msg?: string };
+                  const m = err.message || err.msg;
+                  if (m) details.push(err.field ? `${err.field}: ${m}` : m);
+                }
+              });
+            } else if (data?.errors && typeof data?.errors === 'object') {
+              Object.entries(data.errors).forEach(([k, v]) => {
+                details.push(typeof v === 'string' ? `${k}: ${v}` : k);
+              });
+            }
+
+            if (details.length > 0) message = details.join('\n');
+          } catch {
+            /* ignore body parse errors */
+          }
+          setSubmitError(message);
+          return;
+        }
+
+        setStep(4); // Submitted state
+      } catch {
+        setSubmitError(
+          'Network error. Please check your connection and try again.'
+        );
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -197,6 +340,12 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
     );
   };
 
+  const fieldErrorClass = 'text-xs text-red-500 mt-1.5';
+  const fieldErrorText = (key: string) =>
+    fieldErrors[key] ? (
+      <p className={fieldErrorClass}>{fieldErrors[key]}</p>
+    ) : null;
+
   const sectionCard =
     'bg-white rounded-2xl border border-surface-variant shadow-[0_4px_16px_rgba(30,41,59,0.06)] p-5 md:p-6 w-full max-w-xl mx-auto';
 
@@ -248,6 +397,7 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         handleInputChange('fullName', e.target.value)
                       }
                     />
+                    {fieldErrorText('fullName')}
                   </div>
 
                   <div>
@@ -265,6 +415,7 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         handleInputChange('email', e.target.value)
                       }
                     />
+                    {fieldErrorText('email')}
                   </div>
 
                   <div>
@@ -280,8 +431,6 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         }
                       >
                         <option>+234</option>
-                        <option>+1</option>
-                        <option>+44</option>
                       </select>
                       <input
                         required
@@ -295,12 +444,13 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         }
                       />
                     </div>
+                    {fieldErrorText('whatsapp')}
                   </div>
 
                   <div>
                     <span className={labelClass}>Gender</span>
                     <div className="grid grid-cols-3 gap-3">
-                      {['male', 'female', 'other'].map((g) => (
+                      {['male', 'female', 'no_preference'].map((g) => (
                         <button
                           key={g}
                           type="button"
@@ -311,10 +461,11 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                               : optionIdle
                           }`}
                         >
-                          {g}
+                          {g.replace('_', ' ')}
                         </button>
                       ))}
                     </div>
+                    {fieldErrorText('gender')}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -331,11 +482,15 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                             handleInputChange('ageRange', e.target.value)
                           }
                         >
+                          <option value="" disabled>
+                          Select age range...
+                        </option>
                           <option>18 - 24</option>
                           <option>25 - 34</option>
                           <option>35 - 44</option>
                         <option>45+</option>
                         </select>
+                        {fieldErrorText('ageRange')}
                         <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
                           expand_more
                         </span>
@@ -355,17 +510,20 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                             handleInputChange('religion', e.target.value)
                           }
                         >
-                          <option>Prefer not to say</option>
+<option value="" disabled>
+                            Select religion...
+                          </option>
                           <option>Christianity</option>
                           <option>Islam</option>
-                        <option>Other</option>
+                          <option>Other</option>
                         </select>
-                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
-                          expand_more
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                        {fieldErrorText('religion')}
+                <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
+                  expand_more
+                </span>
+              </div>
+            </div>
+          </div>
 
                   <div>
                     <label className={labelClass} htmlFor="maritalStatus">
@@ -380,11 +538,15 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         handleInputChange('maritalStatus', e.target.value)
                       }
                     >
-                      <option>Single</option>
-                      <option>Married</option>
-                      <option>Divorced</option>
-                    <option>Widowed</option>
+                      <option value="" disabled>
+                        Select marital status...
+                      </option>
+                      <option value="single">Single</option>
+                      <option value="married">Married</option>
+                      <option value="divorced">Divorced</option>
+                      <option value="prefer_not_to_say">Prefer not to say</option>
                     </select>
+                    {fieldErrorText('maritalStatus')}
                     <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
                       expand_more
                     </span>
@@ -504,6 +666,7 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                         </div>
                       )}
                     </div>
+                    {fieldErrorText('preferredArea')}
                   </section>
 
                   <hr className="border-t border-surface-variant" />
@@ -516,7 +679,7 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                       Budget & Timeline
                     </h2>
                     <div>
-                      <label className={labelClass}>Monthly Budget Range</label>
+                      <label className={labelClass}>Budget per year</label>
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">
@@ -548,6 +711,10 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                           />
                         </div>
                       </div>
+                      <div className="flex gap-2">
+                        {fieldErrorText('minBudget')}
+                        {fieldErrorText('maxBudget')}
+                      </div>
                     </div>
 
                     <div className="mt-4">
@@ -565,6 +732,7 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                           }
                         />
                       </div>
+                      {fieldErrorText('moveInDate')}
                     </div>
                   </section>
 
@@ -622,11 +790,13 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                               handleInputChange('occupation', e.target.value)
                             }
                           >
-                            <option value="full_time">Full-time Professional</option>
-                            <option value="part_time">Part-time</option>
-                            <option value="student">Student</option>
-                            <option value="freelance">Freelance / Remote</option>
-                          <option value="other">Other</option>
+                            <option value="" disabled>
+                              Select occupation...
+                            </option>
+                            <option value="nysc">nysc</option>
+                            <option value="student">student</option>
+                            <option value="working_professional">working professional</option>
+                            <option value="other">other</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
                             expand_more
@@ -646,6 +816,9 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                               handleInputChange('schedule', e.target.value)
                             }
                           >
+                            <option value="" disabled>
+                              Select schedule...
+                            </option>
                             <option value="standard">Standard (9 to 5)</option>
                             <option value="flexible">Flexible / Remote</option>
                             <option value="shift">Shift Work</option>
@@ -717,6 +890,12 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                     </label>
                   </div>
 
+{submitError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 text-red-700 px-4 py-3 text-sm whitespace-pre-line">
+                      {submitError}
+                    </div>
+                  )}
+
                   <div className="pt-1 flex flex-col-reverse sm:flex-row justify-between items-center gap-3">
                     <button
                       type="button"
@@ -725,8 +904,19 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
                     >
                       Back
                     </button>
-                    <button type="submit" className={`w-full sm:w-auto ${primaryBtn}`}>
-                      Complete My Profile
+                    <button
+                      type="submit"
+                      disabled={submitting}
+                      className={`w-full sm:w-auto ${primaryBtn} disabled:opacity-70 disabled:hover:translate-y-0 disabled:shadow-none`}
+                    >
+                      {submitting ? (
+                        <>
+                          <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        'Complete My Profile'
+                      )}
                     </button>
                   </div>
                 </form>
@@ -745,15 +935,55 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
 
           <div className="space-y-2">
             <h1 className="font-display text-3xl font-extrabold text-dark-slate">
-              Profile Created Successfully!
+              You&rsquo;re All Set,{' '}
+              <span className="text-bright-cyan">
+                {formData.fullName.split(' ')[0] || 'User'}
+              </span>
+              ! 🚀
             </h1>
             <p className="font-body text-slate-muted text-base">
-              Welcome,{' '}
-              <span className="font-bold text-dark-slate">
-                {formData.fullName || 'User'}
-              </span>
-              ! Your preferences are logged and our team is matching you.
+              Your roommate profile is live! Sit back while our team pairs you
+              with verified roommates in your target locations.
             </p>
+          </div>
+
+          <div className="bg-surface-container-lowest border border-slate-200 rounded-2xl p-6 text-left space-y-3 shadow-sm">
+            <h3 className="font-display font-bold text-sm text-dark-slate uppercase tracking-wider">
+              How Roommate NG Works
+            </h3>
+            <div className="space-y-3 text-sm text-slate-600">
+              <div className="flex gap-3">
+                <span>🔍</span>
+                <p>
+                  <span className="font-semibold text-dark-slate">
+                    We Find Matches:
+                  </span>{' '}
+                  Our team scans active profiles that match your location,
+                  budget, and lifestyle preferences.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span>📲</span>
+                <p>
+                  <span className="font-semibold text-dark-slate">
+                    Review &amp; Connect:
+                  </span>{' '}
+                  Once a compatible match is found, we notify you via WhatsApp
+                  so you can inspect their profile.
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <span>🛡️</span>
+                <p>
+                  <span className="font-semibold text-dark-slate">
+                    Pay Only When Matched:
+                  </span>{' '}
+                  Submitting your preferences is 100% free. You only pay a
+                  small ₦2,000 service fee after we find a verified match you
+                  are happy to connect with.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="bg-surface-container-lowest border border-slate-200 rounded-2xl p-6 text-left space-y-3 shadow-sm">
@@ -789,10 +1019,10 @@ export default function CreateProfileForm({ onClose }: CreateProfileFormProps) {
           <div className="pt-4 flex flex-col sm:flex-row justify-center gap-4">
             <button
               type="button"
-              onClick={onClose}
               className="bg-bright-cyan text-white px-8 py-3.5 rounded-full font-display font-semibold hover:bg-bright-cyan/90 transition-colors shadow-md"
+              onClick={() => setStep(1)}
             >
-              Return to Home
+              Create Another Profile
             </button>
           </div>
         </div>

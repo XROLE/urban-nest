@@ -8,6 +8,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   size?: 'md' | 'lg';
+  preventDismiss?: boolean;
 }
 
 const sizeClasses = {
@@ -21,6 +22,7 @@ export default function Modal({
   title,
   children,
   size = 'lg',
+  preventDismiss = false,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -31,7 +33,7 @@ export default function Modal({
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (!preventDismiss && e.key === 'Escape') onClose();
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -45,7 +47,7 @@ export default function Modal({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose]);
+  }, [open, onClose, preventDismiss]);
 
   if (!open) return null;
 
@@ -53,7 +55,7 @@ export default function Modal({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       <div
         className="absolute inset-0 bg-dark-slate/50 backdrop-blur-sm"
-        onClick={onClose}
+        onClick={preventDismiss ? undefined : onClose}
         aria-hidden="true"
       />
 
