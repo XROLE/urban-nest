@@ -2,14 +2,33 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AmbassadorDashboard() {
+  const router = useRouter();
+  const { user, profile, logout } = useAuth();
   const [copied, setCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const referralCode = 'GOODNESS01';
+  const fullName = user?.full_name || 'Ambassador';
+  const firstName = fullName.trim().split(/\s+/)[0] || 'Ambassador';
+  const initials =
+    fullName
+      .trim()
+      .split(/\s+/)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'AM';
+
+  const referralCode = profile?.referral_code || 'SN00';
   const referralLink = `https://roommateng.com/r/${referralCode}`;
+
+  const totalReferrals = profile?.total_referrals ?? 24;
+  const totalEarnings = profile?.total_earnings_ngn ?? 6000;
+  const pendingBalance = profile?.pending_balance_ngn ?? 4500;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -20,6 +39,11 @@ export default function AmbassadorDashboard() {
   const handleWithdraw = () => {
     setWithdrawn(true);
     setTimeout(() => setWithdrawn(false), 3000);
+  };
+
+  const handleLogout = () => {
+    logout();
+    router.push('/ambassador/login');
   };
 
   return (
@@ -40,7 +64,7 @@ export default function AmbassadorDashboard() {
 
         <div className="flex items-center gap-4">
           <span className="font-body text-sm font-semibold text-dark-slate hidden sm:inline">
-            Hi, John 👋
+            Hi, {firstName} 👋
           </span>
           <button
             aria-label="Notifications"
@@ -59,7 +83,7 @@ export default function AmbassadorDashboard() {
             </span>
           </button>
           <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center font-bold text-xs text-primary">
-            JA
+            {initials}
           </div>
         </div>
       </header>
@@ -132,15 +156,15 @@ export default function AmbassadorDashboard() {
               Copy Invite Link
             </button>
 
-            <Link
-              href="/ambassador/login"
+            <button
+              onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-sm"
             >
               <span className="material-symbols-outlined text-base">
                 logout
               </span>
               <span>Log Out</span>
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
@@ -163,7 +187,7 @@ export default function AmbassadorDashboard() {
           <div className="fixed top-20 right-8 bg-bright-cyan text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
             <span className="material-symbols-outlined text-lg">payments</span>
             <span className="font-semibold text-sm">
-              Withdrawal request for ₦4,500 submitted!
+              Withdrawal request for ₦{pendingBalance.toLocaleString()} submitted!
             </span>
           </div>
         )}
@@ -228,7 +252,7 @@ export default function AmbassadorDashboard() {
                   Total Referrals
                 </h4>
                 <p className="font-display text-3xl font-extrabold text-dark-slate">
-                  24
+                  {totalReferrals}
                 </p>
               </div>
 
@@ -256,7 +280,7 @@ export default function AmbassadorDashboard() {
                   Total Earnings
                 </h4>
                 <p className="font-display text-3xl font-extrabold text-dark-slate">
-                  ₦6,000
+                  ₦{totalEarnings.toLocaleString()}
                 </p>
               </div>
 
@@ -271,7 +295,7 @@ export default function AmbassadorDashboard() {
                 </h4>
                 <div className="flex justify-between items-end pt-1">
                   <p className="font-display text-3xl font-extrabold text-bright-cyan">
-                    ₦4,500
+                    ₦{pendingBalance.toLocaleString()}
                   </p>
                   <button
                     onClick={handleWithdraw}

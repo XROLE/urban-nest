@@ -3,16 +3,55 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
+
+type FieldErrors = {
+  email?: string;
+  password?: string;
+};
 
 export default function AmbassadorLogin() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const [submitError, setSubmitError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/ambassador/dashboard');
+    const nextErrors: FieldErrors = {};
+
+    if (!email.trim()) {
+      nextErrors.email = 'Email address is required.';
+    } else if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+      nextErrors.email = 'Enter a valid email address.';
+    }
+
+    if (!password) {
+      nextErrors.password = 'Password is required.';
+    }
+
+    setErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      await login(email.trim(), password);
+      router.push('/ambassador/dashboard');
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong. Please try again.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -66,7 +105,16 @@ export default function AmbassadorLogin() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              {submitError && (
+                <div
+                  role="alert"
+                  className="mb-4 bg-error/10 text-error border border-error/20 rounded-2xl px-4 py-3 text-sm font-body"
+                >
+                  {submitError}
+                </div>
+              )}
+
               <div>
                 <label
                   className="block font-label-bold text-xs font-bold text-dark-slate mb-1"
@@ -81,8 +129,16 @@ export default function AmbassadorLogin() {
                   placeholder="you@example.com"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors((prev) => ({ ...prev, email: undefined }));
+                  }}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-xs font-body font-semibold text-error">
+                    {errors.email}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -108,7 +164,10 @@ export default function AmbassadorLogin() {
                     placeholder="••••••••"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrors((prev) => ({ ...prev, password: undefined }));
+                    }}
                   />
                   <button
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
@@ -120,13 +179,19 @@ export default function AmbassadorLogin() {
                     </span>
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="mt-1 text-xs font-body font-semibold text-error">
+                    {errors.password}
+                  </p>
+                )}
               </div>
 
               <button
-                className="w-full mt-6 rounded-full bg-bright-cyan text-white font-display font-semibold text-base py-3.5 hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98]"
+                className="w-full mt-6 rounded-full bg-bright-cyan text-white font-display font-semibold text-base py-3.5 hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={submitting}
               >
-                Sign In to Dashboard
+                {submitting ? 'Signing in…' : 'Sign In to Dashboard'}
               </button>
             </form>
 

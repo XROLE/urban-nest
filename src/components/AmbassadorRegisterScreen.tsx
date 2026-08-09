@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Modal from '@/components/Modal';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 type FormValues = {
   full_name: string;
@@ -69,6 +70,7 @@ const validate = (values: FormValues): FormErrors => {
 
 export default function AmbassadorRegisterScreen() {
   const router = useRouter();
+  const { register } = useAuth();
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>(initialErrors);
   const [showPassword, setShowPassword] = useState(false);
@@ -93,19 +95,12 @@ export default function AmbassadorRegisterScreen() {
     setSubmitError('');
 
     try {
-      const res = await fetch('/api/ambassadors/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: values.full_name.trim(),
-          phone_number: values.phone_number.trim(),
-          email: values.email.trim(),
-          password: values.password,
-          agreed_to_terms: values.agreed_to_terms,
-        }),
+      await register({
+        fullName: values.full_name.trim(),
+        whatsappNumber: values.phone_number.trim(),
+        email: values.email.trim(),
+        password: values.password,
       });
-
-      if (!res.ok) throw new Error('Registration failed. Please try again.');
 
       router.push('/ambassador/dashboard');
     } catch (err) {

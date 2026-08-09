@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import ModalProvider from '@/components/providers/ModalProvider';
+import AuthProvider from '@/components/providers/AuthProvider';
 import './globals.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -37,7 +38,9 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-warm-gray text-slate-light font-body antialiased selection:bg-bright-cyan/20 selection:text-dark-slate min-h-screen flex flex-col">
-        <ModalProvider>{children}</ModalProvider>
+        <AuthProvider>
+          <ModalProvider>{children}</ModalProvider>
+        </AuthProvider>
       </body>
     </html>
   );
