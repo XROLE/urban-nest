@@ -4,6 +4,86 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+import Modal from '@/components/Modal';
+
+type View = 'dashboard' | 'referrals';
+
+interface ReferralRow {
+  name: string;
+  date: string;
+  status: 'Paid' | 'Profile Complete' | 'Signed Up' | 'Match Found';
+  location: string;
+  reward: number;
+}
+
+const STATUSES: Array<ReferralRow['status'] | 'All'> = [
+  'All',
+  'Paid',
+  'Profile Complete',
+  'Signed Up',
+  'Match Found',
+];
+
+const colorForStatus: Record<ReferralRow['status'], string> = {
+  Paid: 'bg-emerald-50 text-emerald-600',
+  'Profile Complete': 'bg-sky-50 text-sky-600',
+  'Signed Up': 'bg-slate-100 text-slate-600',
+  'Match Found': 'bg-slate-200 text-dark-slate',
+};
+
+const dotForStatus: Record<ReferralRow['status'], string> = {
+  Paid: 'bg-emerald-500',
+  'Profile Complete': 'bg-sky-500',
+  'Signed Up': 'bg-slate-400',
+  'Match Found': 'bg-dark-slate',
+};
+
+const SAMPLE_REFERRALS: ReferralRow[] = [
+  { name: 'Sarah Jenkins', date: 'Oct 24, 2023', status: 'Paid', location: 'Lagos', reward: 2000 },
+  { name: 'Michael Okafor', date: 'Oct 22, 2023', status: 'Profile Complete', location: 'Abuja', reward: 0 },
+  { name: 'Emeka Anya', date: 'Oct 20, 2023', status: 'Signed Up', location: 'Port Harcourt', reward: 0 },
+  { name: 'David Balogun', date: 'Oct 18, 2023', status: 'Match Found', location: 'Lagos', reward: 0 },
+  { name: 'Chioma Adeyemi', date: 'Oct 15, 2023', status: 'Paid', location: 'Ibadan', reward: 2000 },
+  { name: 'Tunde Olatunji', date: 'Oct 12, 2023', status: 'Profile Complete', location: 'Lagos', reward: 0 },
+  { name: 'Favour Nwachukwu', date: 'Oct 10, 2023', status: 'Paid', location: 'Enugu', reward: 2000 },
+  { name: 'Kingsley Eze', date: 'Oct 08, 2023', status: 'Match Found', location: 'Abuja', reward: 0 },
+  { name: 'Aisha Mohammed', date: 'Oct 05, 2023', status: 'Signed Up', location: 'Kano', reward: 0 },
+  { name: 'Joy Udo', date: 'Oct 01, 2023', status: 'Paid', location: 'Uyo', reward: 2000 },
+  { name: 'Blessing Okoye', date: 'Sep 28, 2023', status: 'Profile Complete', location: 'Lagos', reward: 0 },
+  { name: 'Ibrahim Musa', date: 'Sep 25, 2023', status: 'Paid', location: 'Kano', reward: 2000 },
+  { name: 'Ngozi Chukwu', date: 'Sep 22, 2023', status: 'Signed Up', location: 'Enugu', reward: 0 },
+  { name: 'Peter Obi', date: 'Sep 20, 2023', status: 'Match Found', location: 'Onitsha', reward: 0 },
+  { name: 'Adaora Ibe', date: 'Sep 18, 2023', status: 'Paid', location: 'Lagos', reward: 2000 },
+  { name: 'Chinedu Nwosu', date: 'Sep 15, 2023', status: 'Profile Complete', location: 'Ibadan', reward: 0 },
+  { name: 'Fatima Bello', date: 'Sep 12, 2023', status: 'Signed Up', location: 'Kaduna', reward: 0 },
+  { name: 'Tola Adebiyi', date: 'Sep 10, 2023', status: 'Paid', location: 'Lagos', reward: 2000 },
+  { name: 'Yemi Ojo', date: 'Sep 08, 2023', status: 'Match Found', location: 'Abeokuta', reward: 0 },
+  { name: 'Halima Sani', date: 'Sep 05, 2023', status: 'Profile Complete', location: 'Kano', reward: 0 },
+  { name: 'Emeka Obi', date: 'Sep 02, 2023', status: 'Paid', location: 'Enugu', reward: 2000 },
+  { name: 'Zainab Ibrahim', date: 'Aug 30, 2023', status: 'Signed Up', location: 'Abuja', reward: 0 },
+  { name: 'Kelechi Nduka', date: 'Aug 28, 2023', status: 'Match Found', location: 'Lagos', reward: 0 },
+  { name: 'Amina Yusuf', date: 'Aug 25, 2023', status: 'Paid', location: 'Kaduna', reward: 2000 },
+  { name: 'Seyi Adewale', date: 'Aug 22, 2023', status: 'Profile Complete', location: 'Lagos', reward: 0 },
+  { name: 'Nneka Okafor', date: 'Aug 20, 2023', status: 'Signed Up', location: 'Onitsha', reward: 0 },
+  { name: 'Musa Jibrin', date: 'Aug 18, 2023', status: 'Paid', location: 'Abuja', reward: 2000 },
+  { name: 'Chiamaka Eze', date: 'Aug 15, 2023', status: 'Match Found', location: 'Lagos', reward: 0 },
+  { name: 'Tunde Bakare', date: 'Aug 12, 2023', status: 'Profile Complete', location: 'Ibadan', reward: 0 },
+  { name: 'Rita Ani', date: 'Aug 10, 2023', status: 'Paid', location: 'Enugu', reward: 2000 },
+  { name: 'Damilola Ogun', date: 'Aug 08, 2023', status: 'Signed Up', location: 'Lagos', reward: 0 },
+  { name: 'Hauwa Bala', date: 'Aug 05, 2023', status: 'Match Found', location: 'Kano', reward: 0 },
+  { name: 'Emeka Uche', date: 'Aug 02, 2023', status: 'Paid', location: 'Port Harcourt', reward: 2000 },
+  { name: 'Bolaji Adesina', date: 'Jul 30, 2023', status: 'Profile Complete', location: 'Lagos', reward: 0 },
+  { name: 'Kemi Olawale', date: 'Jul 28, 2023', status: 'Signed Up', location: 'Ibadan', reward: 0 },
+  { name: 'Yusuf Abdullahi', date: 'Jul 25, 2023', status: 'Paid', location: 'Kaduna', reward: 2000 },
+  { name: 'Amara Nwankwo', date: 'Jul 22, 2023', status: 'Match Found', location: 'Enugu', reward: 0 },
+  { name: 'Femi Adeyemi', date: 'Jul 20, 2023', status: 'Profile Complete', location: 'Lagos', reward: 0 },
+  { name: 'Ijeoma Obasi', date: 'Jul 18, 2023', status: 'Paid', location: 'Onitsha', reward: 2000 },
+  { name: 'Chukwuma Okafor', date: 'Jul 15, 2023', status: 'Signed Up', location: 'Abuja', reward: 0 },
+  { name: 'Bisi Adeyemi', date: 'Jul 12, 2023', status: 'Match Found', location: 'Lagos', reward: 0 },
+  { name: 'Omotola Adekunle', date: 'Jul 10, 2023', status: 'Paid', location: 'Ibadan', reward: 2000 },
+];
+
+const PAGE_SIZE = 10;
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
@@ -12,6 +92,11 @@ export default function AmbassadorDashboard() {
   const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [view, setView] = useState<View>('dashboard');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ReferralRow['status'] | 'All'>('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -70,6 +155,32 @@ Fill out the short form here to get started:
     router.push('/ambassador/login');
   };
 
+  const confirmLogout = () => {
+    setLogoutModalOpen(false);
+    handleLogout();
+  };
+
+  const filteredReferrals = SAMPLE_REFERRALS.filter((r) => {
+    const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredReferrals.length / PAGE_SIZE));
+  const page = Math.min(currentPage, totalPages);
+  const pageRows = filteredReferrals.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  const applyView = (next: View) => {
+    setView(next);
+    setSearchQuery('');
+    setStatusFilter('All');
+    setCurrentPage(1);
+    setMobileSidebarOpen(false);
+  };
+
   return (
     <div className="bg-background text-on-surface font-body min-h-screen">
       {/* TopAppBar */}
@@ -81,9 +192,27 @@ Fill out the short form here to get started:
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
-          <h2 className="font-display text-xl font-bold text-primary hidden md:block">
-            Ambassador Dashboard
-          </h2>
+          {view === 'referrals' ? (
+            <div className="flex items-center bg-slate-100 border border-slate-200 rounded-full px-4 py-2 w-full max-w-xs focus-within:border-bright-cyan focus-within:ring-2 focus-within:ring-bright-cyan/20 transition-all hidden sm:flex">
+              <span className="material-symbols-outlined text-slate-400 mr-2 text-lg">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Search referrals..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="bg-transparent outline-none text-sm text-dark-slate placeholder:text-slate-400 w-full"
+              />
+            </div>
+          ) : (
+            <h2 className="font-display text-xl font-bold text-primary hidden md:block">
+              Ambassador Dashboard
+            </h2>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
@@ -124,7 +253,7 @@ Fill out the short form here to get started:
           {/* Brand Area */}
           <div className="px-4 py-4 mb-6">
             <Link
-              href="/"
+              href="/ambassador/dashboard"
               className="font-display text-2xl font-extrabold text-white tracking-tight block"
             >
               Roommate NG
@@ -136,36 +265,40 @@ Fill out the short form here to get started:
 
           {/* Nav Links */}
           <nav className="flex-1 space-y-1">
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-3 text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold transition-all rounded-l-lg"
+            <button
+              onClick={() => applyView('dashboard')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
+                view === 'dashboard'
+                  ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
             >
-              <span className="material-symbols-outlined icon-filled">
+              <span
+                className={`material-symbols-outlined ${
+                  view === 'dashboard' ? 'icon-filled' : ''
+                }`}
+              >
                 dashboard
               </span>
               <span className="font-body text-sm">Dashboard</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-lg"
+            </button>
+            <button
+              onClick={() => applyView('referrals')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
+                view === 'referrals'
+                  ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
             >
-              <span className="material-symbols-outlined">group</span>
+              <span
+                className={`material-symbols-outlined ${
+                  view === 'referrals' ? 'icon-filled' : ''
+                }`}
+              >
+                group
+              </span>
               <span className="font-body text-sm">Referrals</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-lg"
-            >
-              <span className="material-symbols-outlined">payments</span>
-              <span className="font-body text-sm">Earnings</span>
-            </a>
-            <a
-              href="#"
-              className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-lg"
-            >
-              <span className="material-symbols-outlined">library_books</span>
-              <span className="font-body text-sm">Resources</span>
-            </a>
+            </button>
           </nav>
 
           {/* CTA & Logout */}
@@ -181,7 +314,7 @@ Fill out the short form here to get started:
             </button>
 
             <button
-              onClick={handleLogout}
+              onClick={() => setLogoutModalOpen(true)}
               className="w-full flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-sm"
             >
               <span className="material-symbols-outlined text-base">
@@ -227,14 +360,16 @@ Fill out the short form here to get started:
           </div>
         )}
 
-        {/* Header Section */}
-        <div className="mb-8">
-          <h1 className="font-display text-2xl md:text-3xl font-extrabold text-dark-slate mb-1">
-            Dashboard Overview
-          </h1>
-          <p className="font-body text-sm text-slate-500">
-            Track your referrals, earnings, and access marketing resources.
-          </p>
+        {view === 'dashboard' ? (
+          <>
+            {/* Header Section */}
+            <div className="mb-8">
+              <h1 className="font-display text-2xl md:text-3xl font-extrabold text-dark-slate mb-1">
+                Dashboard Overview
+              </h1>
+              <p className="font-body text-sm text-slate-500">
+                Track your referrals, earnings, and access marketing resources.
+              </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -492,8 +627,228 @@ Fill out the short form here to get started:
               </div>
             </section>
           </div>
-        </div>
+          </div>
+          </>
+        ) : (
+          <div className="space-y-6">
+            {/* Page Header */}
+            <div>
+              <h1 className="font-display text-2xl md:text-3xl font-extrabold text-dark-slate">
+                All Referrals
+              </h1>
+              <p className="font-body text-sm text-slate-500">
+                Track everyone referred through your unique code.
+              </p>
+            </div>
+
+            {/* Filter Toolbar */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <div className="w-full sm:hidden flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-2">
+                <span className="material-symbols-outlined text-slate-400 mr-2 text-lg">
+                  search
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="bg-transparent outline-none text-sm text-dark-slate placeholder:text-slate-400 w-full"
+                />
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-500">
+                    Status:
+                  </span>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => {
+                      setStatusFilter(
+                        e.target.value as ReferralRow['status'] | 'All'
+                      );
+                      setCurrentPage(1);
+                    }}
+                    className="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:border-bright-cyan"
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-500">
+                    Date:
+                  </span>
+                  <select className="bg-slate-50 border border-slate-200 rounded-lg text-sm px-3 py-2 outline-none focus:border-bright-cyan">
+                    <option>Last 30 Days</option>
+                    <option>Last 90 Days</option>
+                    <option>Custom</option>
+                  </select>
+                </div>
+              </div>
+
+              <button className="hidden sm:flex items-center gap-2 border border-slate-300 text-dark-slate font-semibold text-sm px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                <span className="material-symbols-outlined text-lg">
+                  download
+                </span>
+                Export
+              </button>
+            </div>
+
+            {/* Referrals Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase bg-slate-50">
+                      <th className="py-3 px-4">Name</th>
+                      <th className="py-3 px-4">Date Referred</th>
+                      <th className="py-3 px-4">Status</th>
+                      <th className="py-3 px-4">Location</th>
+                      <th className="py-3 px-4 text-right">Reward Earned</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm font-body divide-y divide-slate-100">
+                    {pageRows.map((r) => {
+                      const initials = r.name
+                        .split(' ')
+                        .map((p) => p[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase();
+                      return (
+                        <tr
+                          key={r.name}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-slate-200 text-primary flex items-center justify-center font-bold text-xs">
+                                {initials}
+                              </div>
+                              <span className="font-semibold text-dark-slate">
+                                {r.name}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">{r.date}</td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${colorForStatus[r.status]}`}
+                            >
+                              <span
+                                className={`w-2 h-2 rounded-full mr-1.5 ${dotForStatus[r.status]}`}
+                              />
+                              {r.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500">
+                            {r.location}
+                          </td>
+                          <td
+                            className={`py-3 px-4 text-right font-medium ${
+                              r.reward ? 'text-dark-slate' : 'text-slate-500'
+                            }`}
+                          >
+                            ₦{r.reward.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {pageRows.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="py-10 text-center text-slate-400"
+                        >
+                          No referrals match your filters.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="text-xs text-slate-500">
+                  {filteredReferrals.length === 0
+                    ? '0 referrals'
+                    : `Showing ${
+                        (page - 1) * PAGE_SIZE + 1
+                      }-${Math.min(
+                        page * PAGE_SIZE,
+                        filteredReferrals.length
+                      )} of ${filteredReferrals.length} referrals`}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    disabled={page <= 1}
+                    onClick={() => setCurrentPage(page - 1)}
+                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-500 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Prev
+                  </button>
+                  <button
+                    disabled={page >= totalPages}
+                    onClick={() => setCurrentPage(page + 1)}
+                    className="px-3 py-1.5 border border-slate-200 rounded-lg text-xs text-slate-500 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* Logout Confirmation Modal */}
+      <Modal
+        open={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        title="Log out"
+        size="md"
+        preventDismiss
+      >
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col items-center text-center">
+            <span className="flex items-center justify-center w-14 h-14 rounded-full bg-red-100 text-red-600 mb-4">
+              <span className="material-symbols-outlined text-3xl">logout</span>
+            </span>
+            <h3 className="font-display text-xl font-extrabold text-dark-slate mb-2">
+              Log out of your account?
+            </h3>
+            <p className="font-body text-sm text-slate-500 max-w-sm">
+              Are you sure you want to log out? You&apos;ll need to sign in again to
+              access your dashboard.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-8">
+            <button
+              type="button"
+              onClick={() => setLogoutModalOpen(false)}
+              className="flex-1 py-3 rounded-full font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmLogout}
+              className="flex-1 py-3 rounded-full font-display font-semibold text-sm bg-red-600/90 text-white hover:bg-red-600/80 transition-colors shadow-md active:scale-[0.98]"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
