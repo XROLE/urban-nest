@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import CreateProfileButton from '@/components/CreateProfileButton';
 import LegalModal from '@/components/LegalModal';
+import SafetyTipsModal from '@/components/SafetyTipsModal';
 
 interface FooterProps {
   showMobileStickyCta?: boolean;
@@ -13,6 +14,7 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(
     null
   );
+  const [safetyTipsOpen, setSafetyTipsOpen] = useState(false);
 
   return (
     <>
@@ -60,9 +62,13 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
               <Link href="/ambassador/login" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
                 Ambassador Login
               </Link>
-              <Link href="#" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
+              <button
+                type="button"
+                onClick={() => setSafetyTipsOpen(true)}
+                className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors text-left"
+              >
                 Safety Tips
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -95,6 +101,11 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
         type="terms"
         open={legalModal === 'terms'}
         onClose={() => setLegalModal(null)}
+      />
+
+      <SafetyTipsModal
+        open={safetyTipsOpen}
+        onClose={() => setSafetyTipsOpen(false)}
       />
     </>
   );
