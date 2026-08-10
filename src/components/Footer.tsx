@@ -1,11 +1,19 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import CreateProfileButton from '@/components/CreateProfileButton';
+import LegalModal from '@/components/LegalModal';
 
 interface FooterProps {
   showMobileStickyCta?: boolean;
 }
 
 export default function Footer({ showMobileStickyCta = true }: FooterProps) {
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(
+    null
+  );
+
   return (
     <>
       <footer className="bg-dark-slate border-t border-slate-800 px-4 md:px-16 py-12 text-slate-300 mt-auto">
@@ -29,12 +37,20 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
               <span className="text-white font-display font-semibold text-sm uppercase tracking-wider">
                 Legal
               </span>
-              <Link href="#" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
+              <button
+                type="button"
+                onClick={() => setLegalModal('privacy')}
+                className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors text-left"
+              >
                 Privacy Policy
-              </Link>
-              <Link href="#" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
+              </button>
+              <button
+                type="button"
+                onClick={() => setLegalModal('terms')}
+                className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors text-left"
+              >
                 Terms of Service
-              </Link>
+              </button>
             </div>
 
             <div className="flex flex-col gap-3">
@@ -43,9 +59,6 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
               </span>
               <Link href="/ambassador/login" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
                 Ambassador Login
-              </Link>
-              <Link href="/admin/dashboard" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
-                Admin Dashboard
               </Link>
               <Link href="#" className="font-body text-sm text-slate-400 hover:text-bright-cyan transition-colors">
                 Safety Tips
@@ -72,6 +85,17 @@ export default function Footer({ showMobileStickyCta = true }: FooterProps) {
           </CreateProfileButton>
         </div>
       )}
+
+      <LegalModal
+        type="privacy"
+        open={legalModal === 'privacy'}
+        onClose={() => setLegalModal(null)}
+      />
+      <LegalModal
+        type="terms"
+        open={legalModal === 'terms'}
+        onClose={() => setLegalModal(null)}
+      />
     </>
   );
 }

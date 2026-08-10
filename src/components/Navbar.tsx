@@ -88,13 +88,6 @@ export default function Navbar({ minimal = false }: NavbarProps) {
           >
             Become an Ambassador
           </Link>
-          <Link
-            href="/admin/dashboard"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block font-display font-semibold text-base text-dark-slate hover:text-bright-cyan"
-          >
-            Admin Portal
-          </Link>
           <div className="pt-2">
             <CreateProfileButton
               onClick={() => setMobileMenuOpen(false)}

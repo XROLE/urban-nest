@@ -49,8 +49,8 @@ interface AuthContextValue {
   profile: AmbassadorProfile | null;
   session: AuthSession | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: RegisterPayload) => Promise<void>;
+  login: (email: string, password: string) => Promise<AmbassadorUser | null>;
+  register: (payload: RegisterPayload) => Promise<AmbassadorUser | null>;
   logout: () => void;
 }
 
@@ -127,21 +127,23 @@ export default function AuthProvider({
         success?: boolean;
         data?: AuthResponseData;
       };
-      setAuth(data?.data ?? {});
+      const authData = data?.data ?? {};
+      setAuth(authData);
+      return authData.user ?? null;
     },
     [setAuth]
   );
 
   const login = useCallback(
     async (email: string, password: string) => {
-      await postAuth('/ambassadors/login', { email, password });
+      return await postAuth('/ambassadors/login', { email, password });
     },
     [postAuth]
   );
 
   const register = useCallback(
     async (payload: RegisterPayload) => {
-      await postAuth('/ambassadors/register', payload);
+      return await postAuth('/ambassadors/register', payload);
     },
     [postAuth]
   );

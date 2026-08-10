@@ -1,16 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, isAuthenticated } = useAuth();
   const [copied, setCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/ambassador/login');
+    } else if (user?.role === 'admin') {
+      router.replace('/admin/dashboard');
+    }
+  }, [isAuthenticated, user?.role, router]);
 
   const fullName = user?.full_name || 'Ambassador';
   const firstName = fullName.trim().split(/\s+/)[0] || 'Ambassador';

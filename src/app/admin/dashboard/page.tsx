@@ -1,7 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/providers/AuthProvider';
 
 interface Profile {
   id: string;
@@ -14,9 +16,30 @@ interface Profile {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
+  const { user, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/ambassador/login');
+    } else if (user?.role !== 'admin') {
+      router.replace('/ambassador/dashboard');
+    }
+  }, [isAuthenticated, user?.role, router]);
+
+  const adminName = user?.full_name || 'Admin';
+  const firstName = adminName.trim().split(/\s+/)[0] || adminName;
+  const initials =
+    adminName
+      .trim()
+      .split(/\s+/)
+      .map((part) => part[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || 'AD';
 
   const initialProfiles: Profile[] = [
     {
@@ -107,11 +130,16 @@ export default function AdminDashboard() {
           </button>
           <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
             <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs">
-              AD
+              {initials}
             </div>
-            <span className="text-xs font-semibold text-dark-slate hidden sm:inline">
-              Admin Portal
-            </span>
+            <div className="leading-tight">
+              <span className="text-xs font-semibold text-dark-slate hidden sm:inline">
+                Hi, {firstName}
+              </span>
+              <span className="text-[10px] text-slate-400 hidden sm:block">
+                Admin Portal
+              </span>
+            </div>
           </div>
         </div>
       </header>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+import LegalModal from '@/components/LegalModal';
 
 type FieldErrors = {
   email?: string;
@@ -19,6 +20,9 @@ export default function AmbassadorLogin() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [submitError, setSubmitError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(
+    null
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,8 +45,10 @@ export default function AmbassadorLogin() {
     setSubmitError('');
 
     try {
-      await login(email.trim(), password);
-      router.push('/ambassador/dashboard');
+      const user = await login(email.trim(), password);
+      router.push(
+        user?.role === 'admin' ? '/admin/dashboard' : '/ambassador/dashboard'
+      );
     } catch (err) {
       setSubmitError(
         err instanceof Error
@@ -222,15 +228,34 @@ export default function AmbassadorLogin() {
             <span>Secure Ambassador Portal</span>
           </div>
           <div className="flex gap-4">
-            <a className="hover:text-primary underline" href="#">
+            <button
+              className="hover:text-primary underline"
+              type="button"
+              onClick={() => setLegalModal('privacy')}
+            >
               Privacy Policy
-            </a>
-            <a className="hover:text-primary underline" href="#">
+            </button>
+            <button
+              className="hover:text-primary underline"
+              type="button"
+              onClick={() => setLegalModal('terms')}
+            >
               Terms of Service
-            </a>
+            </button>
           </div>
         </footer>
       </div>
+
+      <LegalModal
+        type="privacy"
+        open={legalModal === 'privacy'}
+        onClose={() => setLegalModal(null)}
+      />
+      <LegalModal
+        type="terms"
+        open={legalModal === 'terms'}
+        onClose={() => setLegalModal(null)}
+      />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Modal from '@/components/Modal';
+import LegalModal from '@/components/LegalModal';
 
 const stepLabels = ['Personal', 'Housing', 'Lifestyle'] as const;
 
@@ -1028,51 +1028,16 @@ export default function CreateProfileForm() {
         </div>
       )}
 
-      <Modal open={showTerms} onClose={() => setShowTerms(false)} title="Terms of Service">
-        <div className="p-6 md:p-8 overflow-y-auto min-h-0">
-          <h2 className="font-display text-xl font-extrabold text-dark-slate mb-3">
-            Terms of Service
-          </h2>
-          <div className="font-body text-sm text-slate-500 space-y-3">
-            <p>
-              By creating a profile on Roommate NG, you agree to provide
-              accurate information and use the platform to find compatible,
-              trustworthy roommates.
-            </p>
-            <p>
-              You are responsible for the accuracy of the details you share and
-              for your interactions with other members. Roommate NG reserves
-              the right to suspend accounts that violate these terms.
-            </p>
-            <p>
-              We may update these terms at any time. Continued use constitutes
-              acceptance of any changes.
-            </p>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal open={showPrivacy} onClose={() => setShowPrivacy(false)} title="Privacy Policy">
-        <div className="p-6 md:p-8 overflow-y-auto min-h-0">
-          <h2 className="font-display text-xl font-bold text-dark-slate mb-3">
-            Privacy Policy
-          </h2>
-          <div className="font-body text-sm text-slate-600 space-y-3">
-            <p>
-              We collect the information you provide when creating a profile to
-              match you with compatible roommates and improve the platform.
-            </p>
-            <p>
-              Your personal data will not be sold to third parties. It may be
-              shared with service providers only as necessary to deliver our
-              services and comply with legal obligations.
-            </p>
-            <p>
-              For questions about your data, please contact our support team.
-            </p>
-          </div>
-        </div>
-      </Modal>
+      <LegalModal
+        type="terms"
+        open={showTerms}
+        onClose={() => setShowTerms(false)}
+      />
+      <LegalModal
+        type="privacy"
+        open={showPrivacy}
+        onClose={() => setShowPrivacy(false)}
+      />
     </div>
   );
 }

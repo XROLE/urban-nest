@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Modal from '@/components/Modal';
+import LegalModal from '@/components/LegalModal';
 import { useAuth } from '@/components/providers/AuthProvider';
 
 type FormValues = {
@@ -95,14 +95,16 @@ export default function AmbassadorRegisterScreen() {
     setSubmitError('');
 
     try {
-      await register({
+      const user = await register({
         fullName: values.full_name.trim(),
         whatsappNumber: values.phone_number.trim(),
         email: values.email.trim(),
         password: values.password,
       });
 
-      router.push('/ambassador/dashboard');
+      router.push(
+        user?.role === 'admin' ? '/admin/dashboard' : '/ambassador/dashboard'
+      );
     } catch (err) {
       setSubmitError(
         err instanceof Error
@@ -405,60 +407,16 @@ export default function AmbassadorRegisterScreen() {
       </div>
 
       {/* Legal Modals */}
-      <Modal
+      <LegalModal
+        type="terms"
         open={showTerms}
         onClose={() => setShowTerms(false)}
-        title="Terms & Conditions"
-      >
-        <div className="p-6 md:p-8 overflow-y-auto min-h-0">
-          <h2 className="font-display text-xl font-extrabold text-dark-slate mb-3">
-            Terms &amp; Conditions
-          </h2>
-          <div className="prose-sm font-body text-sm text-slate-500 space-y-3">
-            <p>
-              By becoming a Roommate NG Ambassador, you agree to promote the
-              platform in a truthful and respectful manner.
-            </p>
-            <p>
-              You are entitled to rewards for qualifying referrals as defined
-              in our Ambassador program guidelines. Rewards are subject to
-              verification and may be revoked in cases of fraud or
-              misrepresentation.
-            </p>
-            <p>
-              Roommate NG reserves the right to modify these terms at any time.
-              Continued participation constitutes acceptance of any changes.
-            </p>
-          </div>
-        </div>
-      </Modal>
-
-      <Modal
+      />
+      <LegalModal
+        type="privacy"
         open={showPrivacy}
         onClose={() => setShowPrivacy(false)}
-        title="Privacy Policy"
-      >
-        <div className="p-6 md:p-8 overflow-y-auto min-h-0">
-          <h2 className="font-display text-xl font-extrabold text-dark-slate mb-3">
-            Privacy Policy
-          </h2>
-          <div className="prose-sm font-body text-slate-600 space-y-3">
-            <p>
-              We collect the information you provide during registration, such
-              as your name, phone number, and email address, to operate and
-              improve our Ambassador program.
-            </p>
-            <p>
-              Your personal data will not be sold to third parties. It may be
-              shared with service providers only as necessary to deliver our
-              services and comply with legal obligations.
-            </p>
-            <p>
-              For questions about your data, please contact our support team.
-            </p>
-          </div>
-        </div>
-      </Modal>
+      />
     </div>
   );
 }
