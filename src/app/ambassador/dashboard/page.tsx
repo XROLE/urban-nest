@@ -6,7 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
 
-type View = 'dashboard' | 'referrals';
+const contactFieldClass =
+  'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
+
+type View = 'dashboard' | 'referrals' | 'notifications';
 
 interface ReferralRow {
   name: string;
@@ -15,6 +18,66 @@ interface ReferralRow {
   location: string;
   reward: number;
 }
+
+interface NotificationItem {
+  id: number;
+  icon: string;
+  iconBg: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  category: 'Referrals' | 'Payments' | 'Account';
+}
+
+const SAMPLE_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 1,
+    icon: 'group',
+    iconBg: 'bg-teal-50 text-teal-700',
+    title: 'New Referral: Sarah Jenkins',
+    message: 'Sarah Jenkins just joined using your link.',
+    time: '2 mins ago',
+    read: false,
+    category: 'Referrals',
+  },
+  {
+    id: 2,
+    icon: 'payments',
+    iconBg: 'bg-emerald-50 text-emerald-700',
+    title: 'Payment Successful',
+    message: 'Your reward for Michael Okafor has been paid.',
+    time: '2 hours ago',
+    read: false,
+    category: 'Payments',
+  },
+  {
+    id: 3,
+    icon: 'person',
+    iconBg: 'bg-slate-100 text-slate-500',
+    title: 'Profile Update: David Balogun',
+    message: 'David Balogun completed his roommate profile.',
+    time: 'Yesterday',
+    read: true,
+    category: 'Account',
+  },
+  {
+    id: 4,
+    icon: 'hourglass_empty',
+    iconBg: 'bg-slate-100 text-slate-500',
+    title: 'Payment Processing',
+    message: 'Your payout of ₦5,000 is currently being processed.',
+    time: '2 days ago',
+    read: true,
+    category: 'Payments',
+  },
+];
+
+type NotificationFilter =
+  | 'All'
+  | 'Unread'
+  | 'Referrals'
+  | 'Payments';
 
 const STATUSES: Array<ReferralRow['status'] | 'All'> = [
   'All',
@@ -97,6 +160,15 @@ export default function AmbassadorDashboard() {
   const [statusFilter, setStatusFilter] = useState<ReferralRow['status'] | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactSent, setContactSent] = useState(false);
+  const [contactForm, setContactForm] = useState({ subject: '', message: '' });
+  const [notifications, setNotifications] =
+    useState<NotificationItem[]>(SAMPLE_NOTIFICATIONS);
+  const [notificationFilter, setNotificationFilter] =
+    useState<NotificationFilter>('All');
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -160,10 +232,25 @@ Fill out the short form here to get started:
     handleLogout();
   };
 
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const markAllRead = () => {
+    setNotifications((prev) =>
+      prev.map((n) => ({ ...n, read: true }))
+    );
+  };
+
   const filteredReferrals = SAMPLE_REFERRALS.filter((r) => {
     const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
     return matchesSearch && matchesStatus;
+  });
+
+  const filteredNotifications = notifications.filter((n) => {
+    if (notificationFilter === 'Referrals') return n.category === 'Referrals';
+    if (notificationFilter === 'Payments') return n.category === 'Payments';
+    if (notificationFilter === 'Unread') return !n.read;
+    return true;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredReferrals.length / PAGE_SIZE));
@@ -219,22 +306,121 @@ Fill out the short form here to get started:
           <span className="font-body text-sm font-semibold text-dark-slate hidden sm:inline">
             Hi, {firstName} 👋
           </span>
-          <button
-            aria-label="Notifications"
-            className="text-slate-500 hover:text-bright-cyan transition-colors p-2 rounded-full hover:bg-slate-100"
-          >
-            <span className="material-symbols-outlined text-xl">
-              notifications
-            </span>
-          </button>
-          <button
-            aria-label="Help"
-            className="text-slate-500 hover:text-bright-cyan transition-colors p-2 rounded-full hover:bg-slate-100"
-          >
-            <span className="material-symbols-outlined text-xl">
-              help_outline
-            </span>
-          </button>
+          <div className="relative">
+            <button
+              aria-label="Notifications"
+              onClick={() => setNotificationsOpen((o) => !o)}
+              className="relative text-slate-500 hover:text-bright-cyan transition-colors p-2 rounded-full hover:bg-slate-100"
+            >
+              <span className="material-symbols-outlined text-xl">
+                {notificationsOpen ? 'notifications_active' : 'notifications'}
+              </span>
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-bright-cyan border-2 border-white" />
+              )}
+            </button>
+
+            {notificationsOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setNotificationsOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-3 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="px-5 py-4 border-b border-slate-100 flex justify-between items-center">
+                    <h3 className="font-display font-bold text-sm text-dark-slate">
+                      Notifications
+                    </h3>
+                    <button
+                      onClick={markAllRead}
+                      className="font-body text-xs font-semibold text-bright-cyan hover:underline"
+                    >
+                      Mark all as read
+                    </button>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+                    {notifications.map((n) => (
+                      <div
+                        key={n.id}
+                        className="px-5 py-4 flex gap-3 hover:bg-slate-50 transition-colors"
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.iconBg}`}
+                        >
+                          <span className="material-symbols-outlined text-lg">
+                            {n.icon}
+                          </span>
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <p
+                            className={`font-body text-sm ${
+                              n.read
+                                ? 'text-slate-500'
+                                : 'text-dark-slate font-semibold'
+                            }`}
+                          >
+                            {n.message}
+                          </p>
+                          <span className="font-body text-xs text-slate-400 mt-0.5">
+                            {n.time}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      applyView('notifications');
+                    }}
+                    className="w-full py-3 font-body text-sm font-semibold text-bright-cyan hover:bg-slate-50 transition-colors border-t border-slate-100"
+                  >
+                    See all notifications
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <div className="relative">
+            <button
+              aria-label="Help"
+              onClick={() => setHelpOpen((o) => !o)}
+              className="text-slate-500 hover:text-bright-cyan transition-colors p-2 rounded-full hover:bg-slate-100"
+            >
+              <span className="material-symbols-outlined text-xl">
+                {helpOpen ? 'help' : 'help_outline'}
+              </span>
+            </button>
+
+            {helpOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setHelpOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="p-5">
+                    <h3 className="font-display font-bold text-sm text-dark-slate mb-3">
+                      Need assistance?
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setHelpOpen(false);
+                        setContactSent(false);
+                        setContactOpen(true);
+                      }}
+                      className="w-full bg-primary text-white font-body text-sm font-semibold py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-sm">
+                        support_agent
+                      </span>
+                      Contact Support
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
           <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center font-bold text-xs text-primary">
             {initials}
           </div>
@@ -483,7 +669,10 @@ Fill out the short form here to get started:
                 <h3 className="font-display font-bold text-lg text-dark-slate">
                   Recent Referrals
                 </h3>
-                <button className="text-bright-cyan text-xs font-bold hover:underline">
+                <button
+                  onClick={() => applyView('referrals')}
+                  className="text-bright-cyan text-xs font-bold hover:underline"
+                >
                   View All
                 </button>
               </div>
@@ -629,7 +818,7 @@ Fill out the short form here to get started:
           </div>
           </div>
           </>
-        ) : (
+        ) : view === 'referrals' ? (
           <div className="space-y-6">
             {/* Page Header */}
             <div>
@@ -806,6 +995,117 @@ Fill out the short form here to get started:
               </div>
             </div>
           </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Page Header */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="font-display text-2xl md:text-3xl font-extrabold text-dark-slate">
+                  Notifications
+                </h1>
+                <p className="font-body text-sm text-slate-500">
+                  Stay updated on your referrals, payments, and account
+                  activity.
+                </p>
+              </div>
+              <button
+                onClick={markAllRead}
+                className="inline-flex items-center gap-2 font-body text-sm font-semibold text-bright-cyan hover:underline"
+              >
+                <span className="material-symbols-outlined text-lg">
+                  done_all
+                </span>
+                Mark all as read
+              </button>
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-1 border-b border-slate-200 overflow-x-auto">
+              {(
+                ['All', 'Unread', 'Referrals', 'Payments'] as NotificationFilter[]
+              ).map((filter) => {
+                const tabCount =
+                  filter === 'Unread'
+                    ? notifications.filter((n) => !n.read).length
+                    : filter === 'Referrals'
+                      ? notifications.filter((n) => n.category === 'Referrals')
+                          .length
+                      : filter === 'Payments'
+                        ? notifications.filter((n) => n.category === 'Payments')
+                            .length
+                        : notifications.length;
+                const active = notificationFilter === filter;
+                return (
+                  <button
+                    key={filter}
+                    onClick={() => setNotificationFilter(filter)}
+                    className={`relative pb-3 px-4 font-body text-sm font-semibold transition-colors ${
+                      active ? 'text-bright-cyan' : 'text-slate-500 hover:text-dark-slate'
+                    }`}
+                  >
+                    {filter}
+                    {filter === 'Unread' && tabCount > 0 && (
+                      <span className="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full text-[10px] font-bold bg-bright-cyan text-white align-middle">
+                        {tabCount}
+                      </span>
+                    )}
+                    {active && (
+                      <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-bright-cyan" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Notification List */}
+            <div className="space-y-3">
+              {filteredNotifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`flex items-start gap-4 px-5 py-4 rounded-2xl border border-slate-100 shadow-sm transition-colors ${
+                    n.read ? 'hover:bg-slate-50' : 'bg-slate-50/60 hover:bg-slate-100'
+                  }`}
+                >
+                  <div
+                    className={`w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      n.read ? n.iconBg : 'bg-bright-cyan/10 text-bright-cyan'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-xl">
+                      {n.icon}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <h3
+                        className={`font-body text-sm ${
+                          n.read ? 'text-slate-600' : 'font-semibold text-dark-slate'
+                        }`}
+                      >
+                        {n.title}
+                      </h3>
+                      <span className="font-body text-xs text-slate-400 flex-shrink-0 shrink-0">
+                        {n.time}
+                      </span>
+                    </div>
+                    <p className="font-body text-sm text-slate-500 mt-0.5">
+                      {n.message}
+                    </p>
+                  </div>
+                  {!n.read && (
+                    <span className="mt-1.5 w-2 h-2 rounded-full bg-bright-cyan flex-shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Load More */}
+            <div className="flex justify-center pt-2">
+              <button className="font-body text-sm font-semibold text-bright-cyan border-2 border-bright-cyan rounded-full px-6 py-2.5 hover:bg-bright-cyan hover:text-white transition-colors">
+                Load More
+              </button>
+            </div>
+          </div>
         )}
       </main>
 
@@ -848,6 +1148,135 @@ Fill out the short form here to get started:
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Contact Support Modal */}
+      <Modal
+        open={contactOpen}
+        onClose={() => {
+          setContactOpen(false);
+          setContactSent(false);
+          setContactForm({ subject: '', message: '' });
+        }}
+        title="Contact Support"
+        size="md"
+      >
+        {contactSent ? (
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center">
+            <span className="flex items-center justify-center w-14 h-14 rounded-full bg-green-100 text-green-600 mb-4">
+              <span className="material-symbols-outlined text-3xl">check_circle</span>
+            </span>
+            <h3 className="font-display text-xl font-extrabold text-dark-slate">
+              Message Sent!
+            </h3>
+            <p className="font-body text-sm text-slate-500 max-w-sm mt-2">
+              Thanks for reaching out. Our team will get back to you shortly.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setContactOpen(false);
+                setContactSent(false);
+                setContactForm({ subject: '', message: '' });
+              }}
+              className="mt-8 w-full sm:w-auto px-8 py-3 rounded-full bg-bright-cyan text-white font-display font-semibold text-sm hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98]"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="p-6 sm:p-8 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-bright-cyan/10 text-bright-cyan flex items-center justify-center flex-shrink-0">
+                  <span className="material-symbols-outlined">support_agent</span>
+                </div>
+                <div>
+                  <h3 className="font-display text-xl font-extrabold text-dark-slate">
+                    Contact Support
+                  </h3>
+                  <p className="font-body text-sm text-slate-500 mt-0.5">
+                    Our team is here to help you. Send us a message and
+                    we&apos;ll get back to you shortly.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-4 p-6 sm:p-8">
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="contact-subject"
+                  className="block text-xs font-bold text-dark-slate uppercase tracking-wide"
+                >
+                  Subject
+                </label>
+                <div className="relative">
+                  <select
+                    id="contact-subject"
+                    className={`${contactFieldClass} appearance-none pr-10 cursor-pointer`}
+                    value={contactForm.subject}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, subject: e.target.value })
+                    }
+                  >
+                    <option disabled value="">
+                      Select an issue...
+                    </option>
+                    <option value="account">Account Access</option>
+                    <option value="earnings">Earnings &amp; Payouts</option>
+                    <option value="referrals">Referral Tracking</option>
+                    <option value="other">Other Inquiry</option>
+                  </select>
+                  <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                    <span className="material-symbols-outlined text-xl">expand_more</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="contact-message"
+                  className="block text-xs font-bold text-dark-slate uppercase tracking-wide"
+                >
+                  Message
+                </label>
+                <textarea
+                  id="contact-message"
+                  rows={5}
+                  placeholder="How can we help?"
+                  className={`${contactFieldClass} resize-none`}
+                  value={contactForm.message}
+                  onChange={(e) =>
+                    setContactForm({ ...contactForm, message: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 rounded-b-2xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setContactOpen(false);
+                  setContactSent(false);
+                  setContactForm({ subject: '', message: '' });
+                }}
+                className="px-6 py-3 rounded-full font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactSent(true)}
+                className="px-6 py-3 rounded-full flex items-center gap-2 bg-bright-cyan text-white font-display font-semibold text-sm hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98]"
+              >
+                <span>Send Message</span>
+                <span className="material-symbols-outlined text-lg">send</span>
+              </button>
+            </div>
+          </>
+        )}
       </Modal>
     </div>
   );
