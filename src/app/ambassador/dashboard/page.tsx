@@ -9,6 +9,7 @@ export default function AmbassadorDashboard() {
   const router = useRouter();
   const { user, profile, logout, isAuthenticated } = useAuth();
   const [copied, setCopied] = useState(false);
+  const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -32,7 +33,16 @@ export default function AmbassadorDashboard() {
       .toUpperCase() || 'AM';
 
   const referralCode = profile?.referral_code || 'SN00';
-  const referralLink = `https://roommateng.com/r/${referralCode}`;
+  const referralLink = `https://urban-nest-tawny.vercel.app?ref=${referralCode}`;
+
+  const whatsappCaption = `Hey! Are you (or someone you know)—whether a Corper, student, young professional, or relocating to Lagos—currently searching for a roommate or looking to split rent in a great location around Lagos? 🏠
+
+Check out Roommate NG. You just share your budget, target area, and living habits, and we connect you with compatible, like-minded roommates.
+
+No upfront fees are required until you are paired with a roommate 🚀
+
+Fill out the short form here to get started:
+👉 https://urban-nest-tawny.vercel.app?ref=${referralCode}`;
 
   const totalReferrals = profile?.total_referrals ?? 24;
   const totalEarnings = profile?.total_earnings_ngn ?? 6000;
@@ -42,6 +52,12 @@ export default function AmbassadorDashboard() {
     navigator.clipboard.writeText(referralLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleCopyCaption = () => {
+    navigator.clipboard.writeText(whatsappCaption);
+    setCaptionCopied(true);
+    setTimeout(() => setCaptionCopied(false), 2500);
   };
 
   const handleWithdraw = () => {
@@ -187,6 +203,17 @@ export default function AmbassadorDashboard() {
             </span>
             <span className="font-semibold text-sm">
               Referral link copied to clipboard!
+            </span>
+          </div>
+        )}
+
+        {captionCopied && (
+          <div className="fixed top-20 right-8 bg-mint text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+            <span className="material-symbols-outlined text-lg">
+              check_circle
+            </span>
+            <span className="font-semibold text-sm">
+              WhatsApp caption copied to clipboard!
             </span>
           </div>
         )}
@@ -399,7 +426,11 @@ export default function AmbassadorDashboard() {
               </p>
 
               <div className="space-y-3 pt-2">
-                <div className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group">
+                <a
+                  href="/marketing-flyer.png"
+                  download="Roommate-NG-Marketing-Flyer.png"
+                  className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
+                >
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-bright-cyan text-2xl">
                       campaign
@@ -408,16 +439,16 @@ export default function AmbassadorDashboard() {
                       <h4 className="font-bold text-xs text-dark-slate">
                         Marketing Flyer
                       </h4>
-                      <p className="text-[11px] text-slate-400">PDF & PNG</p>
+                      <p className="text-[11px] text-slate-400">PNG</p>
                     </div>
                   </div>
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-bright-cyan">
                     download
                   </span>
-                </div>
+                </a>
 
                 <div
-                  onClick={handleCopy}
+                  onClick={handleCopyCaption}
                   className="p-4 rounded-xl border border-slate-200 hover:border-emerald-500 transition-all flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
@@ -434,11 +465,15 @@ export default function AmbassadorDashboard() {
                     </div>
                   </div>
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-emerald-500">
-                    content_copy
+                    {captionCopied ? 'check' : 'content_copy'}
                   </span>
                 </div>
 
-                <div className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group">
+                <a
+                  href="/social_media_asset.png"
+                  download="Roommate-NG-Social-Media-Asset.png"
+                  className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
+                >
                   <div className="flex items-center gap-3">
                     <span className="material-symbols-outlined text-bright-cyan text-2xl">
                       image
@@ -453,7 +488,7 @@ export default function AmbassadorDashboard() {
                   <span className="material-symbols-outlined text-slate-400 group-hover:text-bright-cyan">
                     download
                   </span>
-                </div>
+                </a>
               </div>
             </section>
           </div>
