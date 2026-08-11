@@ -10,7 +10,7 @@ import Modal from '@/components/Modal';
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
 
-type View = 'dashboard' | 'referrals' | 'notifications' | 'settings';
+type View = 'dashboard' | 'referrals' | 'notifications' | 'settings' | 'checkings';
 
 type SettingsTab =
   | 'Personal Details'
@@ -530,6 +530,23 @@ Fill out the short form here to get started:
                 settings
               </span>
               <span className="font-body text-sm">Settings</span>
+            </button>
+            <button
+              onClick={() => applyView('checkings')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
+                view === 'checkings'
+                  ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <span
+                className={`material-symbols-outlined ${
+                  view === 'checkings' ? 'icon-filled' : ''
+                }`}
+              >
+                fact_check
+              </span>
+              <span className="font-body text-sm">Checkings</span>
             </button>
           </nav>
 
@@ -1642,6 +1659,268 @@ Fill out the short form here to get started:
                   </div>
                 </div>
                 )}
+              </div>
+            </div>
+          </div>
+        ) : view === 'checkings' ? (
+          <div className="flex flex-col gap-4">
+            {/* Hero Section */}
+            <section className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] flex flex-col gap-3 relative overflow-hidden">
+              <div className="absolute -right-20 -top-20 w-96 h-96 bg-primary-fixed rounded-full blur-[100px] opacity-30 pointer-events-none" />
+              <div className="relative z-10">
+                <h2 className="font-display text-2xl text-primary font-bold mb-1">
+                  Complete your setup to start earning! 🚀
+                </h2>
+                <p className="font-body text-sm text-on-surface-variant max-w-2xl">
+                  Verify your contact details and provide your social info to
+                  submit your application for review.
+                </p>
+              </div>
+
+              {/* Progress Stepper */}
+              <div className="relative z-10 pt-1">
+                <div className="flex items-center justify-between w-full relative">
+                  <div className="absolute left-[5%] right-[5%] top-1/2 -translate-y-1/2 h-[2px] bg-outline-variant -z-10" />
+                  {/* Step 1 */}
+                  <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
+                    <div className="w-8 h-8 rounded-full bg-sky-blue text-white flex items-center justify-center shadow-md">
+                      <span
+                        className="material-symbols-outlined text-[16px]"
+                        style={{ fontVariationSettings: `'FILL' 1` }}
+                      >
+                        check
+                      </span>
+                    </div>
+                    <span className="font-body text-xs font-semibold text-primary">
+                      Account Created
+                    </span>
+                  </div>
+                  {/* Step 2 */}
+                  <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
+                    <div className="w-8 h-8 rounded-full bg-[#FFFBEB] border-2 border-[#D97706] text-[#D97706] flex items-center justify-center shadow-sm relative">
+                      <div className="absolute -inset-1 border border-[#D97706] rounded-full opacity-30 animate-ping" />
+                      <span className="font-body text-xs font-bold">2</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="font-body text-xs font-semibold text-[#D97706]">
+                        Verification
+                      </span>
+                      <div className="flex gap-1 mt-1 text-on-surface-variant">
+                        <span className="material-symbols-outlined text-[14px]">
+                          mail
+                        </span>
+                        <span className="material-symbols-outlined text-[14px]">
+                          chat
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Step 3 */}
+                  <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
+                    <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
+                      <span className="font-body text-xs font-bold">3</span>
+                    </div>
+                    <span className="font-body text-xs font-semibold text-on-surface-variant">
+                      Vetting Details
+                    </span>
+                  </div>
+                  {/* Step 4 */}
+                  <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
+                    <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
+                      <span className="material-symbols-outlined text-[16px]">
+                        lock
+                      </span>
+                    </div>
+                    <span className="font-body text-xs font-semibold text-on-surface-variant">
+                      Final Approval
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+              {/* Main Action Column */}
+              <div className="lg:col-span-8 flex flex-col gap-3">
+                {/* Verification Card */}
+                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+                  <div className="mb-3 flex items-center gap-2 text-error opacity-80">
+                    <span className="material-symbols-outlined text-[16px]">
+                      info
+                    </span>
+                    <p className="text-xs font-medium">
+                      Note: Verified contact details cannot be changed once
+                      submitted.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
+                    <span className="material-symbols-outlined text-primary text-[24px]">
+                      verified_user
+                    </span>
+                    <h3 className="font-display text-lg font-semibold text-primary">
+                      Identity Verification
+                    </h3>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    {/* Email Row */}
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-outline-variant hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+                          <span className="material-symbols-outlined">mail</span>
+                        </div>
+                        <div className="flex items-center">
+                          <h4 className="font-body text-sm font-semibold text-primary mb-1">
+                            Verify Email Address
+                          </h4>
+                          <p className="font-body text-sm text-on-surface-variant">
+                            jane.doe@example.com
+                          </p>
+                          <button
+                            aria-label="Edit Email"
+                            className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              edit
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                      <button className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors">
+                        Verify Now
+                      </button>
+                    </div>
+                    {/* WhatsApp Row */}
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-outline-variant hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+                          <span className="material-symbols-outlined">chat</span>
+                        </div>
+                        <div className="flex items-center">
+                          <h4 className="font-body text-sm font-semibold text-primary mb-1">
+                            Verify WhatsApp Number
+                          </h4>
+                          <p className="font-body text-sm text-on-surface-variant">
+                            +234 *** *** **99
+                          </p>
+                          <button
+                            aria-label="Edit WhatsApp Number"
+                            className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">
+                              edit
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                      <button className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors">
+                        Verify Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Vetting Info Form (Disabled) */}
+                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                  <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <div className="bg-surface-container-lowest border border-outline-variant px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[#D97706]">
+                        warning
+                      </span>
+                      <span className="font-body text-xs font-semibold text-primary">
+                        Complete verification steps above to unlock
+                      </span>
+                    </div>
+                  </div>
+                  <div className="opacity-50 pointer-events-none">
+                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
+                      <span className="material-symbols-outlined text-primary text-[24px]">
+                        assignment_ind
+                      </span>
+                      <h3 className="font-display text-lg font-semibold text-primary">
+                        Vetting Information
+                      </h3>
+                    </div>
+                    <form className="flex flex-col gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="flex flex-col gap-1">
+                          <label className="font-body text-xs font-semibold text-on-surface-variant">
+                            Social Media Platform
+                          </label>
+                          <select className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
+                            <option>Select Platform</option>
+                          </select>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="font-body text-xs font-semibold text-on-surface-variant">
+                            Social Handle
+                          </label>
+                          <input
+                            className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
+                            placeholder="@username"
+                            type="text"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="font-body text-xs font-semibold text-on-surface-variant">
+                          Target Audience
+                        </label>
+                        <select className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
+                          <option>Select Audience Type</option>
+                        </select>
+                      </div>
+                      <p className="text-xs text-on-surface-variant mb-2 md:text-right">
+                        Complete email and WhatsApp verification to submit your
+                        application.
+                      </p>
+                      <button
+                        type="button"
+                        disabled
+                        className="mt-2 bg-surface-variant text-on-surface-variant px-5 py-2.5 rounded-[12px] font-body text-xs font-semibold w-full md:w-auto md:self-end"
+                      >
+                        Submit Application for Review
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gated Features Column */}
+              <div className="lg:col-span-4 flex flex-col gap-3">
+                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] h-full relative overflow-hidden flex flex-col">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-display text-lg font-semibold text-primary">
+                      Your Dashboard
+                    </h3>
+                    <span className="material-symbols-outlined text-outline">
+                      lock
+                    </span>
+                  </div>
+                  <div className="relative flex-grow rounded-lg overflow-hidden border border-outline-variant/50">
+                    {/* Simulated blurred content */}
+                    <div className="absolute inset-0 bg-background blur-sm opacity-60">
+                      <div className="p-3 grid gap-3">
+                        <div className="h-16 bg-surface-variant rounded-lg" />
+                        <div className="h-28 bg-surface-variant rounded-lg" />
+                        <div className="h-16 bg-surface-variant rounded-lg" />
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-surface/20">
+                      <div className="w-14 h-14 bg-primary-container rounded-full flex items-center justify-center text-secondary-fixed-dim mb-3 shadow-lg">
+                        <span className="material-symbols-outlined text-[28px]">
+                          query_stats
+                        </span>
+                      </div>
+                      <h4 className="font-display text-lg font-semibold text-primary mb-1">
+                        Metrics Locked
+                      </h4>
+                      <p className="font-body text-sm text-primary-container max-w-[200px] font-medium">
+                        Complete verification to view your performance and
+                        earnings.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
