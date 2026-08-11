@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
@@ -9,7 +10,7 @@ import Modal from '@/components/Modal';
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
 
-type View = 'dashboard' | 'referrals' | 'notifications';
+type View = 'dashboard' | 'referrals' | 'notifications' | 'settings';
 
 interface ReferralRow {
   name: string;
@@ -180,14 +181,6 @@ export default function AmbassadorDashboard() {
 
   const fullName = user?.full_name || 'Ambassador';
   const firstName = fullName.trim().split(/\s+/)[0] || 'Ambassador';
-  const initials =
-    fullName
-      .trim()
-      .split(/\s+/)
-      .map((part) => part[0])
-      .slice(0, 2)
-      .join('')
-      .toUpperCase() || 'AM';
 
   const referralCode = profile?.referral_code || 'SN00';
   const referralLink = `https://urban-nest-tawny.vercel.app?ref=${referralCode}`;
@@ -295,7 +288,11 @@ Fill out the short form here to get started:
                 className="bg-transparent outline-none text-sm text-dark-slate placeholder:text-slate-400 w-full"
               />
             </div>
-          ) : (
+          ) : view === 'settings' ? (
+            <h2 className="font-display text-xl font-bold text-primary hidden md:block">
+              Profile &amp; Settings
+            </h2>
+        ) : (
             <h2 className="font-display text-xl font-bold text-primary hidden md:block">
               Ambassador Dashboard
             </h2>
@@ -421,9 +418,19 @@ Fill out the short form here to get started:
               </>
             )}
           </div>
-          <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center font-bold text-xs text-primary">
-            {initials}
-          </div>
+          <button
+            aria-label="Open Settings"
+            onClick={() => applyView('settings')}
+            className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer hover:border-bright-cyan hover:ring-2 hover:ring-bright-cyan/30 transition-all"
+          >
+            <Image
+              src="/default-avatar.svg"
+              alt="Default profile avatar"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+            />
+          </button>
         </div>
       </header>
 
@@ -484,6 +491,23 @@ Fill out the short form here to get started:
                 group
               </span>
               <span className="font-body text-sm">Referrals</span>
+            </button>
+            <button
+              onClick={() => applyView('settings')}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
+                view === 'settings'
+                  ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              }`}
+            >
+              <span
+                className={`material-symbols-outlined ${
+                  view === 'settings' ? 'icon-filled' : ''
+                }`}
+              >
+                settings
+              </span>
+              <span className="font-body text-sm">Settings</span>
             </button>
           </nav>
 
@@ -991,6 +1015,244 @@ Fill out the short form here to get started:
                   >
                     Next
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : view === 'settings' ? (
+          <div className="space-y-6">
+            {/* Breadcrumbs */}
+            <div className="flex items-center gap-2 text-on-surface-variant font-body text-xs">
+              <button
+                onClick={() => applyView('dashboard')}
+                className="hover:text-primary transition-colors"
+              >
+                Dashboard
+              </button>
+              <span className="material-symbols-outlined text-[14px]">
+                chevron_right
+              </span>
+              <span className="text-primary font-bold">Ambassador Profile</span>
+            </div>
+
+            <div>
+              <h1 className="font-display text-lg font-bold text-dark-slate">
+                Profile &amp; Settings
+              </h1>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Hero Identity Card */}
+              <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm lg:sticky lg:top-24">
+                <div className="flex flex-col items-center text-center p-6">
+                  <div className="relative mb-4">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm">
+                      <Image
+                        src="/default-avatar.svg"
+                        alt="Default profile avatar"
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button className="absolute bottom-0 right-0 bg-bright-cyan text-white p-2 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95">
+                      <span className="material-symbols-outlined text-[18px]">
+                        edit
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col items-center mb-6">
+                    <h2 className="font-display text-lg font-bold text-dark-slate mb-1">
+                      {fullName}
+                    </h2>
+                    <div className="flex items-center gap-1 text-mint mb-3">
+                      <span
+                        className="material-symbols-outlined text-[18px]"
+                        style={{ fontVariationSettings: `'FILL' 1` }}
+                      >
+                        verified
+                      </span>
+                      <span className="font-body text-xs font-bold uppercase tracking-wider">
+                        Verified
+                      </span>
+                    </div>
+                    <div className="inline-flex items-center px-4 py-1 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
+                      <span className="material-symbols-outlined text-[16px] mr-1.5">
+                        emoji_events
+                      </span>
+                      <span className="font-body text-xs font-bold uppercase tracking-wider">
+                        Gold Ambassador
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="w-full pt-6 border-t border-slate-200">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col items-center p-2 rounded-lg bg-slate-50">
+                        <span className="text-[10px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
+                          Member Since
+                        </span>
+                        <span className="font-body text-sm text-dark-slate">
+                          Oct 2023
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-center p-2 rounded-lg bg-slate-50">
+                        <span className="text-[10px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
+                          Total Matches
+                        </span>
+                        <span className="font-body text-sm text-dark-slate">
+                          142
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-1 mt-4 text-primary">
+                      <span className="material-symbols-outlined text-[16px]">
+                        location_on
+                      </span>
+                      <span className="font-body text-sm">
+                        Lagos, Nigeria
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Content */}
+              <div className="lg:col-span-8 flex flex-col gap-6">
+                {/* Tabs */}
+                <div className="flex overflow-x-auto border-b border-slate-200 mb-4 gap-6">
+                  <button className="font-body text-sm text-primary pb-3 border-b-2 border-bright-cyan transition-colors whitespace-nowrap flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">
+                      person
+                    </span>
+                    Personal Details
+                  </button>
+                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">
+                      account_balance_wallet
+                    </span>
+                    Payouts &amp; Finance
+                  </button>
+                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">
+                      hub
+                    </span>
+                    Network &amp; Hubs
+                  </button>
+                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[18px]">
+                      security
+                    </span>
+                    Settings &amp; Security
+                  </button>
+                </div>
+
+                {/* Content Panel */}
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="mb-8 flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-display text-lg font-bold text-dark-slate mb-2">
+                        Personal Details
+                      </h3>
+                      <p className="font-body text-sm text-slate-500">
+                        Manage your personal information and how we can reach
+                        you.
+                      </p>
+                    </div>
+                  </div>
+
+                  <form className="space-y-6">
+                    <div className="flex flex-col gap-2">
+                      <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <input
+                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                          type="text"
+                          value={fullName}
+                          readOnly
+                        />
+                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+                          lock
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Email Address
+                        </label>
+                        <div className="relative">
+                          <input
+                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                            type="email"
+                            value={user?.email || 'bella.onyekachi@example.com'}
+                            readOnly
+                          />
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+                            lock
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          WhatsApp Number
+                        </label>
+                        <div className="relative">
+                          <input
+                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                            type="tel"
+                            value="+234 800 000 0000"
+                            readOnly
+                          />
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+                            lock
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Gender
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="text"
+                          defaultValue="Female"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Emergency Contact
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="tel"
+                          placeholder="+234 ..."
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Sticky Action Bar */}
+                <div className="sticky bottom-6 flex items-center justify-between gap-4 px-6 py-4 z-20 rounded-xl bg-primary-container text-white shadow-lg">
+                  <span className="font-body text-sm">
+                    Unsaved changes detected
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button className="font-body text-sm text-on-primary-container opacity-80 hover:brightness-110 transition-all">
+                      Discard
+                    </button>
+                    <button className="bg-bright-cyan text-white px-4 py-2 rounded-lg font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md">
+                      Save Changes
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
