@@ -1484,23 +1484,148 @@ Fill out the short form here to get started:
                   </section>
                 </div>
                 ) : (
-                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                  <div className="flex flex-col items-center justify-center text-center py-10">
-                    <span className="material-symbols-outlined text-4xl text-slate-300 mb-3">
-                      construction
-                    </span>
-                    <h3 className="font-display text-base font-bold text-dark-slate mb-1">
-                      {settingsTab}
-                    </h3>
-                    <p className="font-body text-sm text-slate-500 max-w-sm">
-                      This section is coming soon. Please check back shortly.
-                    </p>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Available Balance */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <p className="font-body text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            Available Balance
+                          </p>
+                          <h3 className="font-display text-2xl font-extrabold text-dark-slate mt-1">
+                            ₦ 450,000.00
+                          </h3>
+                        </div>
+                        <span className="material-symbols-outlined text-bright-cyan">
+                          account_balance_wallet
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className="w-full bg-bright-cyan text-white font-body text-sm py-2.5 rounded-lg hover:brightness-110 transition-all shadow-sm"
+                      >
+                        Request Withdrawal
+                      </button>
+                    </div>
+
+                    {/* Primary Bank Account */}
+                    <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative">
+                      <button
+                        type="button"
+                        className="absolute top-4 right-4 text-slate-500 hover:text-primary"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">
+                          edit
+                        </span>
+                      </button>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="material-symbols-outlined text-secondary">
+                          account_balance
+                        </span>
+                        <h3 className="font-body text-xs font-bold text-dark-slate uppercase tracking-wider">
+                          Primary Bank Account
+                        </h3>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex justify-between">
+                          <span className="font-body text-sm text-slate-500">
+                            Bank Name
+                          </span>
+                          <span className="font-body text-sm font-bold text-dark-slate">
+                            Access Bank
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-body text-sm text-slate-500">
+                            Account Number
+                          </span>
+                          <span className="font-body text-sm font-bold text-dark-slate">
+                            0123456789
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-body text-sm text-slate-500">
+                            Account Name
+                          </span>
+                          <span className="font-body text-sm font-bold text-dark-slate">
+                            Bella Klasha
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recent Payouts */}
+                  <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div className="p-5 border-b border-slate-200">
+                      <h3 className="font-display text-base font-bold text-dark-slate">
+                        Recent Payouts
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead className="bg-slate-50">
+                          <tr className="font-body text-xs text-slate-500 uppercase tracking-wider">
+                            <th className="px-5 py-3">Date</th>
+                            <th className="px-5 py-3">Reference ID</th>
+                            <th className="px-5 py-3">Status</th>
+                            <th className="px-5 py-3 text-right">Amount</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                          {[
+                            {
+                              date: 'Oct 24, 2023',
+                              ref: 'PAY-8829-X1',
+                              amount: '₦ 45,000.00',
+                            },
+                            {
+                              date: 'Oct 18, 2023',
+                              ref: 'PAY-7712-B4',
+                              amount: '₦ 120,000.00',
+                            },
+                            {
+                              date: 'Oct 10, 2023',
+                              ref: 'PAY-6601-M9',
+                              amount: '₦ 35,500.00',
+                            },
+                            {
+                              date: 'Oct 02, 2023',
+                              ref: 'PAY-5590-L2',
+                              amount: '₦ 88,000.00',
+                            },
+                          ].map((row) => (
+                            <tr
+                              key={row.ref}
+                              className="hover:bg-slate-50/60 transition-colors"
+                            >
+                              <td className="px-5 py-3 font-body text-sm">
+                                {row.date}
+                              </td>
+                              <td className="px-5 py-3 font-body text-sm font-mono">
+                                {row.ref}
+                              </td>
+                              <td className="px-5 py-3">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-mint/10 text-mint uppercase">
+                                  Successful
+                                </span>
+                              </td>
+                              <td className="px-5 py-3 font-body text-sm font-bold text-dark-slate text-right">
+                                {row.amount}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
                 )}
 
                 {/* Sticky Action Bar */}
-                {settingsTab !== 'Settings & Security' && (
+                {settingsTab !== 'Settings & Security' &&
+                  settingsTab !== 'Payouts & Finance' && (
                 <div className="sticky bottom-6 mt-8 flex items-center justify-between gap-4 px-5 py-3 z-20 rounded-xl bg-primary-container text-white shadow-lg">
                   <span className="font-body text-sm">
                     Unsaved changes detected
