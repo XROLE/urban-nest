@@ -12,6 +12,12 @@ const contactFieldClass =
 
 type View = 'dashboard' | 'referrals' | 'notifications' | 'settings';
 
+type SettingsTab =
+  | 'Personal Details'
+  | 'Payouts & Finance'
+  | 'Network & Hubs'
+  | 'Settings & Security';
+
 interface ReferralRow {
   name: string;
   date: string;
@@ -158,6 +164,8 @@ export default function AmbassadorDashboard() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const profileImageRef = useRef<HTMLInputElement>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [settingsTab, setSettingsTab] =
+    useState<SettingsTab>('Personal Details');
   const [view, setView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReferralRow['status'] | 'All'>('All');
@@ -1148,25 +1156,57 @@ Fill out the short form here to get started:
               <div className="lg:col-span-8 flex flex-col gap-6">
                 {/* Tabs */}
                 <div className="flex overflow-x-auto border-b border-slate-200 mb-4 gap-6">
-                  <button className="font-body text-sm text-primary pb-3 border-b-2 border-bright-cyan transition-colors whitespace-nowrap flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSettingsTab('Personal Details')}
+                    className={`font-body text-sm pb-3 border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
+                      settingsTab === 'Personal Details'
+                        ? 'text-primary border-bright-cyan'
+                        : 'text-slate-500 border-transparent hover:text-primary'
+                    }`}
+                  >
                     <span className="material-symbols-outlined text-[18px]">
                       person
                     </span>
                     Personal Details
                   </button>
-                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSettingsTab('Payouts & Finance')}
+                    className={`font-body text-sm pb-3 border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
+                      settingsTab === 'Payouts & Finance'
+                        ? 'text-primary border-bright-cyan'
+                        : 'text-slate-500 border-transparent hover:text-primary'
+                    }`}
+                  >
                     <span className="material-symbols-outlined text-[18px]">
                       account_balance_wallet
                     </span>
                     Payouts &amp; Finance
                   </button>
-                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSettingsTab('Network & Hubs')}
+                    className={`font-body text-sm pb-3 border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
+                      settingsTab === 'Network & Hubs'
+                        ? 'text-primary border-bright-cyan'
+                        : 'text-slate-500 border-transparent hover:text-primary'
+                    }`}
+                  >
                     <span className="material-symbols-outlined text-[18px]">
                       hub
                     </span>
                     Network &amp; Hubs
                   </button>
-                  <button className="font-body text-sm text-slate-500 pb-3 border-b-2 border-transparent hover:text-primary transition-colors whitespace-nowrap flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSettingsTab('Settings & Security')}
+                    className={`font-body text-sm pb-3 border-b-2 transition-colors whitespace-nowrap flex items-center gap-2 ${
+                      settingsTab === 'Settings & Security'
+                        ? 'text-primary border-bright-cyan'
+                        : 'text-slate-500 border-transparent hover:text-primary'
+                    }`}
+                  >
                     <span className="material-symbols-outlined text-[18px]">
                       security
                     </span>
@@ -1175,6 +1215,7 @@ Fill out the short form here to get started:
                 </div>
 
                 {/* Content Panel */}
+                {settingsTab === 'Personal Details' ? (
                 <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                   <div className="mb-8 flex justify-between items-start">
                     <div className="flex-1">
@@ -1265,6 +1306,114 @@ Fill out the short form here to get started:
                     </div>
                   </form>
                 </div>
+                ) : settingsTab === 'Network & Hubs' ? (
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="mb-8">
+                    <h3 className="font-display text-lg font-bold text-dark-slate mb-2">
+                      Network Influence
+                    </h3>
+                    <p className="font-body text-sm text-slate-500">
+                      Define your primary audience and geographic hubs to help
+                      us match you with relevant campaigns.
+                    </p>
+                  </div>
+
+                  <form className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Target Audience Category
+                        </label>
+                        <div className="relative">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                            <option>Student Community</option>
+                            <option>Young Professionals</option>
+                            <option>Expatriates</option>
+                            <option>Corporate Real Estate</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            arrow_drop_down
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Institution / Organization
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="text"
+                          defaultValue="University of Lagos (UNILAG)"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="border-t border-slate-200 my-6" />
+
+                    <h4 className="font-body text-xs font-bold text-dark-slate uppercase tracking-wider mb-4">
+                      Location Hubs
+                    </h4>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Primary Operational Hub
+                        </label>
+                        <div className="relative">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                            <option>Yaba / Akoka</option>
+                            <option>Lekki / Victoria Island</option>
+                            <option>Ikeja / Maryland</option>
+                            <option>Surulere</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            arrow_drop_down
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-slate-400 mt-1">
+                          Your main area of influence.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Secondary Operational Hub
+                        </label>
+                        <div className="relative">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                            <option>Surulere</option>
+                            <option>Lekki / Victoria Island</option>
+                            <option>Ikeja / Maryland</option>
+                            <option>Yaba / Akoka</option>
+                            <option>None</option>
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                            expand_more
+                          </span>
+                        </div>
+                        <p className="font-body text-xs text-slate-400 mt-1">
+                          Optional secondary area.
+                        </p>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                ) : (
+                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                  <div className="flex flex-col items-center justify-center text-center py-16">
+                    <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">
+                      construction
+                    </span>
+                    <h3 className="font-display text-lg font-bold text-dark-slate mb-1">
+                      {settingsTab}
+                    </h3>
+                    <p className="font-body text-sm text-slate-500 max-w-sm">
+                      This section is coming soon. Please check back shortly.
+                    </p>
+                  </div>
+                </div>
+                )}
 
                 {/* Sticky Action Bar */}
                 <div className="sticky bottom-6 flex items-center justify-between gap-4 px-6 py-4 z-20 rounded-xl bg-primary-container text-white shadow-lg">
