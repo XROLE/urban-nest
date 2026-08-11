@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -155,6 +155,8 @@ export default function AmbassadorDashboard() {
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const profileImageRef = useRef<HTMLInputElement>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [view, setView] = useState<View>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
@@ -208,6 +210,16 @@ Fill out the short form here to get started:
     navigator.clipboard.writeText(whatsappCaption);
     setCaptionCopied(true);
     setTimeout(() => setCaptionCopied(false), 2500);
+  };
+
+  const handleProfileImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setProfileImage(URL.createObjectURL(file));
+    }
+    e.target.value = '';
   };
 
   const handleWithdraw = () => {
@@ -424,10 +436,11 @@ Fill out the short form here to get started:
             className="w-9 h-9 rounded-full overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer hover:border-bright-cyan hover:ring-2 hover:ring-bright-cyan/30 transition-all"
           >
             <Image
-              src="/default-avatar.svg"
-              alt="Default profile avatar"
+              src={profileImage || '/default-avatar.svg'}
+              alt="Profile avatar"
               width={36}
               height={36}
+              unoptimized
               className="w-full h-full object-cover"
             />
           </button>
@@ -1042,20 +1055,33 @@ Fill out the short form here to get started:
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <input
+                ref={profileImageRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfileImageChange}
+              />
               {/* Hero Identity Card */}
               <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm lg:sticky lg:top-24">
                 <div className="flex flex-col items-center text-center p-6">
                   <div className="relative mb-4">
                     <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm">
                       <Image
-                        src="/default-avatar.svg"
-                        alt="Default profile avatar"
+                        src={profileImage || '/default-avatar.svg'}
+                        alt="Profile avatar"
                         width={96}
                         height={96}
+                        unoptimized
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <button className="absolute bottom-0 right-0 bg-bright-cyan text-white p-2 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95">
+                    <button
+                      type="button"
+                      aria-label="Change profile photo"
+                      onClick={() => profileImageRef.current?.click()}
+                      className="absolute bottom-0 right-0 bg-bright-cyan text-white p-2 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95 cursor-pointer"
+                    >
                       <span className="material-symbols-outlined text-[18px]">
                         edit
                       </span>
