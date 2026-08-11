@@ -1688,7 +1688,7 @@ Fill out the short form here to get started:
         ) : view === 'checkings' ? (
           <div className="flex flex-col gap-4">
             {/* Hero Section */}
-            <section className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] flex flex-col gap-3 relative overflow-hidden">
+            <section className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-5 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] flex flex-col gap-3 relative overflow-hidden">
               <div className="absolute -right-20 -top-20 w-96 h-96 bg-primary-fixed rounded-full blur-[100px] opacity-30 pointer-events-none" />
               <div className="relative z-10">
                 <h2 className="font-display text-2xl text-primary font-bold mb-1">
@@ -1703,10 +1703,10 @@ Fill out the short form here to get started:
               {/* Progress Stepper */}
               <div className="relative z-10 pt-1">
                 <div className="flex items-center justify-between w-full relative">
-                  <div className="absolute left-[5%] right-[5%] top-1/2 -translate-y-1/2 h-[2px] bg-outline-variant -z-10" />
+                  <div className="absolute left-[5%] right-[5%] top-1/2 -translate-y-1/2 h-[2px] bg-slate-200 -z-10" />
                   {/* Step 1 */}
                   <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
-                    <div className="w-8 h-8 rounded-full bg-sky-blue text-white flex items-center justify-center shadow-md">
+                    <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
                       <span
                         className="material-symbols-outlined text-[16px]"
                         style={{ fontVariationSettings: `'FILL' 1` }}
@@ -1720,22 +1720,14 @@ Fill out the short form here to get started:
                   </div>
                   {/* Step 2 */}
                   <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
-                    <div className="w-8 h-8 rounded-full bg-[#FFFBEB] border-2 border-[#D97706] text-[#D97706] flex items-center justify-center shadow-sm relative">
-                      <div className="absolute -inset-1 border border-[#D97706] rounded-full opacity-30 animate-ping" />
+                    <div className="w-8 h-8 rounded-full bg-amber-50 border border-amber-300 text-amber-600 flex items-center justify-center">
+                      <div className="absolute -inset-1 border border-amber-300 rounded-full opacity-20 animate-ping" />
                       <span className="font-body text-xs font-bold">2</span>
                     </div>
                     <div className="flex flex-col items-center">
-                      <span className="font-body text-xs font-semibold text-[#D97706]">
+                      <span className="font-body text-xs font-semibold text-amber-600">
                         Verification
                       </span>
-                      <div className="flex gap-1 mt-1 text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[14px]">
-                          mail
-                        </span>
-                        <span className="material-symbols-outlined text-[14px]">
-                          chat
-                        </span>
-                      </div>
                     </div>
                   </div>
                   {/* Step 3 */}
@@ -1748,7 +1740,7 @@ Fill out the short form here to get started:
                     </span>
                   </div>
                   {/* Step 4 */}
-                  <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
+                  <div className="flex flex-col items-center gap-2 relative px-4">
                     <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
                       <span className="material-symbols-outlined text-[16px]">
                         lock
@@ -1766,7 +1758,7 @@ Fill out the short form here to get started:
               {/* Main Action Column */}
               <div className="lg:col-span-8 flex flex-col gap-3">
                 {/* Verification Card */}
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
+                <div className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
                   <div className="mb-3 flex items-center gap-2 text-error opacity-80">
                     <span className="material-symbols-outlined text-[16px]">
                       info
@@ -1776,8 +1768,8 @@ Fill out the short form here to get started:
                       submitted.
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
-                    <span className="material-symbols-outlined text-primary text-[24px]">
+                  <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
+                    <span className="material-symbols-outlined text-sky-600 text-[24px]">
                       verified_user
                     </span>
                     <h3 className="font-display text-lg font-semibold text-primary">
@@ -1786,7 +1778,7 @@ Fill out the short form here to get started:
                   </div>
                   <div className="flex flex-col gap-3">
                     {/* Email Row */}
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-outline-variant hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-slate-200 hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                           <span className="material-symbols-outlined">mail</span>
@@ -1814,7 +1806,7 @@ Fill out the short form here to get started:
                       </button>
                     </div>
                     {/* WhatsApp Row */}
-                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-outline-variant hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-slate-200 hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                           <span className="material-symbols-outlined">chat</span>
@@ -1845,9 +1837,9 @@ Fill out the short form here to get started:
                 </div>
 
                 {/* Vetting Info Form (Disabled) */}
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] relative overflow-hidden">
+                <div className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] relative overflow-hidden">
                   <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <div className="bg-surface-container-lowest border border-outline-variant px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+                    <div className="bg-surface-container-lowest border border-slate-200 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
                       <span className="material-symbols-outlined text-[#D97706]">
                         warning
                       </span>
@@ -1857,8 +1849,8 @@ Fill out the short form here to get started:
                     </div>
                   </div>
                   <div className="opacity-50 pointer-events-none">
-                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-outline-variant">
-                      <span className="material-symbols-outlined text-primary text-[24px]">
+                    <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
+                      <span className="material-symbols-outlined text-sky-600 text-[24px]">
                         assignment_ind
                       </span>
                       <h3 className="font-display text-lg font-semibold text-primary">
@@ -1871,7 +1863,7 @@ Fill out the short form here to get started:
                           <label className="font-body text-xs font-semibold text-on-surface-variant">
                             Social Media Platform
                           </label>
-                          <select className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
+                          <select className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
                             <option>Select Platform</option>
                           </select>
                         </div>
@@ -1880,7 +1872,7 @@ Fill out the short form here to get started:
                             Social Handle
                           </label>
                           <input
-                            className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
+                            className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
                             placeholder="@username"
                             type="text"
                           />
@@ -1890,7 +1882,7 @@ Fill out the short form here to get started:
                         <label className="font-body text-xs font-semibold text-on-surface-variant">
                           Target Audience
                         </label>
-                        <select className="w-full bg-background border border-outline-variant rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
+                        <select className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
                           <option>Select Audience Type</option>
                         </select>
                       </div>
@@ -1912,7 +1904,7 @@ Fill out the short form here to get started:
 
               {/* Gated Features Column */}
               <div className="lg:col-span-4 flex flex-col gap-3">
-                <div className="bg-surface-container-lowest border border-outline-variant rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] h-full relative overflow-hidden flex flex-col">
+                <div className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] h-full relative overflow-hidden flex flex-col">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-display text-lg font-semibold text-primary">
                       Your Dashboard
@@ -1921,7 +1913,7 @@ Fill out the short form here to get started:
                       lock
                     </span>
                   </div>
-                  <div className="relative flex-grow rounded-lg overflow-hidden border border-outline-variant/50">
+                  <div className="relative flex-grow rounded-lg overflow-hidden border border-slate-200/50">
                     {/* Simulated blurred content */}
                     <div className="absolute inset-0 bg-background blur-sm opacity-60">
                       <div className="p-3 grid gap-3">
