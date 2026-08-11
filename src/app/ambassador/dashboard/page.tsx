@@ -1041,28 +1041,8 @@ Fill out the short form here to get started:
             </div>
           </div>
         ) : view === 'settings' ? (
-          <div className="space-y-6">
-            {/* Breadcrumbs */}
-            <div className="flex items-center gap-2 text-on-surface-variant font-body text-xs">
-              <button
-                onClick={() => applyView('dashboard')}
-                className="hover:text-primary transition-colors"
-              >
-                Dashboard
-              </button>
-              <span className="material-symbols-outlined text-[14px]">
-                chevron_right
-              </span>
-              <span className="text-primary font-bold">Ambassador Profile</span>
-            </div>
-
-            <div>
-              <h1 className="font-display text-lg font-bold text-dark-slate">
-                Profile &amp; Settings
-              </h1>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
               <input
                 ref={profileImageRef}
                 type="file"
@@ -1072,14 +1052,14 @@ Fill out the short form here to get started:
               />
               {/* Hero Identity Card */}
               <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm lg:sticky lg:top-24">
-                <div className="flex flex-col items-center text-center p-6">
-                  <div className="relative mb-4">
-                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm">
+                <div className="flex flex-col items-center text-center p-5">
+                  <div className="relative mb-3">
+                    <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm">
                       <Image
                         src={profileImage || '/default-avatar.svg'}
                         alt="Profile avatar"
-                        width={96}
-                        height={96}
+                        width={80}
+                        height={80}
                         unoptimized
                         className="w-full h-full object-cover"
                       />
@@ -1088,19 +1068,19 @@ Fill out the short form here to get started:
                       type="button"
                       aria-label="Change profile photo"
                       onClick={() => profileImageRef.current?.click()}
-                      className="absolute bottom-0 right-0 bg-bright-cyan text-white p-2 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95 cursor-pointer"
+                      className="absolute bottom-0 right-0 bg-bright-cyan text-white p-1.5 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95 cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-[18px]">
+                      <span className="material-symbols-outlined text-[16px]">
                         edit
                       </span>
                     </button>
                   </div>
 
-                  <div className="flex flex-col items-center mb-6">
+                  <div className="flex flex-col items-center mb-4">
                     <h2 className="font-display text-lg font-bold text-dark-slate mb-1">
                       {fullName}
                     </h2>
-                    <div className="flex items-center gap-1 text-mint mb-3">
+                    <div className="flex items-center gap-1 text-mint mb-2">
                       <span
                         className="material-symbols-outlined text-[18px]"
                         style={{ fontVariationSettings: `'FILL' 1` }}
@@ -1111,7 +1091,7 @@ Fill out the short form here to get started:
                         Verified
                       </span>
                     </div>
-                    <div className="inline-flex items-center px-4 py-1 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
+                    <div className="inline-flex items-center px-3 py-0.5 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
                       <span className="material-symbols-outlined text-[16px] mr-1.5">
                         emoji_events
                       </span>
@@ -1121,8 +1101,8 @@ Fill out the short form here to get started:
                     </div>
                   </div>
 
-                  <div className="w-full pt-6 border-t border-slate-200">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="w-full pt-4 border-t border-slate-200">
+                    <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col items-center p-2 rounded-lg bg-slate-50">
                         <span className="text-[10px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
                           Member Since
@@ -1140,7 +1120,7 @@ Fill out the short form here to get started:
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-center gap-1 mt-4 text-primary">
+                    <div className="flex items-center justify-center gap-1 mt-3 text-primary">
                       <span className="material-symbols-outlined text-[16px]">
                         location_on
                       </span>
@@ -1153,9 +1133,9 @@ Fill out the short form here to get started:
               </div>
 
               {/* Main Content */}
-              <div className="lg:col-span-8 flex flex-col gap-6">
+              <div className="lg:col-span-8 flex flex-col gap-4">
                 {/* Tabs */}
-                <div className="flex overflow-x-auto border-b border-slate-200 mb-4 gap-6">
+                <div className="flex overflow-x-auto border-b border-slate-200 mb-2 gap-5">
                   <button
                     type="button"
                     onClick={() => setSettingsTab('Personal Details')}
@@ -1216,10 +1196,10 @@ Fill out the short form here to get started:
 
                 {/* Content Panel */}
                 {settingsTab === 'Personal Details' ? (
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <div className="mb-8 flex justify-between items-start">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <div className="mb-5 flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-display text-lg font-bold text-dark-slate mb-2">
+                      <h3 className="font-display text-base font-bold text-dark-slate mb-1">
                         Personal Details
                       </h3>
                       <p className="font-body text-sm text-slate-500">
@@ -1229,14 +1209,14 @@ Fill out the short form here to get started:
                     </div>
                   </div>
 
-                  <form className="space-y-6">
+                  <form className="space-y-5">
                     <div className="flex flex-col gap-2">
                       <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                         Full Name
                       </label>
                       <div className="relative">
                         <input
-                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                          className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
                           type="text"
                           value={fullName}
                           readOnly
@@ -1247,14 +1227,14 @@ Fill out the short form here to get started:
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Email Address
                         </label>
                         <div className="relative">
                           <input
-                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
                             type="email"
                             value={user?.email || 'bella.onyekachi@example.com'}
                             readOnly
@@ -1271,7 +1251,7 @@ Fill out the short form here to get started:
                         </label>
                         <div className="relative">
                           <input
-                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-3 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
                             type="tel"
                             value="+234 800 000 0000"
                             readOnly
@@ -1287,7 +1267,7 @@ Fill out the short form here to get started:
                           Gender
                         </label>
                         <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="text"
                           defaultValue="Female"
                         />
@@ -1298,7 +1278,7 @@ Fill out the short form here to get started:
                           Emergency Contact
                         </label>
                         <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="tel"
                           placeholder="+234 ..."
                         />
@@ -1307,9 +1287,9 @@ Fill out the short form here to get started:
                   </form>
                 </div>
                 ) : settingsTab === 'Network & Hubs' ? (
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <div className="mb-8">
-                    <h3 className="font-display text-lg font-bold text-dark-slate mb-2">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <div className="mb-5">
+                    <h3 className="font-display text-base font-bold text-dark-slate mb-1">
                       Network Influence
                     </h3>
                     <p className="font-body text-sm text-slate-500">
@@ -1318,14 +1298,14 @@ Fill out the short form here to get started:
                     </p>
                   </div>
 
-                  <form className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <form className="space-y-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Target Audience Category
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
                             <option>Student Community</option>
                             <option>Young Professionals</option>
                             <option>Expatriates</option>
@@ -1342,26 +1322,26 @@ Fill out the short form here to get started:
                           Institution / Organization
                         </label>
                         <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="text"
                           defaultValue="University of Lagos (UNILAG)"
                         />
                       </div>
                     </div>
 
-                    <div className="border-t border-slate-200 my-6" />
+                    <div className="border-t border-slate-200 my-5" />
 
-                    <h4 className="font-body text-xs font-bold text-dark-slate uppercase tracking-wider mb-4">
+                    <h4 className="font-body text-xs font-bold text-dark-slate uppercase tracking-wider mb-3">
                       Location Hubs
                     </h4>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Primary Operational Hub
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
                             <option>Yaba / Akoka</option>
                             <option>Lekki / Victoria Island</option>
                             <option>Ikeja / Maryland</option>
@@ -1381,7 +1361,7 @@ Fill out the short form here to get started:
                           Secondary Operational Hub
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-3 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
+                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
                             <option>Surulere</option>
                             <option>Lekki / Victoria Island</option>
                             <option>Ikeja / Maryland</option>
@@ -1399,13 +1379,117 @@ Fill out the short form here to get started:
                     </div>
                   </form>
                 </div>
+) : settingsTab === 'Settings & Security' ? (
+                <div className="space-y-6">
+                  {/* Change Password */}
+                  <section className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-slate-200 pb-3 mb-4">
+                      <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-dark-slate">
+                        <span className="material-symbols-outlined text-[20px]">
+                          password
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-display text-base font-bold text-dark-slate">
+                          Change Password
+                        </h3>
+                        <p className="font-body text-sm text-slate-500 mt-0.5">
+                          Ensure your account is using a long, random password
+                          to stay secure.
+                        </p>
+                      </div>
+                    </div>
+
+                    <form className="space-y-4 max-w-lg">
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Current Password
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="password"
+                          placeholder="••••••••"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          New Password
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="password"
+                          placeholder="••••••••"
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Confirm New Password
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="password"
+                          placeholder="••••••••"
+                        />
+                      </div>
+
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          className="bg-bright-cyan text-white px-6 py-3 rounded-xl font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md"
+                        >
+                          Update Password
+                        </button>
+                      </div>
+                    </form>
+                  </section>
+
+                  {/* Danger Zone */}
+                  <section className="bg-white border border-error/30 rounded-2xl p-5 shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-error/10 pb-3 mb-4">
+                      <div className="w-9 h-9 rounded-lg bg-error/10 flex items-center justify-center text-error">
+                        <span className="material-symbols-outlined text-[20px]">
+                          warning
+                        </span>
+                      </div>
+                      <div>
+                        <h3 className="font-display text-base font-bold text-error">
+                          Danger Zone
+                        </h3>
+                        <p className="font-body text-sm text-slate-500 mt-0.5">
+                          Irreversible actions concerning your ambassador
+                          account.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <h4 className="font-body text-sm font-bold text-dark-slate mb-1">
+                          Delete Account
+                        </h4>
+                        <p className="font-body text-sm text-slate-500">
+                          Once you delete your account, there is no going back.
+                          Please be certain.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="border border-error text-error px-6 py-2.5 rounded-xl font-body text-sm hover:bg-error hover:text-white transition-all active:scale-95 whitespace-nowrap"
+                      >
+                        Delete Account
+                      </button>
+                    </div>
+                  </section>
+                </div>
                 ) : (
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                  <div className="flex flex-col items-center justify-center text-center py-16">
-                    <span className="material-symbols-outlined text-5xl text-slate-300 mb-4">
+                <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex flex-col items-center justify-center text-center py-10">
+                    <span className="material-symbols-outlined text-4xl text-slate-300 mb-3">
                       construction
                     </span>
-                    <h3 className="font-display text-lg font-bold text-dark-slate mb-1">
+                    <h3 className="font-display text-base font-bold text-dark-slate mb-1">
                       {settingsTab}
                     </h3>
                     <p className="font-body text-sm text-slate-500 max-w-sm">
@@ -1416,7 +1500,8 @@ Fill out the short form here to get started:
                 )}
 
                 {/* Sticky Action Bar */}
-                <div className="sticky bottom-6 flex items-center justify-between gap-4 px-6 py-4 z-20 rounded-xl bg-primary-container text-white shadow-lg">
+                {settingsTab !== 'Settings & Security' && (
+                <div className="sticky bottom-6 mt-8 flex items-center justify-between gap-4 px-5 py-3 z-20 rounded-xl bg-primary-container text-white shadow-lg">
                   <span className="font-body text-sm">
                     Unsaved changes detected
                   </span>
@@ -1429,6 +1514,7 @@ Fill out the short form here to get started:
                     </button>
                   </div>
                 </div>
+                )}
               </div>
             </div>
           </div>
