@@ -174,6 +174,7 @@ export default function AmbassadorDashboard() {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [bankModalOpen, setBankModalOpen] = useState(false);
   const [contactSent, setContactSent] = useState(false);
   const [contactForm, setContactForm] = useState({ subject: '', message: '' });
   const [notifications, setNotifications] =
@@ -1513,6 +1514,7 @@ Fill out the short form here to get started:
                     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative">
                       <button
                         type="button"
+                        onClick={() => setBankModalOpen(true)}
                         className="absolute top-4 right-4 text-slate-500 hover:text-primary"
                       >
                         <span className="material-symbols-outlined text-[20px]">
@@ -1925,6 +1927,130 @@ Fill out the short form here to get started:
             </div>
           </>
         )}
+      </Modal>
+
+      {/* Edit Bank Account Modal */}
+      <Modal
+        open={bankModalOpen}
+        onClose={() => setBankModalOpen(false)}
+        title="Edit Bank Account"
+        size="md"
+      >
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-display text-lg font-bold text-dark-slate flex items-center gap-2">
+            <span className="material-symbols-outlined text-bright-cyan">
+              account_balance
+            </span>
+            Edit Bank Account
+          </h2>
+          <button
+            type="button"
+            onClick={() => setBankModalOpen(false)}
+            className="text-slate-500 hover:text-dark-slate rounded-full p-1 hover:bg-slate-100 transition-colors"
+            aria-label="Close"
+          >
+            <span className="material-symbols-outlined text-[20px]">
+              close
+            </span>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6">
+          <form className="space-y-5">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="bank_name"
+                className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide"
+              >
+                Bank Name
+              </label>
+              <div className="relative">
+                <select
+                  id="bank_name"
+                  defaultValue="access"
+                  className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10"
+                >
+                  <option disabled value="">
+                    Select a bank
+                  </option>
+                  <option value="access">Access Bank</option>
+                  <option value="gtb">Guaranty Trust Bank</option>
+                  <option value="zenith">Zenith Bank</option>
+                  <option value="fbn">First Bank of Nigeria</option>
+                  <option value="uba">United Bank for Africa</option>
+                </select>
+                <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
+                  expand_more
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="account_number"
+                className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide"
+              >
+                Account Number
+              </label>
+              <input
+                id="account_number"
+                type="text"
+                defaultValue="0123456789"
+                maxLength={10}
+                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm font-mono text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+              />
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="account_name"
+                className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide flex justify-between"
+              >
+                Account Name
+                <span className="text-slate-400 font-normal normal-case tracking-normal">
+                  Auto-resolved
+                </span>
+              </label>
+              <div className="relative">
+                <input
+                  id="account_name"
+                  type="text"
+                  readOnly
+                  defaultValue="Bella Klasha"
+                  className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-slate-500 focus:outline-none cursor-not-allowed"
+                />
+                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-mint">
+                  <span className="material-symbols-outlined text-[20px]">
+                    check_circle
+                  </span>
+                </span>
+              </div>
+              <p className="font-body text-xs text-slate-400">
+                Name must match your profile identity.
+              </p>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setBankModalOpen(false)}
+            className="px-5 py-2.5 rounded-lg border border-slate-300 text-dark-slate font-body text-sm hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={() => setBankModalOpen(false)}
+            className="px-5 py-2.5 rounded-lg bg-bright-cyan text-white font-body text-sm hover:brightness-110 transition-all shadow-sm flex items-center gap-2"
+          >
+            Save Changes
+          </button>
+        </div>
       </Modal>
     </div>
   );
