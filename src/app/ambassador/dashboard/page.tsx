@@ -181,6 +181,15 @@ export default function AmbassadorDashboard() {
     useState<NotificationItem[]>(SAMPLE_NOTIFICATIONS);
   const [notificationFilter, setNotificationFilter] =
     useState<NotificationFilter>('All');
+  const [checkingsContact, setCheckingsContact] = useState({
+    email: 'jane.doe@example.com',
+    whatsapp: '+234 *** *** **99',
+  });
+  const [editContactOpen, setEditContactOpen] = useState(false);
+  const [editContactDraft, setEditContactDraft] = useState({
+    email: 'jane.doe@example.com',
+    whatsapp: '+234 *** *** **99',
+  });
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -234,6 +243,20 @@ Fill out the short form here to get started:
   const handleWithdraw = () => {
     setWithdrawn(true);
     setTimeout(() => setWithdrawn(false), 3000);
+  };
+
+  const openEditContact = () => {
+    setEditContactDraft(checkingsContact);
+    setEditContactOpen(true);
+  };
+
+  const closeEditContact = () => {
+    setEditContactOpen(false);
+  };
+
+  const saveEditContact = () => {
+    setCheckingsContact(editContactDraft);
+    setEditContactOpen(false);
   };
 
   const handleLogout = () => {
@@ -1773,10 +1796,11 @@ Fill out the short form here to get started:
                             Verify Email Address
                           </h4>
                           <p className="font-body text-sm text-on-surface-variant">
-                            jane.doe@example.com
+                            {checkingsContact.email}
                           </p>
                           <button
                             aria-label="Edit Email"
+                            onClick={openEditContact}
                             className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
                           >
                             <span className="material-symbols-outlined text-[16px]">
@@ -1800,10 +1824,11 @@ Fill out the short form here to get started:
                             Verify WhatsApp Number
                           </h4>
                           <p className="font-body text-sm text-on-surface-variant">
-                            +234 *** *** **99
+                            {checkingsContact.whatsapp}
                           </p>
                           <button
                             aria-label="Edit WhatsApp Number"
+                            onClick={openEditContact}
                             className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
                           >
                             <span className="material-symbols-outlined text-[16px]">
@@ -2331,6 +2356,120 @@ Fill out the short form here to get started:
           </button>
         </div>
       </Modal>
+
+      {/* Edit Contact Details Modal */}
+      {editContactOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            aria-hidden="true"
+            onClick={closeEditContact}
+            className="absolute inset-0 bg-primary/40 backdrop-blur-sm z-40"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Edit Contact Details"
+            className="relative z-50 w-full max-w-md bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden transform transition-all shadow-[0px_10px_15px_-3px_rgba(13,34,64,0.1)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant/50">
+              <h2 className="font-display text-xl text-on-surface">
+                Edit Contact Details
+              </h2>
+              <button
+                type="button"
+                aria-label="Close modal"
+                onClick={closeEditContact}
+                className="text-on-surface-variant hover:text-on-surface transition-colors rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-secondary/50"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 space-y-6">
+              {/* Email Input Group */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-email"
+                  className="block font-body text-xs font-semibold text-on-surface-variant"
+                >
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-outline text-[20px]">
+                      mail
+                    </span>
+                  </div>
+                  <input
+                    id="edit-email"
+                    type="email"
+                    className="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors font-body text-sm text-on-surface placeholder:text-outline outline-none"
+                    value={editContactDraft.email}
+                    onChange={(e) =>
+                      setEditContactDraft({
+                        ...editContactDraft,
+                        email: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+
+              {/* WhatsApp Input Group */}
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-whatsapp"
+                  className="block font-body text-xs font-semibold text-on-surface-variant"
+                >
+                  WhatsApp Number
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="material-symbols-outlined text-outline text-[20px]">
+                      phone
+                    </span>
+                  </div>
+                  <input
+                    id="edit-whatsapp"
+                    type="tel"
+                    className="block w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg bg-surface focus:bg-surface-container-lowest focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-colors font-body text-sm text-on-surface placeholder:text-outline outline-none"
+                    value={editContactDraft.whatsapp}
+                    onChange={(e) =>
+                      setEditContactDraft({
+                        ...editContactDraft,
+                        whatsapp: e.target.value,
+                      })
+                    }
+                    placeholder="Enter your WhatsApp number"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Footer / Actions */}
+            <div className="px-6 py-4 bg-surface-container-low flex justify-end gap-2 border-t border-outline-variant/50 rounded-b-xl">
+              <button
+                type="button"
+                onClick={closeEditContact}
+                className="px-4 py-2 rounded-lg font-body text-xs font-semibold text-on-surface-variant hover:bg-surface-variant transition-colors focus:outline-none focus:ring-2 focus:ring-outline/50 border border-transparent"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveEditContact}
+                className="px-4 py-2 rounded-lg font-body text-xs font-semibold text-white bg-sky-blue hover:bg-sky-blue/90 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-sky-blue/50"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
