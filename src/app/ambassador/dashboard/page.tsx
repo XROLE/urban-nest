@@ -569,7 +569,7 @@ Fill out the short form here to get started:
               >
                 fact_check
               </span>
-              <span className="font-body text-sm">Checkings</span>
+              <span className="font-body text-sm">Approval Status</span>
             </button>
           </nav>
 
