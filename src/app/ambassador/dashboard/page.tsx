@@ -1966,6 +1966,17 @@ Fill out the short form here to get started:
           </div>
         ) : view === 'earnings' ? (
           <div className="flex flex-col gap-5">
+            {/* Page Header */}
+            <div>
+              <h3 className="font-display text-xl md:text-2xl font-bold text-primary mb-1">
+                Transactions
+              </h3>
+              <p className="font-body text-sm text-slate-500">
+                Manage your commissions and request transfers to your local
+                bank.
+              </p>
+            </div>
+
             {/* Top Grid: Hero & Bank Info */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Money Hero */}
