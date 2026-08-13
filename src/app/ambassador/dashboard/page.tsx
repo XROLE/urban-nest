@@ -291,6 +291,9 @@ export default function AmbassadorDashboard() {
   const [networkSuccessOpen, setNetworkSuccessOpen] = useState(false);
   const [networkError, setNetworkError] = useState('');
   const [networkSaving, setNetworkSaving] = useState(false);
+  const [vettingSuccessOpen, setVettingSuccessOpen] = useState(false);
+  const [vettingSaving, setVettingSaving] = useState(false);
+  const [vettingError, setVettingError] = useState('');
 
   const initialNetwork = () => ({
     audienceCategory:
@@ -371,6 +374,85 @@ export default function AmbassadorDashboard() {
   const discardNetworkChanges = () => {
     setNetworkDraft({ ...savedNetwork });
     setNetworkError('');
+  };
+
+  const initializeVettingInfo = () => ({
+    socialMediaPlatform:
+      (Array.isArray(profile?.social_media_platform) &&
+        profile!.social_media_platform![0]) ||
+      '',
+    socialMediaHandle: (profile?.social_media_handle ?? '').trim()
+      ? `@${(profile?.social_media_handle ?? '').replace(/^@/, '')}`
+      : '',
+    socialMediaTargetAudience: profile?.social_media_target_audience ?? '',
+  });
+
+  const [vettingDraft, setVettingDraft] = useState(initializeVettingInfo);
+
+  const handleVettingFieldChange =
+    (field: keyof ReturnType<typeof initializeVettingInfo>) =>
+    (
+      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      setVettingError('');
+      setVettingDraft((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleVettingHandleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setVettingError('');
+    const raw = e.target.value.replace(/^@/, '').replace(/\s+/g, '');
+    setVettingDraft((prev) => ({
+      ...prev,
+      socialMediaHandle: raw ? `@${raw}` : '',
+    }));
+  };
+
+  const submitVetting = async () => {
+    setVettingError('');
+
+    const platform = vettingDraft.socialMediaPlatform.trim();
+    const handle = vettingDraft.socialMediaHandle.trim();
+    const audience = vettingDraft.socialMediaTargetAudience.trim();
+
+    if (!platform) {
+      setVettingError('Please select your social media platform.');
+      return;
+    }
+    if (!handle) {
+      setVettingError('Please provide your social media handle.');
+      return;
+    }
+    if (!audience) {
+      setVettingError('Please select your target audience.');
+      return;
+    }
+
+    setVettingSaving(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          socialMediaPlatform: [platform],
+          socialMediaHandle: handle,
+          socialMediaTargetAudience: audience,
+        }),
+      });
+
+      if (!res.ok) {
+        setVettingError(await parseApiError(res));
+        return;
+      }
+
+      setVettingSuccessOpen(true);
+    } catch {
+      setVettingError('Something went wrong. Please try again.');
+    } finally {
+      setVettingSaving(false);
+    }
   };
 
   const emptyBank = {
@@ -572,6 +654,7 @@ export default function AmbassadorDashboard() {
   const whatsappVerified =
     Boolean(profile?.whatsapp_verified ?? user?.whatsapp_verified) ||
     sessionVerified.whatsapp;
+  const contactVerified = emailVerified && whatsappVerified;
 
   const ranking = (profile?.ambassador_ranking ?? 'bronze').toLowerCase();
   const rankingCfg =
@@ -2406,15 +2489,33 @@ Fill out the short form here to get started:
                   </div>
                   {/* Step 2 */}
                   <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
-                    <div className="w-8 h-8 rounded-full bg-amber-50 border border-amber-300 text-amber-600 flex items-center justify-center">
-                      <div className="absolute -inset-1 border border-amber-300 rounded-full opacity-20 animate-ping" />
-                      <span className="font-body text-xs font-bold">2</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="font-body text-xs font-semibold text-amber-600">
-                        Verification
-                      </span>
-                    </div>
+                    {contactVerified ? (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                          <span
+                            className="material-symbols-outlined text-[16px]"
+                            style={{ fontVariationSettings: `'FILL' 1` }}
+                          >
+                            check
+                          </span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-primary">
+                          Verification
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-amber-50 border border-amber-300 text-amber-600 flex items-center justify-center">
+                          <div className="absolute -inset-1 border border-amber-300 rounded-full opacity-20 animate-ping" />
+                          <span className="font-body text-xs font-bold">2</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <span className="font-body text-xs font-semibold text-amber-600">
+                            Verification
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                   {/* Step 3 */}
                   <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
@@ -2445,15 +2546,17 @@ Fill out the short form here to get started:
               <div className="lg:col-span-8 flex flex-col gap-3">
                 {/* Verification Card */}
                 <div className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)]">
-                  <div className="mb-3 flex items-center gap-2 text-error opacity-80">
-                    <span className="material-symbols-outlined text-[16px]">
-                      info
-                    </span>
-                    <p className="text-xs font-medium">
-                      Note: Verified contact details cannot be changed once
-                      submitted.
-                    </p>
-                  </div>
+                  {!contactVerified && (
+                    <div className="mb-3 flex items-center gap-2 text-error opacity-80">
+                      <span className="material-symbols-outlined text-[16px]">
+                        info
+                      </span>
+                      <p className="text-xs font-medium">
+                        Note: Verified contact details cannot be changed once
+                        submitted.
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
                     <span className="material-symbols-outlined text-sky-600 text-[24px]">
                       verified_user
@@ -2558,19 +2661,21 @@ Fill out the short form here to get started:
                   </div>
                 </div>
 
-                {/* Vetting Info Form (Disabled) */}
+                {/* Vetting Info Form */}
                 <div className="bg-surface-container-lowest border border-slate-200 rounded-[16px] p-4 shadow-[0px_4px_6px_-1px_rgba(0,0,0,0.05)] relative overflow-hidden">
-                  <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <div className="bg-surface-container-lowest border border-slate-200 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[#D97706]">
-                        warning
-                      </span>
-                      <span className="font-body text-xs font-semibold text-primary">
-                        Complete verification steps above to unlock
-                      </span>
+                  {!contactVerified && (
+                    <div className="absolute inset-0 bg-surface/50 backdrop-blur-[2px] z-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <div className="bg-surface-container-lowest border border-slate-200 px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+                        <span className="material-symbols-outlined text-[#D97706]">
+                          warning
+                        </span>
+                        <span className="font-body text-xs font-semibold text-primary">
+                          Complete verification steps above to unlock
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="opacity-50 pointer-events-none">
+                  )}
+                  <div className={contactVerified ? '' : 'opacity-50 pointer-events-none'}>
                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-slate-200">
                       <span className="material-symbols-outlined text-sky-600 text-[24px]">
                         assignment_ind
@@ -2579,14 +2684,33 @@ Fill out the short form here to get started:
                         Vetting Information
                       </h3>
                     </div>
-                    <form className="flex flex-col gap-3">
+                    <form
+                      className="flex flex-col gap-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        submitVetting();
+                      }}
+                    >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div className="flex flex-col gap-1">
                           <label className="font-body text-xs font-semibold text-on-surface-variant">
                             Social Media Platform
                           </label>
-                          <select className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
-                            <option>Select Platform</option>
+                          <select
+                            className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
+                            value={vettingDraft.socialMediaPlatform}
+                            onChange={handleVettingFieldChange('socialMediaPlatform')}
+                            required
+                          >
+                            <option value="">Select Platform</option>
+                            <option>Instagram</option>
+                            <option>TikTok</option>
+                            <option>X (Twitter)</option>
+                            <option>Facebook</option>
+                            <option>WhatsApp</option>
+                            <option>YouTube</option>
+                            <option>LinkedIn</option>
+                            <option>Other</option>
                           </select>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -2597,6 +2721,9 @@ Fill out the short form here to get started:
                             className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
                             placeholder="@username"
                             type="text"
+                            value={vettingDraft.socialMediaHandle}
+                            onChange={handleVettingHandleChange}
+                            required
                           />
                         </div>
                       </div>
@@ -2604,20 +2731,42 @@ Fill out the short form here to get started:
                         <label className="font-body text-xs font-semibold text-on-surface-variant">
                           Target Audience
                         </label>
-                        <select className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant">
-                          <option>Select Audience Type</option>
+                        <select
+                          className="w-full bg-background border border-slate-200 rounded-[12px] px-4 py-2.5 text-on-surface-variant font-body text-sm focus:border-sky-blue focus:ring-1 focus:ring-sky-blue outline-none disabled:bg-surface-variant"
+                          value={vettingDraft.socialMediaTargetAudience}
+                          onChange={handleVettingFieldChange('socialMediaTargetAudience')}
+                          required
+                        >
+                          <option value="">Select Audience Type</option>
+                          <option>NYSC</option>
+                          <option>Students</option>
+                          <option>Young Professionals</option>
+                          <option>Expatriates</option>
+                          <option>All Audiences</option>
                         </select>
                       </div>
-                      <p className="text-xs text-on-surface-variant mb-2 md:text-right">
-                        Complete email and WhatsApp verification to submit your
-                        application.
-                      </p>
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mt-1">
+                        {vettingError && (
+                          <p className="text-xs font-medium text-error" role="alert">
+                            {vettingError}
+                          </p>
+                        )}
+                        <p className="text-xs text-on-surface-variant md:text-right">
+                          {contactVerified
+                            ? 'Your contact details are verified. Add your social info and submit.'
+                            : 'Complete email and WhatsApp verification to submit your application.'}
+                        </p>
+                      </div>
                       <button
-                        type="button"
-                        disabled
-                        className="mt-2 bg-surface-variant text-on-surface-variant px-5 py-2.5 rounded-[12px] font-body text-xs font-semibold w-full md:w-auto md:self-end"
+                        type="submit"
+                        disabled={!contactVerified || vettingSaving}
+                        className={`mt-2 px-5 py-2.5 rounded-[12px] font-body text-xs font-semibold w-full md:w-auto md:self-end ${
+                          contactVerified
+                            ? 'bg-sky-blue text-white hover:bg-sky-blue/90 transition-colors disabled:opacity-60'
+                            : 'bg-surface-variant text-on-surface-variant'
+                        }`}
                       >
-                        Submit Application for Review
+                        {vettingSaving ? 'Saving…' : 'Continue'}
                       </button>
                     </form>
                   </div>
@@ -3413,6 +3562,15 @@ Fill out the short form here to get started:
           onClose={() => setBankSuccessOpen(false)}
           details="Your bank account details have been updated successfully."
           onPrimary={() => setBankSuccessOpen(false)}
+        />
+      )}
+
+      {vettingSuccessOpen && (
+        <SuccessModal
+          open={vettingSuccessOpen}
+          onClose={() => setVettingSuccessOpen(false)}
+          details="Your vetting information has been submitted for review successfully."
+          onPrimary={() => setVettingSuccessOpen(false)}
         />
       )}
     </div>
