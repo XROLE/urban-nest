@@ -234,7 +234,11 @@ export default function AmbassadorDashboard() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [settingsTab, setSettingsTab] =
     useState<SettingsTab>('Personal Details');
-  const [view, setView] = useState<View>('dashboard');
+  const [view, setView] = useState<View>(
+    (profile?.verification_status ?? 'unverified').toLowerCase() === 'unverified'
+      ? 'checkings'
+      : 'dashboard'
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReferralRow['status'] | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
@@ -545,6 +549,7 @@ export default function AmbassadorDashboard() {
   const status =
     VERIFICATION_STATUS_CONFIG[verificationStatus] ??
     VERIFICATION_STATUS_CONFIG.unverified;
+  const isUnverified = verificationStatus === 'unverified';
 
   const ranking = (profile?.ambassador_ranking ?? 'bronze').toLowerCase();
   const rankingCfg =
@@ -705,7 +710,11 @@ Fill out the short form here to get started:
   );
 
   const applyView = (next: View) => {
-    setView(next);
+    const locked =
+      isUnverified &&
+      (next === 'dashboard' || next === 'referrals' || next === 'settings');
+    const target = locked ? 'checkings' : next;
+    setView(target);
     setSearchQuery('');
     setStatusFilter('All');
     setCurrentPage(1);
@@ -912,11 +921,12 @@ Fill out the short form here to get started:
           <nav className="flex-1 space-y-1">
             <button
               onClick={() => applyView('dashboard')}
+              disabled={isUnverified}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'dashboard'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -926,14 +936,20 @@ Fill out the short form here to get started:
                 dashboard
               </span>
               <span className="font-body text-sm">Dashboard</span>
+              {isUnverified && (
+                <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
+                  lock
+                </span>
+              )}
             </button>
             <button
               onClick={() => applyView('referrals')}
+              disabled={isUnverified}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'referrals'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -943,14 +959,20 @@ Fill out the short form here to get started:
                 group
               </span>
               <span className="font-body text-sm">Referrals</span>
+              {isUnverified && (
+                <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
+                  lock
+                </span>
+              )}
             </button>
             <button
               onClick={() => applyView('settings')}
+              disabled={isUnverified}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'settings'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }`}
+              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -960,6 +982,11 @@ Fill out the short form here to get started:
                 settings
               </span>
               <span className="font-body text-sm">Settings</span>
+              {isUnverified && (
+                <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
+                  lock
+                </span>
+              )}
             </button>
             <button
               onClick={() => applyView('checkings')}
@@ -984,10 +1011,11 @@ Fill out the short form here to get started:
           <div className="mt-auto border-t border-slate-800 pt-4 space-y-2">
             <button
               onClick={handleCopy}
-              className="w-full bg-bright-cyan text-white font-display font-semibold py-2.5 rounded-xl hover:bg-bright-cyan/90 transition-all flex justify-center items-center gap-2 text-sm shadow-md"
+              disabled={isUnverified}
+              className="w-full bg-bright-cyan text-white font-display font-semibold py-2.5 rounded-xl hover:bg-bright-cyan/90 transition-all flex justify-center items-center gap-2 text-sm shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-bright-cyan"
             >
-              <span className="material-symbols-outlined text-base">
-                content_copy
+              <span className="material-symbols-outlined text-[8px]">
+                {isUnverified ? 'lock' : 'content_copy'}
               </span>
               Copy Invite Link
             </button>
