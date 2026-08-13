@@ -1518,113 +1518,113 @@ Fill out the short form here to get started:
         {view === 'dashboard' ? (
           <>
             {/* Header Section */}
-            <div className="mb-8">
-              <h1 className="font-display text-2xl md:text-3xl font-extrabold text-dark-slate mb-1">
+            <div className="mb-5">
+              <h1 className="font-display text-xl md:text-2xl font-extrabold text-dark-slate mb-1">
                 Dashboard Overview
               </h1>
-              <p className="font-body text-sm text-slate-500">
+              <p className="font-body text-xs text-slate-500">
                 Track your referrals, earnings, and access marketing resources.
               </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Left Column: Referral Card & Tables */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-5">
             {/* Referral Sharing Card */}
-            <section className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 relative overflow-hidden shadow-sm">
-              <div className="flex-1 z-10 w-full space-y-3">
-                <h3 className="font-display font-bold text-xl text-dark-slate">
+            <section className="bg-white border border-slate-200 rounded-2xl p-5 relative overflow-hidden shadow-sm">
+              <div className="flex-1 z-10 w-full space-y-2">
+                <h3 className="font-display font-bold text-base text-dark-slate">
                   Your referral code is ready!
                 </h3>
-                <p className="font-body text-sm text-slate-500">
+                <p className="font-body text-xs text-slate-500">
                   Share this code with friends looking for roommates or apartments in Nigeria.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 items-stretch pt-2">
-                  <div className="flex-grow flex items-center bg-slate-100 rounded-full border border-slate-200 px-5 py-2.5">
-                    <span className="font-display font-bold text-dark-slate tracking-wider">
+                <div className="flex flex-col sm:flex-row gap-2 items-stretch pt-1">
+                  <div className="flex-grow flex items-center bg-slate-100 rounded-full border border-slate-200 px-4 py-2">
+                    <span className="font-display font-bold text-sm text-dark-slate tracking-wider">
                       {referralCode}
                     </span>
                   </div>
                   <button
                     onClick={handleCopy}
-                    className="bg-bright-cyan text-white font-display font-semibold px-6 py-2.5 rounded-full hover:bg-bright-cyan/90 transition-all flex items-center justify-center gap-2 shadow-sm text-sm"
+                    className="bg-bright-cyan text-white font-display font-semibold px-5 py-2 rounded-full hover:bg-bright-cyan/90 transition-all flex items-center justify-center gap-1.5 shadow-sm text-xs"
                   >
-                    <span className="material-symbols-outlined text-base">
+                    <span className="material-symbols-outlined text-sm">
                       content_copy
                     </span>
                     {copied ? 'Copied!' : 'Copy Link'}
                   </button>
                 </div>
-                <p className="font-body text-xs text-slate-400 pt-1">
+                <p className="font-body text-[11px] text-slate-400">
                   {referralLink}
                 </p>
               </div>
             </section>
 
             {/* Overview Metrics Grid */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
+            <section className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-1.5 min-h-[120px]">
                 <div className="flex justify-between items-center">
-                  <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                  <span className="material-symbols-outlined text-bright-cyan text-xl">
                     group
                   </span>
-                  <span className="bg-mint/10 text-mint text-xs font-bold px-2.5 py-1 rounded-full">
+                  <span className="bg-mint/10 text-mint text-[10px] font-bold px-2 py-0.5 rounded-full">
                     +12%
                   </span>
                 </div>
-                <h4 className="font-body text-xs text-slate-500 font-semibold uppercase">
+                <h4 className="font-body text-[11px] text-slate-500 font-semibold uppercase">
                   Total Referrals
                 </h4>
-                <p className="font-display text-3xl font-extrabold text-dark-slate">
+                <p className="font-display text-2xl font-extrabold text-dark-slate">
                   {totalReferrals}
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-1.5 min-h-[120px]">
                 <div className="flex justify-between items-center">
-                  <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                  <span className="material-symbols-outlined text-bright-cyan text-xl">
                     task_alt
                   </span>
                 </div>
-                <h4 className="font-body text-xs text-slate-500 font-semibold uppercase">
+                <h4 className="font-body text-[11px] text-slate-500 font-semibold uppercase">
                   Successful Payments
                 </h4>
-                <p className="font-display text-3xl font-extrabold text-dark-slate">
+                <p className="font-display text-2xl font-extrabold text-dark-slate">
                   10
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2">
+              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-1.5 min-h-[120px]">
                 <div className="flex justify-between items-center">
-                  <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                  <span className="material-symbols-outlined text-bright-cyan text-xl">
                     account_balance_wallet
                   </span>
                 </div>
-                <h4 className="font-body text-xs text-slate-500 font-semibold uppercase">
+                <h4 className="font-body text-[11px] text-slate-500 font-semibold uppercase">
                   Total Earnings
                 </h4>
-                <p className="font-display text-3xl font-extrabold text-dark-slate">
+                <p className="font-display text-2xl font-extrabold text-dark-slate">
                   ₦{totalEarnings.toLocaleString()}
                 </p>
               </div>
 
-              <div className="bg-dark-slate text-white rounded-2xl p-6 border border-slate-800 shadow-md space-y-2">
+              <div className="bg-dark-slate text-white rounded-2xl p-5 border border-slate-800 shadow-md space-y-1.5 min-h-[120px]">
                 <div className="flex justify-between items-center">
-                  <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                  <span className="material-symbols-outlined text-bright-cyan text-xl">
                     payments
                   </span>
                 </div>
-                <h4 className="font-body text-xs text-slate-400 font-semibold uppercase">
+                <h4 className="font-body text-[11px] text-slate-400 font-semibold uppercase">
                   Available for Withdrawal
                 </h4>
-                <div className="flex justify-between items-end pt-1">
-                  <p className="font-display text-3xl font-extrabold text-bright-cyan">
+                <div className="flex justify-between items-end pt-0.5">
+                  <p className="font-display text-2xl font-extrabold text-bright-cyan">
                     ₦{pendingBalance.toLocaleString()}
                   </p>
                   <button
                     onClick={handleWithdraw}
-                    className="bg-bright-cyan text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-bright-cyan/90 transition-colors"
+                    className="bg-bright-cyan text-white text-[11px] font-semibold px-3 py-1.5 rounded-full hover:bg-bright-cyan/90 transition-colors"
                   >
                     Request
                   </button>
@@ -1633,9 +1633,9 @@ Fill out the short form here to get started:
             </section>
 
             {/* Recent Referrals Table */}
-            <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-display font-bold text-lg text-dark-slate">
+            <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="font-display font-bold text-base text-dark-slate">
                   Recent Referrals
                 </h3>
                 <button
@@ -1648,53 +1648,53 @@ Fill out the short form here to get started:
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-400 uppercase">
-                      <th className="py-3 px-4">Name</th>
-                      <th className="py-3 px-4">Date Joined</th>
-                      <th className="py-3 px-4">Status</th>
+                    <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-400 uppercase">
+                      <th className="py-2 px-3">Name</th>
+                      <th className="py-2 px-3">Date Joined</th>
+                      <th className="py-2 px-3">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="text-sm font-body divide-y divide-slate-100">
+                  <tbody className="text-xs font-body divide-y divide-slate-100">
                     <tr>
-                      <td className="py-3.5 px-4 font-semibold text-dark-slate">
+                      <td className="py-2.5 px-3 font-semibold text-dark-slate">
                         John A.
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500">Oct 24, 2023</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">
+                      <td className="py-2.5 px-3 text-slate-500">Oct 24, 2023</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600">
                           Profile Created
                         </span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-3.5 px-4 font-semibold text-dark-slate">
+                      <td className="py-2.5 px-3 font-semibold text-dark-slate">
                         Sarah O.
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500">Oct 22, 2023</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-600">
+                      <td className="py-2.5 px-3 text-slate-500">Oct 22, 2023</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-600">
                           Match Found
                         </span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-3.5 px-4 font-semibold text-dark-slate">
+                      <td className="py-2.5 px-3 font-semibold text-dark-slate">
                         David E.
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500">Oct 20, 2023</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-600">
+                      <td className="py-2.5 px-3 text-slate-500">Oct 20, 2023</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-600">
                           Payment Pending
                         </span>
                       </td>
                     </tr>
                     <tr>
-                      <td className="py-3.5 px-4 font-semibold text-dark-slate">
+                      <td className="py-2.5 px-3 font-semibold text-dark-slate">
                         Grace K.
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500">Oct 18, 2023</td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600">
+                      <td className="py-2.5 px-3 text-slate-500">Oct 18, 2023</td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-600">
                           Paid
                         </span>
                       </td>
@@ -1706,10 +1706,10 @@ Fill out the short form here to get started:
           </div>
 
           {/* Right Column: Resources Panel */}
-          <div className="lg:col-span-1 space-y-6">
-            <section className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
-              <h3 className="font-display font-bold text-lg text-dark-slate flex items-center gap-2">
-                <span className="material-symbols-outlined text-bright-cyan">
+          <div className="lg:col-span-1 space-y-5">
+            <section className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <h3 className="font-display font-bold text-base text-dark-slate flex items-center gap-2">
+                <span className="material-symbols-outlined text-bright-cyan text-xl">
                   auto_awesome
                 </span>
                 Ambassador Resources
@@ -1718,14 +1718,14 @@ Fill out the short form here to get started:
                 Marketing materials to help you share and convert.
               </p>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-2 pt-1">
                 <a
                   href="/marketing-flyer.png"
                   download="Roommate-NG-Marketing-Flyer.png"
-                  className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
+                  className="p-3 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                    <span className="material-symbols-outlined text-bright-cyan text-xl">
                       campaign
                     </span>
                     <div>
@@ -1742,10 +1742,10 @@ Fill out the short form here to get started:
 
                 <div
                   onClick={handleCopyCaption}
-                  className="p-4 rounded-xl border border-slate-200 hover:border-emerald-500 transition-all flex items-center justify-between cursor-pointer group"
+                  className="p-3 rounded-xl border border-slate-200 hover:border-emerald-500 transition-all flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-emerald-500 text-2xl">
+                    <span className="material-symbols-outlined text-emerald-500 text-xl">
                       chat
                     </span>
                     <div>
@@ -1765,10 +1765,10 @@ Fill out the short form here to get started:
                 <a
                   href="/social_media_asset.png"
                   download="Roommate-NG-Social-Media-Asset.png"
-                  className="p-4 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
+                  className="p-3 rounded-xl border border-slate-200 hover:border-bright-cyan transition-all flex items-center justify-between cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-bright-cyan text-2xl">
+                    <span className="material-symbols-outlined text-bright-cyan text-xl">
                       image
                     </span>
                     <div>
