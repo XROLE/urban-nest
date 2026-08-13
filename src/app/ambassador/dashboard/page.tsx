@@ -14,7 +14,7 @@ import SuccessModal from '@/components/modals/SuccessModal';
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
 
-type View = 'dashboard' | 'referrals' | 'notifications' | 'settings' | 'checkings';
+type View = 'dashboard' | 'referrals' | 'earnings' | 'notifications' | 'settings' | 'checkings';
 
 interface StatusCfg {
   label: string;
@@ -215,6 +215,34 @@ const SAMPLE_REFERRALS: ReferralRow[] = [
 ];
 
 const PAGE_SIZE = 10;
+
+interface EarningsFeedItem {
+  name: string;
+  hub: string;
+  time: string;
+  amount: number;
+  status: 'Cleared' | 'Pending';
+}
+
+const SAMPLE_EARNINGS_FEED: EarningsFeedItem[] = [
+  { name: 'Chidi O.', hub: 'UNILAG Hub', time: 'Today, 10:24 AM', amount: 1000, status: 'Cleared' },
+  { name: 'Aisha M.', hub: 'UI Campus', time: 'Yesterday, 2:15 PM', amount: 1000, status: 'Pending' },
+  { name: 'Tunde B.', hub: 'Yaba Referral', time: 'Aug 12, 2023', amount: 1000, status: 'Cleared' },
+  { name: 'Ngozi K.', hub: 'UNN Hub', time: 'Aug 10, 2023', amount: 1000, status: 'Cleared' },
+];
+
+interface PayoutRow {
+  date: string;
+  ref: string;
+  amount: number;
+}
+
+const SAMPLE_PAYOUT_HISTORY: PayoutRow[] = [
+  { date: 'Aug 10, 2023', ref: 'TRF_9823719', amount: 15000 },
+  { date: 'Jul 28, 2023', ref: 'TRF_7451902', amount: 22500 },
+  { date: 'Jul 15, 2023', ref: 'TRF_3391004', amount: 10000 },
+  { date: 'Jun 30, 2023', ref: 'TRF_1102934', amount: 5500 },
+];
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
@@ -797,6 +825,28 @@ Fill out the short form here to get started:
   const totalReferrals = profile?.total_referrals ?? 24;
   const totalEarnings = profile?.total_earnings_ngn ?? 6000;
   const pendingBalance = profile?.pending_balance_ngn ?? 4500;
+  const pendingEarnings = 5000;
+
+  const maskAccountNumber = (num: string) => {
+    const clean = num.replace(/\s+/g, '');
+    if (clean.length <= 6) return clean || '0123456789';
+    return `${clean.slice(0, 3)}****${clean.slice(-3)}`;
+  };
+
+  const downloadPayoutCsv = () => {
+    const header = 'Date,Ref ID,Amount (NGN)';
+    const rows = SAMPLE_PAYOUT_HISTORY.map(
+      (r) => `${r.date},${r.ref},${r.amount.toFixed(2)}`
+    );
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'payout-history.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
@@ -1080,7 +1130,10 @@ Fill out the short form here to get started:
   const applyView = (next: View) => {
     const locked =
       isUnverified &&
-      (next === 'dashboard' || next === 'referrals' || next === 'settings');
+      (next === 'dashboard' ||
+        next === 'referrals' ||
+        next === 'earnings' ||
+        next === 'settings');
     const target = locked ? 'checkings' : next;
     setView(target);
     setSearchQuery('');
@@ -1119,6 +1172,10 @@ Fill out the short form here to get started:
           ) : view === 'settings' ? (
             <h2 className="font-display text-xl font-bold text-primary hidden md:block">
               Profile &amp; Settings
+            </h2>
+          ) : view === 'earnings' ? (
+            <h2 className="font-display text-xl font-bold text-primary hidden md:block">
+              Earnings &amp; Payouts
             </h2>
         ) : (
             <h2 className="font-display text-xl font-bold text-primary hidden md:block">
@@ -1327,6 +1384,29 @@ Fill out the short form here to get started:
                 group
               </span>
               <span className="font-body text-sm">Referrals</span>
+              {isUnverified && (
+                <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
+                  lock
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => applyView('earnings')}
+              disabled={isUnverified}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
+                view === 'earnings'
+                  ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
+            >
+              <span
+                className={`material-symbols-outlined ${
+                  view === 'earnings' ? 'icon-filled' : ''
+                }`}
+              >
+                payments
+              </span>
+              <span className="font-body text-sm">Earnings</span>
               {isUnverified && (
                 <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
                   lock
@@ -1880,6 +1960,240 @@ Fill out the short form here to get started:
                   >
                     Next
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : view === 'earnings' ? (
+          <div className="flex flex-col gap-5">
+            {/* Top Grid: Hero & Bank Info */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+              {/* Money Hero */}
+              <div className="lg:col-span-2 bg-dark-slate rounded-xl p-5 md:p-6 relative overflow-hidden shadow-sm flex flex-col justify-between min-h-[220px]">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-mint/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none" />
+                <div>
+                  <p className="font-body text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                    Available for Payout
+                  </p>
+                  <p className="font-display text-3xl md:text-4xl font-extrabold text-mint tracking-tight">
+                    ₦{pendingBalance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mt-6 gap-5 z-10">
+                  <div className="flex gap-7">
+                    <div>
+                      <p className="font-body text-[11px] font-bold text-slate-400 uppercase mb-1">
+                        Pending Earnings
+                      </p>
+                      <p className="font-body text-base text-white font-semibold">
+                        ₦{pendingEarnings.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="font-body text-[11px] font-bold text-slate-400 uppercase mb-1">
+                        Lifetime Commissions
+                      </p>
+                      <p className="font-body text-base text-white font-semibold">
+                        ₦{totalEarnings.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleWithdraw}
+                    className="bg-mint text-white font-body text-sm font-semibold py-2.5 px-5 rounded-lg hover:brightness-110 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
+                  >
+                    <span className="material-symbols-outlined text-base">
+                      account_balance_wallet
+                    </span>
+                    Request Payout
+                  </button>
+                </div>
+              </div>
+
+              {/* Payout Bank Account Card */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col h-full">
+                <div className="flex justify-between items-start mb-5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-lg bg-bright-cyan/10 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-bright-cyan text-[20px]">
+                        account_balance
+                      </span>
+                    </div>
+                    <div>
+                      <h4 className="font-body text-sm font-semibold text-dark-slate">
+                        {savedBank.bankName || 'No bank added'}
+                      </h4>
+                      {savedBank.bankCode && (
+                        <p className="font-body text-xs font-bold text-mint flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[14px]">
+                            verified
+                          </span>
+                          Verified
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={openBankModal}
+                    aria-label="Edit bank account"
+                    className="text-slate-400 hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">
+                      edit
+                    </span>
+                  </button>
+                </div>
+                <div className="mt-auto">
+                  <p className="font-body text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Account Number
+                  </p>
+                  <p className="font-body text-base text-dark-slate font-bold tracking-widest font-mono mb-3">
+                    {maskAccountNumber(savedBank.accountNumber)}
+                  </p>
+                  <p className="font-body text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Account Name
+                  </p>
+                  <p className="font-body text-sm text-dark-slate font-semibold">
+                    {savedBank.accountName || 'Your Account Name'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Grid: Feed & Logs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {/* Recent Activity */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div className="flex justify-between items-center mb-1 border-b border-slate-200 pb-3.5">
+                  <h4 className="font-display text-base font-bold text-dark-slate">
+                    Recent Activity
+                  </h4>
+                  <button
+                    onClick={() => applyView('referrals')}
+                    className="font-body text-xs font-bold text-bright-cyan hover:underline"
+                  >
+                    View All
+                  </button>
+                </div>
+                <div className="flex flex-col">
+                  {SAMPLE_EARNINGS_FEED.map((item) => {
+                    const cleared = item.status === 'Cleared';
+                    return (
+                      <div
+                        key={`${item.name}-${item.time}`}
+                        className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <div
+                            className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                              cleared
+                                ? 'bg-mint/10 text-mint'
+                                : 'bg-amber-50 text-amber-600'
+                            }`}
+                          >
+                            <span className="material-symbols-outlined text-[20px]">
+                              {cleared ? 'person_add' : 'hourglass_empty'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="font-body text-sm font-semibold text-dark-slate">
+                              {item.name}{' '}
+                              <span className="text-slate-500 font-normal">
+                                - {item.hub}
+                              </span>
+                            </p>
+                            <p className="font-body text-xs text-slate-400 mt-0.5">
+                              {item.time}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p
+                            className={`font-body text-sm font-bold ${
+                              cleared ? 'text-mint' : 'text-amber-600'
+                            }`}
+                          >
+                            +₦{item.amount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 uppercase tracking-wider ${
+                              cleared
+                                ? 'bg-mint/10 text-mint'
+                                : 'bg-amber-50 text-amber-600'
+                            }`}
+                          >
+                            {item.status}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Payout History */}
+              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-1 border-b border-slate-200 pb-3.5">
+                  <h4 className="font-display text-base font-bold text-dark-slate">
+                    Payout History
+                  </h4>
+                  <button
+                    onClick={downloadPayoutCsv}
+                    className="text-slate-400 hover:text-primary transition-colors flex items-center gap-1 font-body text-xs font-bold"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">
+                      download
+                    </span>
+                    CSV
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                        <th className="pb-2.5 border-b border-slate-200">Date</th>
+                        <th className="pb-2.5 border-b border-slate-200">
+                          Ref ID
+                        </th>
+                        <th className="pb-2.5 border-b border-slate-200 text-right">
+                          Amount
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="font-body text-sm">
+                      {SAMPLE_PAYOUT_HISTORY.map((row) => (
+                        <tr
+                          key={row.ref}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="py-3 border-b border-slate-100 text-slate-500">
+                            {row.date}
+                          </td>
+                          <td className="py-3 border-b border-slate-100 text-dark-slate font-mono">
+                            {row.ref}
+                          </td>
+                          <td className="py-3 border-b border-slate-100 text-dark-slate font-bold text-right">
+                            ₦{row.amount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
