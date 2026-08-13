@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { BASE_URL, parseApiError } from '@/lib/api';
 import { LAGOS_AREAS } from '@/lib/lagosLocations';
+import { NIGERIAN_BANKS } from '@/lib/banks';
 import Modal from '@/components/Modal';
 import SuccessModal from '@/components/modals/SuccessModal';
 
@@ -295,6 +296,111 @@ export default function AmbassadorDashboard() {
     setNetworkError('');
   };
 
+  const emptyBank = {
+    bankCode: '',
+    bankName: '',
+    accountNumber: '',
+    accountName: '',
+  };
+  const [bankDraft, setBankDraft] = useState(emptyBank);
+  const [savedBank, setSavedBank] = useState(emptyBank);
+  const bankSeededRef = useRef(false);
+  const [bankSaving, setBankSaving] = useState(false);
+  const [bankError, setBankError] = useState('');
+  const [bankSuccessOpen, setBankSuccessOpen] = useState(false);
+
+  const openBankModal = () => {
+    setBankError('');
+    setBankDraft({
+      bankCode: savedBank.bankCode,
+      bankName: savedBank.bankName,
+      accountNumber: savedBank.accountNumber,
+      accountName: savedBank.accountName || fullName,
+    });
+    setBankModalOpen(true);
+  };
+
+  const handleBankFieldChange =
+    (field: keyof typeof emptyBank) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+      setBankError('');
+      setBankDraft((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleBankSelectChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const code = e.target.value;
+    const option = NIGERIAN_BANKS.find((b) => b.code === code);
+    setBankError('');
+    setBankDraft((prev) => ({
+      ...prev,
+      bankCode: code,
+      bankName: option?.name ?? '',
+    }));
+  };
+
+  const saveBankChanges = async () => {
+    setBankError('');
+
+    const bankName = bankDraft.bankName.trim();
+    const accountNumber = bankDraft.accountNumber.trim();
+    const accountName = bankDraft.accountName.trim();
+
+    if (!bankDraft.bankCode || !bankName) {
+      setBankError('Please select a bank.');
+      return;
+    }
+    if (!/^\d{10}$/.test(accountNumber)) {
+      setBankError('Account number must be exactly 10 digits.');
+      return;
+    }
+    if (!accountName) {
+      setBankError('Account name is required.');
+      return;
+    }
+    if (accountName.length > 100) {
+      setBankError('Account name must be at most 100 characters.');
+      return;
+    }
+
+    setBankSaving(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          bankCode: bankDraft.bankCode,
+          bankName,
+          accountNumber,
+          accountName,
+        }),
+      });
+
+      if (!res.ok) {
+        setBankError(await parseApiError(res));
+        return;
+      }
+
+      const next = {
+        bankCode: bankDraft.bankCode,
+        bankName,
+        accountNumber,
+        accountName,
+      };
+      setSavedBank(next);
+      setBankModalOpen(false);
+      setBankSuccessOpen(true);
+    } catch {
+      setBankError('Something went wrong. Please try again.');
+    } finally {
+      setBankSaving(false);
+    }
+  };
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassError('');
@@ -357,6 +463,20 @@ export default function AmbassadorDashboard() {
       networkSeededRef.current = true;
       setNetworkDraft(seeded);
       setSavedNetwork(seeded);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (profile && !bankSeededRef.current) {
+      const seeded = {
+        bankCode: profile.bank_code ?? '',
+        bankName: profile.bank_name ?? '',
+        accountNumber: profile.account_number ?? '',
+        accountName: profile.account_name ?? '',
+      };
+      bankSeededRef.current = true;
+      setBankDraft(seeded);
+      setSavedBank(seeded);
     }
   }, [profile]);
 
@@ -1853,7 +1973,7 @@ Fill out the short form here to get started:
                     <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm relative">
                       <button
                         type="button"
-                        onClick={() => setBankModalOpen(true)}
+                        onClick={openBankModal}
                         className="absolute top-4 right-4 text-slate-500 hover:text-primary"
                       >
                         <span className="material-symbols-outlined text-[20px]">
@@ -1874,7 +1994,7 @@ Fill out the short form here to get started:
                             Bank Name
                           </span>
                           <span className="font-body text-sm font-bold text-dark-slate">
-                            Access Bank
+                            {savedBank.bankName || 'Access Bank'}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1882,7 +2002,7 @@ Fill out the short form here to get started:
                             Account Number
                           </span>
                           <span className="font-body text-sm font-bold text-dark-slate">
-                            0123456789
+                            {savedBank.accountNumber || '0123456789'}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -1890,7 +2010,7 @@ Fill out the short form here to get started:
                             Account Name
                           </span>
                           <span className="font-body text-sm font-bold text-dark-slate">
-                            Bella Klasha
+                            {savedBank.accountName || 'Your Account Name'}
                           </span>
                         </div>
                       </div>
@@ -2573,17 +2693,18 @@ Fill out the short form here to get started:
               <div className="relative">
                 <select
                   id="bank_name"
-                  defaultValue="access"
+                  value={bankDraft.bankCode}
+                  onChange={handleBankSelectChange}
                   className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10"
                 >
                   <option disabled value="">
                     Select a bank
                   </option>
-                  <option value="access">Access Bank</option>
-                  <option value="gtb">Guaranty Trust Bank</option>
-                  <option value="zenith">Zenith Bank</option>
-                  <option value="fbn">First Bank of Nigeria</option>
-                  <option value="uba">United Bank for Africa</option>
+                  {NIGERIAN_BANKS.map((bank) => (
+                    <option key={bank.code} value={bank.code}>
+                      {bank.name}
+                    </option>
+                  ))}
                 </select>
                 <span className="material-symbols-outlined pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
                   expand_more
@@ -2601,8 +2722,10 @@ Fill out the short form here to get started:
               <input
                 id="account_number"
                 type="text"
-                defaultValue="0123456789"
+                inputMode="numeric"
                 maxLength={10}
+                value={bankDraft.accountNumber}
+                onChange={handleBankFieldChange('accountNumber')}
                 className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm font-mono text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
               />
             </div>
@@ -2613,28 +2736,27 @@ Fill out the short form here to get started:
                 className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide flex justify-between"
               >
                 Account Name
-                <span className="text-slate-400 font-normal normal-case tracking-normal">
-                  Auto-resolved
-                </span>
               </label>
-              <div className="relative">
-                <input
-                  id="account_name"
-                  type="text"
-                  readOnly
-                  defaultValue="Bella Klasha"
-                  className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-slate-500 focus:outline-none cursor-not-allowed"
-                />
-                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-mint">
-                  <span className="material-symbols-outlined text-[20px]">
-                    check_circle
-                  </span>
-                </span>
-              </div>
+              <input
+                id="account_name"
+                type="text"
+                maxLength={100}
+                value={bankDraft.accountName}
+                onChange={handleBankFieldChange('accountName')}
+                placeholder="Enter account name"
+                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+              />
               <p className="font-body text-xs text-slate-400">
-                Name must match your profile identity.
+                Please enter the name on the account.
               </p>
             </div>
+
+            {bankError && (
+              <p className="font-body text-sm text-error flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {bankError}
+              </p>
+            )}
           </form>
         </div>
 
@@ -2649,10 +2771,11 @@ Fill out the short form here to get started:
           </button>
           <button
             type="button"
-            onClick={() => setBankModalOpen(false)}
-            className="px-5 py-2.5 rounded-lg bg-bright-cyan text-white font-body text-sm hover:brightness-110 transition-all shadow-sm flex items-center gap-2"
+            onClick={saveBankChanges}
+            disabled={bankSaving}
+            className="px-5 py-2.5 rounded-lg bg-bright-cyan text-white font-body text-sm hover:brightness-110 transition-all shadow-sm flex items-center gap-2 disabled:opacity-60"
           >
-            Save Changes
+            {bankSaving ? 'Saving…' : 'Save Changes'}
           </button>
         </div>
       </Modal>
@@ -2877,6 +3000,15 @@ Fill out the short form here to get started:
           onClose={() => setNetworkSuccessOpen(false)}
           details="Your network influence details have been updated successfully."
           onSecondary={() => setNetworkSuccessOpen(false)}
+        />
+      )}
+
+      {bankSuccessOpen && (
+        <SuccessModal
+          open={bankSuccessOpen}
+          onClose={() => setBankSuccessOpen(false)}
+          details="Your bank account details have been updated successfully."
+          onPrimary={() => setBankSuccessOpen(false)}
         />
       )}
     </div>

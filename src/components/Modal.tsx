@@ -26,6 +26,13 @@ export default function Modal({
   preventDismiss = false,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  const preventDismissRef = useRef(preventDismiss);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    preventDismissRef.current = preventDismiss;
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -34,7 +41,7 @@ export default function Modal({
     document.body.style.overflow = 'hidden';
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!preventDismiss && e.key === 'Escape') onClose();
+      if (!preventDismissRef.current && e.key === 'Escape') onCloseRef.current();
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -48,7 +55,7 @@ export default function Modal({
       document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [open, onClose, preventDismiss]);
+  }, [open]);
 
   if (!open) return null;
 
