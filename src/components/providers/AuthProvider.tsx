@@ -15,6 +15,8 @@ export interface AmbassadorUser {
   full_name?: string;
   email?: string;
   whatsapp_number?: string;
+  email_verified?: boolean;
+  whatsapp_verified?: boolean;
   role?: string;
   is_active?: boolean;
 }
@@ -41,6 +43,8 @@ export interface AmbassadorProfile {
   primary_operating?: string | null;
   secondary_operating?: string | null;
   verification_status?: string | null;
+  email_verified?: boolean;
+  whatsapp_verified?: boolean;
   ambassador_ranking?: string | null;
   state_covering?: string[];
   social_media_platform?: string[];

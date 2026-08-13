@@ -254,14 +254,30 @@ export default function AmbassadorDashboard() {
   const [notificationFilter, setNotificationFilter] =
     useState<NotificationFilter>('All');
   const [checkingsContact, setCheckingsContact] = useState({
-    email: 'jane.doe@example.com',
-    whatsapp: '+234 *** *** **99',
+    email: user?.email ?? 'jane.doe@example.com',
+    whatsapp: user?.whatsapp_number ?? '+234 *** *** **99',
   });
   const [editContactOpen, setEditContactOpen] = useState(false);
   const [editContactDraft, setEditContactDraft] = useState({
-    email: 'jane.doe@example.com',
-    whatsapp: '+234 *** *** **99',
+    email: user?.email ?? 'jane.doe@example.com',
+    whatsapp: user?.whatsapp_number ?? '+234 *** *** **99',
   });
+
+  const [sessionVerified, setSessionVerified] = useState<{
+    email: boolean;
+    whatsapp: boolean;
+  }>({ email: false, whatsapp: false });
+  const [verifyChannel, setVerifyChannel] = useState<'email' | 'whatsapp' | null>(
+    null
+  );
+  const [verifying, setVerifying] = useState<'email' | 'whatsapp' | null>(null);
+  const [verifySubmitting, setVerifySubmitting] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
+  const [verifySuccess, setVerifySuccess] = useState('');
+  const [otp, setOtp] = useState<string[]>(['', '', '', '']);
+  const [cooldown, setCooldown] = useState(0);
+  const [verifyReference, setVerifyReference] = useState('');
+  const otpInputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -551,6 +567,12 @@ export default function AmbassadorDashboard() {
     VERIFICATION_STATUS_CONFIG.unverified;
   const isUnverified = verificationStatus === 'unverified';
 
+  const emailVerified =
+    Boolean(profile?.email_verified ?? user?.email_verified) || sessionVerified.email;
+  const whatsappVerified =
+    Boolean(profile?.whatsapp_verified ?? user?.whatsapp_verified) ||
+    sessionVerified.whatsapp;
+
   const ranking = (profile?.ambassador_ranking ?? 'bronze').toLowerCase();
   const rankingCfg =
     AMBASSADOR_RANKING_CONFIG[ranking] ?? AMBASSADOR_RANKING_CONFIG.bronze;
@@ -670,6 +692,147 @@ Fill out the short form here to get started:
     setCheckingsContact(editContactDraft);
     setEditContactOpen(false);
   };
+
+  const channelTarget = (channel: 'email' | 'whatsapp') =>
+    channel === 'email'
+      ? user?.email ?? checkingsContact.email
+      : user?.whatsapp_number ?? checkingsContact.whatsapp;
+
+  const sendVerification = async (channel: 'email' | 'whatsapp') => {
+    setVerifyError('');
+    setVerifySuccess('');
+    setVerifying(channel);
+    try {
+      const res = await fetch(`${BASE_URL}/verification/initiate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ channel, to: channelTarget(channel) }),
+      });
+
+      if (!res.ok) {
+        setVerifyError(await parseApiError(res));
+        return;
+      }
+
+      const data = (await res.json()) as {
+        data?: { reference?: string; token?: string; id?: string; verificationId?: string };
+      };
+      const ref =
+        data?.data?.reference ||
+        data?.data?.token ||
+        data?.data?.id ||
+        data?.data?.verificationId ||
+        '';
+      setVerifyReference(ref);
+      setVerifyChannel(channel);
+      setOtp(['', '', '', '']);
+      setCooldown(59);
+    } catch {
+      setVerifyError('Something went wrong. Please try again.');
+    } finally {
+      setVerifying(null);
+    }
+  };
+
+  const confirmVerification = async () => {
+    if (verifyChannel === null) return;
+    const code = otp.join('');
+    if (code.length !== 4) {
+      setVerifyError('Please enter the 4-digit code.');
+      return;
+    }
+    setVerifyError('');
+    setVerifySubmitting(true);
+    try {
+      const body: {
+        channel: 'email' | 'whatsapp';
+        to: string;
+        code: string;
+        reference?: string;
+      } = {
+        channel: verifyChannel,
+        to: channelTarget(verifyChannel),
+        code,
+      };
+      if (verifyReference) body.reference = verifyReference;
+
+      const res = await fetch(`${BASE_URL}/verification/confirm`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        setVerifyError(await parseApiError(res));
+        return;
+      }
+
+      if (verifyChannel === 'email')
+        setSessionVerified((prev) => ({ ...prev, email: true }));
+      else setSessionVerified((prev) => ({ ...prev, whatsapp: true }));
+
+      setVerifySuccess(
+        `Your ${verifyChannel === 'email' ? 'email address' : 'WhatsApp number'} has been verified successfully.`
+      );
+      setTimeout(() => {
+        setVerifyChannel(null);
+        setVerifySuccess('');
+        setOtp(['', '', '', '']);
+        setCooldown(0);
+        setVerifyReference('');
+      }, 1500);
+    } catch {
+      setVerifyError('Something went wrong. Please try again.');
+    } finally {
+      setVerifySubmitting(false);
+    }
+  };
+
+  const resendCode = async () => {
+    if (verifyChannel === null || cooldown > 0) return;
+    setVerifyError('');
+    setVerifySuccess('');
+    setOtp(['', '', '', '']);
+    await sendVerification(verifyChannel);
+  };
+
+  const closeVerifyModal = () => {
+    setVerifyChannel(null);
+    setOtp(['', '', '', '']);
+    setCooldown(0);
+    setVerifyReference('');
+    setVerifyError('');
+    setVerifySuccess('');
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    const next = [...otp];
+    next[index] = digit;
+    setOtp(next);
+    if (digit && index < 3) otpInputsRef.current[index + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (e.key === 'Backspace' && otp[index] === '' && index > 0) {
+      otpInputsRef.current[index - 1]?.focus();
+    }
+  };
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
 
   const handleLogout = () => {
     logout();
@@ -2306,27 +2469,45 @@ Fill out the short form here to get started:
                         <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                           <span className="material-symbols-outlined">mail</span>
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-x-2">
                           <h4 className="font-body text-sm font-semibold text-primary mb-1">
                             Verify Email Address
                           </h4>
                           <p className="font-body text-sm text-on-surface-variant">
                             {checkingsContact.email}
                           </p>
-                          <button
-                            aria-label="Edit Email"
-                            onClick={openEditContact}
-                            className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">
-                              edit
-                            </span>
-                          </button>
+                          {!emailVerified && (
+                            <button
+                              aria-label="Edit Email"
+                              onClick={openEditContact}
+                              className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">
+                                edit
+                              </span>
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <button className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors">
-                        Verify Now
-                      </button>
+                      {emailVerified ? (
+                        <span className="flex items-center gap-1 text-mint font-body text-xs font-semibold px-4 py-2">
+                          <span className="material-symbols-outlined text-[16px]">
+                            verified
+                          </span>
+                          Verified
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => sendVerification('email')}
+                          disabled={verifying === 'email'}
+                          className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                          {verifying === 'email' && (
+                            <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          )}
+                          {verifying === 'email' ? 'Sending...' : 'Verify Now'}
+                        </button>
+                      )}
                     </div>
                     {/* WhatsApp Row */}
                     <div className="flex items-center justify-between p-3 bg-background rounded-lg border border-slate-200 hover:shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1)] transition-shadow">
@@ -2334,27 +2515,45 @@ Fill out the short form here to get started:
                         <div className="w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
                           <span className="material-symbols-outlined">chat</span>
                         </div>
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-x-2">
                           <h4 className="font-body text-sm font-semibold text-primary mb-1">
                             Verify WhatsApp Number
                           </h4>
                           <p className="font-body text-sm text-on-surface-variant">
                             {checkingsContact.whatsapp}
                           </p>
-                          <button
-                            aria-label="Edit WhatsApp Number"
-                            onClick={openEditContact}
-                            className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">
-                              edit
-                            </span>
-                          </button>
+                          {!whatsappVerified && (
+                            <button
+                              aria-label="Edit WhatsApp Number"
+                              onClick={openEditContact}
+                              className="ml-2 text-on-surface-variant hover:text-primary transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">
+                                edit
+                              </span>
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <button className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors">
-                        Verify Now
-                      </button>
+                      {whatsappVerified ? (
+                        <span className="flex items-center gap-1 text-mint font-body text-xs font-semibold px-4 py-2">
+                          <span className="material-symbols-outlined text-[16px]">
+                            verified
+                          </span>
+                          Verified
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => sendVerification('whatsapp')}
+                          disabled={verifying === 'whatsapp'}
+                          className="text-white px-4 py-2 rounded-lg font-body text-xs font-semibold bg-sky-blue hover:bg-sky-blue/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                          {verifying === 'whatsapp' && (
+                            <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                          )}
+                          {verifying === 'whatsapp' ? 'Sending...' : 'Verify Now'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -3087,6 +3286,116 @@ Fill out the short form here to get started:
           details="Your password has been updated successfully."
           onPrimary={() => applyView('dashboard')}
         />
+      )}
+
+      {verifyChannel && (
+        <Modal open onClose={closeVerifyModal} size="md" title="Enter Verification Code" preventDismiss={verifySubmitting}>
+          <div className="relative p-8 pb-4 text-center">
+            <button
+              type="button"
+              aria-label="Close modal"
+              onClick={closeVerifyModal}
+              disabled={verifySubmitting}
+              className="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low disabled:opacity-40"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <div className="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mx-auto mb-6 text-secondary">
+              <span className="material-symbols-outlined text-3xl">
+                lock_person
+              </span>
+            </div>
+            <h3 className="font-display text-xl font-semibold text-primary mb-2">
+              Enter Verification Code
+            </h3>
+            <p className="font-body text-sm text-on-surface-variant px-4">
+              We&apos;ve sent a 4-digit code to{' '}
+              <span className="font-bold text-on-surface">
+                {verifyChannel === 'email'
+                  ? checkingsContact.email
+                  : checkingsContact.whatsapp}
+              </span>
+              . Please enter it below to continue.
+            </p>
+          </div>
+
+          <div className="p-8 pt-6">
+            <form
+              className="space-y-6"
+              onSubmit={(e) => {
+                e.preventDefault();
+                confirmVerification();
+              }}
+            >
+              <div className="flex gap-2 sm:gap-3 justify-center" role="group" aria-label="Verification code">
+                {otp.map((digit, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => {
+                      otpInputsRef.current[i] = el;
+                    }}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={1}
+                    autoFocus={i === 0}
+                    aria-label={`Digit ${i + 1}`}
+                    className="w-12 h-14 sm:w-14 sm:h-16 text-center font-display text-xl text-primary bg-surface border border-outline-variant rounded-lg focus:border-secondary focus:ring-2 focus:ring-secondary/20 focus:bg-surface-container-lowest transition-all outline-none"
+                  />
+                ))}
+              </div>
+
+              {verifyError && (
+                <p className="font-body text-sm text-error flex items-center gap-1.5 justify-center">
+                  <span className="material-symbols-outlined text-[16px]">
+                    error
+                  </span>
+                  {verifyError}
+                </p>
+              )}
+
+              {verifySuccess && (
+                <p className="font-body text-sm text-mint flex items-center gap-1.5 justify-center">
+                  <span className="material-symbols-outlined text-[16px]">
+                    check_circle
+                  </span>
+                  {verifySuccess}
+                </p>
+              )}
+
+              <div className="space-y-4">
+                <button
+                  type="submit"
+                  disabled={verifySubmitting || otp.join('').length !== 4 || Boolean(verifySuccess)}
+                  className="w-full bg-sky-blue text-white font-body text-sm font-semibold py-4 rounded-xl hover:bg-[#0284c7] transition-colors shadow-[0_4px_14px_0_rgba(56,189,248,0.39)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {verifySubmitting && (
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  )}
+                  {verifySubmitting ? 'Verifying...' : 'Verify Code'}
+                </button>
+                <div className="text-center font-body text-sm">
+                  <span className="text-on-surface-variant">
+                    Didn&apos;t receive the code?{' '}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={resendCode}
+                    disabled={cooldown > 0 || verifySubmitting || Boolean(verifySuccess)}
+                    className="text-secondary font-semibold hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Resend{' '}
+                    {cooldown > 0 && (
+                      <span className="text-on-surface-variant">({cooldown}s)</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </Modal>
       )}
 
       {networkSuccessOpen && (
