@@ -7,11 +7,12 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
-  size?: 'md' | 'lg';
+  size?: 'xs' | 'md' | 'lg';
   preventDismiss?: boolean;
 }
 
 const sizeClasses = {
+  xs: 'max-w-[20rem]',
   md: 'max-w-lg',
   lg: 'max-w-2xl',
 };

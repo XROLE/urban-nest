@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { BASE_URL, parseApiError } from '@/lib/api';
 import Modal from '@/components/Modal';
+import SuccessModal from '@/components/modals/SuccessModal';
 
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
@@ -164,6 +165,11 @@ export default function AmbassadorDashboard() {
   const [withdrawn, setWithdrawn] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const profileImageRef = useRef<HTMLInputElement>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [profilePreview, setProfilePreview] = useState<string | null>(null);
+  const [selectedProfileFile, setSelectedProfileFile] = useState<File | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [settingsTab, setSettingsTab] =
     useState<SettingsTab>('Personal Details');
@@ -200,12 +206,11 @@ export default function AmbassadorDashboard() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passSubmitting, setPassSubmitting] = useState(false);
   const [passError, setPassError] = useState('');
-  const [passSuccess, setPassSuccess] = useState('');
+  const [passSuccessOpen, setPassSuccessOpen] = useState(false);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setPassError('');
-    setPassSuccess('');
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPassError('Please fill in all password fields.');
@@ -232,7 +237,7 @@ export default function AmbassadorDashboard() {
         return;
       }
 
-      setPassSuccess('Password updated successfully.');
+      setPassSuccessOpen(true);
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
@@ -282,14 +287,73 @@ Fill out the short form here to get started:
     setTimeout(() => setCaptionCopied(false), 2500);
   };
 
-  const handleProfileImageChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const openProfileModal = () => {
+    setProfilePreview(profileImage);
+    setSelectedProfileFile(null);
+    setProfileError('');
+    setProfileModalOpen(true);
+  };
+
+  const closeProfileModal = () => {
+    setProfileModalOpen(false);
+    setProfilePreview(null);
+    setSelectedProfileFile(null);
+    setProfileError('');
+  };
+
+  const handleProfileFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    setProfileError('');
     if (file && file.type.startsWith('image/')) {
-      setProfileImage(URL.createObjectURL(file));
+      if (file.size > 2 * 1024 * 1024) {
+        setProfileError('Image must be at most 2MB.');
+        return;
+      }
+      setSelectedProfileFile(file);
+      const reader = new FileReader();
+      reader.onload = () => setProfilePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    } else if (file) {
+      setProfileError('Please select a valid image file.');
     }
     e.target.value = '';
+  };
+
+  const saveProfilePicture = async () => {
+    if (!selectedProfileFile) {
+      setProfileError('Please select an image to upload.');
+      return;
+    }
+    setProfileError('');
+    setProfileSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedProfileFile);
+
+      const res = await fetch(`${BASE_URL}/ambassadors/me/picture`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        setProfileError(await parseApiError(res));
+        return;
+      }
+
+      const data = (await res.json()) as {
+        data?: { profile_picture_url?: string };
+      };
+      const url = data?.data?.profile_picture_url;
+      if (url) setProfileImage(url);
+      closeProfileModal();
+    } catch {
+      setProfileError('Something went wrong. Please try again.');
+    } finally {
+      setProfileSaving(false);
+    }
   };
 
   const handleWithdraw = () => {
@@ -1141,83 +1205,85 @@ Fill out the short form here to get started:
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={handleProfileImageChange}
+                onChange={handleProfileFileSelect}
               />
               {/* Hero Identity Card */}
               <div className="lg:col-span-4 bg-white border border-slate-200 rounded-2xl shadow-sm lg:sticky lg:top-24">
-                <div className="flex flex-col items-center text-center p-5">
-                  <div className="relative mb-3">
-                    <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-slate-100 shadow-sm">
-                      <Image
-                        src={profileImage || '/default-avatar.svg'}
-                        alt="Profile avatar"
-                        width={80}
-                        height={80}
-                        unoptimized
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      aria-label="Change profile photo"
-                      onClick={() => profileImageRef.current?.click()}
-                      className="absolute bottom-0 right-0 bg-bright-cyan text-white p-1.5 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95 cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">
-                        edit
-                      </span>
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col items-center mb-4">
-                    <h2 className="font-display text-lg font-bold text-dark-slate mb-1">
-                      {fullName}
-                    </h2>
-                    <div className="flex items-center gap-1 text-mint mb-2">
-                      <span
-                        className="material-symbols-outlined text-[18px]"
-                        style={{ fontVariationSettings: `'FILL' 1` }}
+                <div className="p-5">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-center gap-5">
+                    <div className="relative shrink-0">
+                      <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg ring-4 ring-bright-cyan/20">
+                        <Image
+                          src={profileImage || '/default-avatar.svg'}
+                          alt="Profile avatar"
+                          width={160}
+                          height={160}
+                          unoptimized
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        aria-label="Change profile photo"
+                        onClick={openProfileModal}
+                        className="absolute bottom-0 right-0 bg-bright-cyan text-white p-2 rounded-full shadow-md hover:brightness-110 transition-all active:scale-95 cursor-pointer"
                       >
-                        verified
-                      </span>
-                      <span className="font-body text-xs font-bold uppercase tracking-wider">
-                        Verified
-                      </span>
+                        <span className="material-symbols-outlined text-[18px]">
+                          edit
+                        </span>
+                      </button>
                     </div>
-                    <div className="inline-flex items-center px-3 py-0.5 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
-                      <span className="material-symbols-outlined text-[16px] mr-1.5">
-                        emoji_events
-                      </span>
-                      <span className="font-body text-xs font-bold uppercase tracking-wider">
-                        Gold Ambassador
-                      </span>
+
+                    <div className="flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 flex-1">
+                      <h2 className="font-display text-base font-bold text-dark-slate mb-1 break-words">
+                        {fullName}
+                      </h2>
+                      <div className="flex items-center gap-1 text-mint mb-2">
+                        <span
+                          className="material-symbols-outlined text-[16px]"
+                          style={{ fontVariationSettings: `'FILL' 1` }}
+                        >
+                          verified
+                        </span>
+                        <span className="font-body text-[11px] font-bold uppercase tracking-wider">
+                          Verified
+                        </span>
+                      </div>
+                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
+                        <span className="material-symbols-outlined text-[14px] mr-1">
+                          emoji_events
+                        </span>
+                        <span className="font-body text-[10px] font-bold uppercase tracking-wider">
+                          Gold Ambassador
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="w-full pt-4 border-t border-slate-200">
+                  <div className="w-full pt-4 mt-4 border-t border-slate-200">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="flex flex-col items-center p-2 rounded-lg bg-slate-50">
-                        <span className="text-[10px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
+                        <span className="text-[9px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
                           Member Since
                         </span>
-                        <span className="font-body text-sm text-dark-slate">
+                        <span className="font-body text-xs text-dark-slate">
                           Oct 2023
                         </span>
                       </div>
                       <div className="flex flex-col items-center p-2 rounded-lg bg-slate-50">
-                        <span className="text-[10px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
+                        <span className="text-[9px] font-body text-slate-500 uppercase tracking-wider mb-0.5">
                           Total Matches
                         </span>
-                        <span className="font-body text-sm text-dark-slate">
+                        <span className="font-body text-xs text-dark-slate">
                           142
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center justify-center gap-1 mt-3 text-primary">
-                      <span className="material-symbols-outlined text-[16px]">
+                      <span className="material-symbols-outlined text-[15px]">
                         location_on
                       </span>
-                      <span className="font-body text-sm">
+                      <span className="font-body text-xs">
                         Lagos, Nigeria
                       </span>
                     </div>
@@ -1573,12 +1639,6 @@ Fill out the short form here to get started:
                         <p className="font-body text-sm text-error flex items-center gap-1.5">
                           <span className="material-symbols-outlined text-[16px]">error</span>
                           {passError}
-                        </p>
-                      )}
-                      {passSuccess && (
-                        <p className="font-body text-sm text-green-600 flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
-                          {passSuccess}
                         </p>
                       )}
 
@@ -2569,6 +2629,106 @@ Fill out the short form here to get started:
             </div>
           </div>
         </div>
+      )}
+
+      {profileModalOpen && (
+        <Modal open={profileModalOpen} onClose={closeProfileModal} size="md" title="Update Profile Picture">
+          <div className="flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="px-6 py-5 border-b border-outline-variant flex items-center justify-between">
+              <h2 className="font-display text-base font-bold text-on-surface">
+                Update Profile Picture
+              </h2>
+              <button
+                type="button"
+                onClick={closeProfileModal}
+                className="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-variant/50"
+                aria-label="Close"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6 flex flex-col items-center gap-5 overflow-y-auto">
+              <div className="w-40 h-40 rounded-full overflow-hidden ring-4 ring-white shadow-xl relative">
+                <Image
+                  src={profilePreview || profileImage || '/default-avatar.svg'}
+                  alt="Current Profile Picture"
+                  width={160}
+                  height={160}
+                  unoptimized
+                  className="w-full h-full object-cover"
+                />
+                {!profilePreview && profileImage && (
+                  <div className="absolute inset-0 bg-primary/0" />
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => profileImageRef.current?.click()}
+                className="w-full max-w-[320px] border-2 border-dashed border-outline-variant rounded-2xl py-5 flex flex-col items-center justify-center gap-2 bg-surface-container-low hover:bg-surface-container hover:border-primary-container/40 transition-colors cursor-pointer"
+              >
+                <div className="w-9 h-9 rounded-full bg-primary-container/10 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-primary-container text-[20px]">
+                    cloud_upload
+                  </span>
+                </div>
+                <div className="text-center">
+                  <p className="font-body text-sm text-on-surface">
+                    <span className="font-bold text-primary-container">
+                      Click to upload
+                    </span>{' '}
+                    or drag and drop
+                  </p>
+                  <p className="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+                    SVG, PNG, JPG or GIF · Max 2MB
+                  </p>
+                </div>
+              </button>
+
+              <p className="font-label-sm text-label-sm text-on-surface-variant text-center px-4">
+                Recommended size: 400x400px.
+              </p>
+
+              {profileError && (
+                <p className="font-body text-sm text-error flex items-center gap-1.5 w-full justify-center">
+                  <span className="material-symbols-outlined text-[16px]">error</span>
+                  {profileError}
+                </p>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex justify-end gap-3 rounded-b-[16px]">
+              <button
+                type="button"
+                onClick={closeProfileModal}
+                className="px-5 py-2.5 rounded-[12px] border border-outline-variant font-body text-sm font-semibold text-primary-container hover:bg-surface-variant transition-colors bg-surface"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveProfilePicture}
+                disabled={profileSaving}
+                className="px-5 py-2.5 rounded-[12px] font-body text-sm font-semibold text-white shadow-sm hover:shadow-md hover:brightness-110 active:scale-95 transition-all bg-bright-cyan disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {profileSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {passSuccessOpen && (
+        <SuccessModal
+          open={passSuccessOpen}
+          onClose={() => setPassSuccessOpen(false)}
+          details="Your password has been updated successfully."
+          onPrimary={() => applyView('dashboard')}
+        />
       )}
     </div>
   );
