@@ -16,6 +16,63 @@ const contactFieldClass =
 
 type View = 'dashboard' | 'referrals' | 'notifications' | 'settings' | 'checkings';
 
+interface StatusCfg {
+  label: string;
+  icon: string;
+  className: string;
+}
+
+const VERIFICATION_STATUS_CONFIG: Record<string, StatusCfg> = {
+  unverified: {
+    label: 'Unverified',
+    icon: 'person',
+    className: 'bg-slate-100 text-slate-600 border-slate-200',
+  },
+  pending: {
+    label: 'Pending',
+    icon: 'hourglass_bottom',
+    className: 'bg-amber-50 text-amber-600 border-amber-200',
+  },
+  verified: {
+    label: 'Verified',
+    icon: 'verified',
+    className: 'bg-mint/10 text-mint border-mint/20',
+  },
+  rejected: {
+    label: 'Rejected',
+    icon: 'cancel',
+    className: 'bg-error/10 text-error border-error/20',
+  },
+};
+
+const AMBASSADOR_RANKING_CONFIG: Record<string, StatusCfg> = {
+  bronze: {
+    label: 'Bronze',
+    icon: 'military_tech',
+    className: 'from-amber-100 to-amber-200 text-amber-900',
+  },
+  silver: {
+    label: 'Silver',
+    icon: 'military_tech',
+    className: 'from-slate-100 to-slate-200 text-slate-700',
+  },
+  gold: {
+    label: 'Gold',
+    icon: 'emoji_events',
+    className: 'from-yellow-100 to-yellow-200 text-yellow-800',
+  },
+  platinum: {
+    label: 'Platinum',
+    icon: 'workspace_premium',
+    className: 'from-cyan-100 to-cyan-200 text-cyan-800',
+  },
+  diamond: {
+    label: 'Diamond',
+    icon: 'diamond',
+    className: 'from-teal-100 to-teal-200 text-teal-800',
+  },
+};
+
 type SettingsTab =
   | 'Personal Details'
   | 'Payouts & Finance'
@@ -482,6 +539,16 @@ export default function AmbassadorDashboard() {
 
   const fullName = user?.full_name || 'Ambassador';
   const firstName = fullName.trim().split(/\s+/)[0] || 'Ambassador';
+
+  const verificationStatus =
+    (profile?.verification_status ?? 'unverified').toLowerCase();
+  const status =
+    VERIFICATION_STATUS_CONFIG[verificationStatus] ??
+    VERIFICATION_STATUS_CONFIG.unverified;
+
+  const ranking = (profile?.ambassador_ranking ?? 'bronze').toLowerCase();
+  const rankingCfg =
+    AMBASSADOR_RANKING_CONFIG[ranking] ?? AMBASSADOR_RANKING_CONFIG.bronze;
 
   const referralCode = profile?.referral_code || 'SN00';
   const referralLink = `https://urban-nest-tawny.vercel.app?ref=${referralCode}`;
@@ -1462,23 +1529,23 @@ Fill out the short form here to get started:
                       <h2 className="font-display text-base font-bold text-dark-slate mb-1 break-words">
                         {fullName}
                       </h2>
-                      <div className="flex items-center gap-1 text-mint mb-2">
+                      <div className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border mb-2 ${status.className}`}>
                         <span
-                          className="material-symbols-outlined text-[16px]"
+                          className="material-symbols-outlined text-[14px]"
                           style={{ fontVariationSettings: `'FILL' 1` }}
                         >
-                          verified
+                          {status.icon}
                         </span>
                         <span className="font-body text-[11px] font-bold uppercase tracking-wider">
-                          Verified
+                          {status.label}
                         </span>
                       </div>
-                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-gradient-to-tr from-[#0BC5EA] to-[rgb(0,102,139)] text-white shadow-sm">
-                        <span className="material-symbols-outlined text-[14px] mr-1">
-                          emoji_events
+                      <div className={`inline-flex items-center px-2 py-0.5 rounded-full bg-gradient-to-tr ${rankingCfg.className} shadow-sm`}>
+                        <span className="material-symbols-outlined text-[13px] mr-1">
+                          {rankingCfg.icon}
                         </span>
-                        <span className="font-body text-[10px] font-bold uppercase tracking-wider">
-                          Gold Ambassador
+                        <span className="font-body text-[9px] font-bold uppercase tracking-wider">
+                          {rankingCfg.label}
                         </span>
                       </div>
                     </div>
