@@ -19,6 +19,12 @@ export interface AmbassadorUser {
   is_active?: boolean;
 }
 
+export interface EmergencyContactRecord {
+  name?: string;
+  phone?: string;
+  relationship?: string;
+}
+
 export interface AmbassadorProfile {
   id?: string;
   user_id?: string;
@@ -28,6 +34,22 @@ export interface AmbassadorProfile {
   pending_balance_ngn?: number;
   campus_or_region?: string | null;
   is_approved?: boolean;
+  profile_picture_url?: string | null;
+  emergency_contact?: EmergencyContactRecord | null;
+  audience_category?: string[];
+  institution_or_organization?: string | null;
+  primary_operating?: string | null;
+  secondary_operating?: string | null;
+  verification_status?: string | null;
+  ambassador_ranking?: string | null;
+  state_covering?: string[];
+  social_media_platform?: string[];
+  social_media_handle?: string | null;
+  social_media_target_audience?: string | null;
+  bank_code?: string | null;
+  bank_name?: string | null;
+  account_number?: string | null;
+  account_name?: string | null;
 }
 
 interface AuthSession {

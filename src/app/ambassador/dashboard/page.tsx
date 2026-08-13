@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { BASE_URL, parseApiError } from '@/lib/api';
+import { LAGOS_AREAS } from '@/lib/lagosLocations';
 import Modal from '@/components/Modal';
 import SuccessModal from '@/components/modals/SuccessModal';
 
@@ -163,7 +164,9 @@ export default function AmbassadorDashboard() {
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(
+    profile?.profile_picture_url ?? null
+  );
   const profileImageRef = useRef<HTMLInputElement>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
@@ -207,6 +210,90 @@ export default function AmbassadorDashboard() {
   const [passSubmitting, setPassSubmitting] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccessOpen, setPassSuccessOpen] = useState(false);
+  const [networkSuccessOpen, setNetworkSuccessOpen] = useState(false);
+  const [networkError, setNetworkError] = useState('');
+  const [networkSaving, setNetworkSaving] = useState(false);
+
+  const initialNetwork = () => ({
+    audienceCategory:
+      (Array.isArray(profile?.audience_category) && profile!.audience_category![0]) ||
+      '',
+    institutionOrOrganization: profile?.institution_or_organization ?? '',
+    primaryOperating: profile?.primary_operating ?? '',
+    secondaryOperating: profile?.secondary_operating ?? '',
+  });
+
+  const [networkDraft, setNetworkDraft] = useState(initialNetwork);
+  const [savedNetwork, setSavedNetwork] = useState(initialNetwork);
+  const networkSeededRef = useRef(false);
+
+  const hasUnsavedChanges =
+    JSON.stringify(networkDraft) !== JSON.stringify(savedNetwork);
+
+  const handleNetworkFieldChange = (
+    field: keyof ReturnType<typeof initialNetwork>
+  ) => (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setNetworkError('');
+    setNetworkDraft((prev) => ({ ...prev, [field]: e.target.value }));
+  };
+
+  const saveNetworkChanges = async () => {
+    setNetworkError('');
+
+    const missing: string[] = [];
+    if (!networkDraft.audienceCategory.trim())
+      missing.push('target community');
+    if (!networkDraft.institutionOrOrganization.trim())
+      missing.push('institution / organization');
+    if (!networkDraft.primaryOperating.trim())
+      missing.push('primary location');
+
+    if (missing.length > 0) {
+      setNetworkError(
+        `Please fill in the required field${missing.length > 1 ? 's' : ''}: ${missing.join(
+          ', '
+        )}.`
+      );
+      return;
+    }
+
+    setNetworkSaving(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          audienceCategory: [networkDraft.audienceCategory],
+          institutionOrOrganization: networkDraft.institutionOrOrganization,
+          primaryOperating: networkDraft.primaryOperating,
+          secondaryOperating: networkDraft.secondaryOperating,
+        }),
+      });
+
+      if (!res.ok) {
+        setNetworkError(await parseApiError(res));
+        return;
+      }
+
+      const next = { ...networkDraft };
+      setSavedNetwork(next);
+      setNetworkSuccessOpen(true);
+    } catch {
+      setNetworkError('Something went wrong. Please try again.');
+    } finally {
+      setNetworkSaving(false);
+    }
+  };
+
+  const discardNetworkChanges = () => {
+    setNetworkDraft({ ...savedNetwork });
+    setNetworkError('');
+  };
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -255,6 +342,23 @@ export default function AmbassadorDashboard() {
       router.replace('/admin/dashboard');
     }
   }, [isAuthenticated, user?.role, router]);
+
+  useEffect(() => {
+    if (profile && !networkSeededRef.current) {
+      const seeded = {
+        audienceCategory:
+          (Array.isArray(profile.audience_category) &&
+            profile.audience_category![0]) ||
+          '',
+        institutionOrOrganization: profile.institution_or_organization ?? '',
+        primaryOperating: profile.primary_operating ?? '',
+        secondaryOperating: profile.secondary_operating ?? '',
+      };
+      networkSeededRef.current = true;
+      setNetworkDraft(seeded);
+      setSavedNetwork(seeded);
+    }
+  }, [profile]);
 
   const fullName = user?.full_name || 'Ambassador';
   const firstName = fullName.trim().split(/\s+/)[0] || 'Ambassador';
@@ -1412,7 +1516,7 @@ Fill out the short form here to get started:
                           <input
                             className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
                             type="tel"
-                            value="+234 800 000 0000"
+                            value={user?.whatsapp_number || '+234 800 000 0000'}
                             readOnly
                           />
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
@@ -1464,11 +1568,17 @@ Fill out the short form here to get started:
                           Target Audience Category
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
-                            <option>Student Community</option>
+                          <select
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10"
+                            value={networkDraft.audienceCategory}
+                            onChange={handleNetworkFieldChange('audienceCategory')}
+                            required
+                          >
+                            <option value="">Select a category</option>
+                            <option>NYSC</option>
+                            <option>Students</option>
                             <option>Young Professionals</option>
                             <option>Expatriates</option>
-                            <option>Corporate Real Estate</option>
                           </select>
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                             arrow_drop_down
@@ -1483,7 +1593,9 @@ Fill out the short form here to get started:
                         <input
                           className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="text"
-                          defaultValue="University of Lagos (UNILAG)"
+                          value={networkDraft.institutionOrOrganization}
+                          onChange={handleNetworkFieldChange('institutionOrOrganization')}
+                          required
                         />
                       </div>
                     </div>
@@ -1500,11 +1612,18 @@ Fill out the short form here to get started:
                           Primary Operational Hub
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
-                            <option>Yaba / Akoka</option>
-                            <option>Lekki / Victoria Island</option>
-                            <option>Ikeja / Maryland</option>
-                            <option>Surulere</option>
+                          <select
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10"
+                            value={networkDraft.primaryOperating}
+                            onChange={handleNetworkFieldChange('primaryOperating')}
+                            required
+                          >
+                            <option value="">Select a location</option>
+                            {LAGOS_AREAS.map((area) => (
+                              <option key={area} value={area}>
+                                {area}
+                              </option>
+                            ))}
                           </select>
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                             arrow_drop_down
@@ -1520,12 +1639,17 @@ Fill out the short form here to get started:
                           Secondary Operational Hub
                         </label>
                         <div className="relative">
-                          <select className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10">
-                            <option>Surulere</option>
-                            <option>Lekki / Victoria Island</option>
-                            <option>Ikeja / Maryland</option>
-                            <option>Yaba / Akoka</option>
-                            <option>None</option>
+                          <select
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all appearance-none cursor-pointer pr-10"
+                            value={networkDraft.secondaryOperating}
+                            onChange={handleNetworkFieldChange('secondaryOperating')}
+                          >
+                            <option value="">None</option>
+                            {LAGOS_AREAS.map((area) => (
+                              <option key={area} value={area}>
+                                {area}
+                              </option>
+                            ))}
                           </select>
                           <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                             expand_more
@@ -1536,6 +1660,13 @@ Fill out the short form here to get started:
                         </p>
                       </div>
                     </div>
+
+                    {networkError && (
+                      <p className="font-body text-sm text-error flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">error</span>
+                        {networkError}
+                      </p>
+                    )}
                   </form>
                 </div>
 ) : settingsTab === 'Settings & Security' ? (
@@ -1834,18 +1965,27 @@ Fill out the short form here to get started:
                 )}
 
                 {/* Sticky Action Bar */}
-                {settingsTab !== 'Settings & Security' &&
-                  settingsTab !== 'Payouts & Finance' && (
+                {hasUnsavedChanges &&
+                  settingsTab === 'Network & Hubs' && (
                 <div className="sticky bottom-6 mt-8 flex items-center justify-between gap-4 px-5 py-3 z-20 rounded-xl bg-primary-container text-white shadow-lg">
                   <span className="font-body text-sm">
                     Unsaved changes detected
                   </span>
                   <div className="flex items-center gap-3">
-                    <button className="font-body text-sm text-on-primary-container opacity-80 hover:brightness-110 transition-all">
+                    <button
+                      type="button"
+                      onClick={discardNetworkChanges}
+                      className="font-body text-sm text-on-primary-container opacity-80 hover:brightness-110 transition-all"
+                    >
                       Discard
                     </button>
-                    <button className="bg-bright-cyan text-white px-4 py-2 rounded-lg font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md">
-                      Save Changes
+                    <button
+                      type="button"
+                      onClick={saveNetworkChanges}
+                      disabled={networkSaving}
+                      className="bg-bright-cyan text-white px-4 py-2 rounded-lg font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md disabled:opacity-60"
+                    >
+                      {networkSaving ? 'Saving…' : 'Save Changes'}
                     </button>
                   </div>
                 </div>
@@ -2728,6 +2868,15 @@ Fill out the short form here to get started:
           onClose={() => setPassSuccessOpen(false)}
           details="Your password has been updated successfully."
           onPrimary={() => applyView('dashboard')}
+        />
+      )}
+
+      {networkSuccessOpen && (
+        <SuccessModal
+          open={networkSuccessOpen}
+          onClose={() => setNetworkSuccessOpen(false)}
+          details="Your network influence details have been updated successfully."
+          onSecondary={() => setNetworkSuccessOpen(false)}
         />
       )}
     </div>
