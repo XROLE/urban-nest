@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { BASE_URL, parseApiError } from '@/lib/api';
 import Modal from '@/components/Modal';
 
 const contactFieldClass =
@@ -157,7 +158,7 @@ const PAGE_SIZE = 10;
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
-  const { user, profile, logout, isAuthenticated } = useAuth();
+  const { user, profile, logout, isAuthenticated, session } = useAuth();
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
@@ -190,6 +191,57 @@ export default function AmbassadorDashboard() {
     email: 'jane.doe@example.com',
     whatsapp: '+234 *** *** **99',
   });
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passSubmitting, setPassSubmitting] = useState(false);
+  const [passError, setPassError] = useState('');
+  const [passSuccess, setPassSuccess] = useState('');
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassError('');
+    setPassSuccess('');
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPassError('Please fill in all password fields.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPassError('New password and confirm password do not match.');
+      return;
+    }
+
+    setPassSubmitting(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me/password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!res.ok) {
+        setPassError(await parseApiError(res));
+        return;
+      }
+
+      setPassSuccess('Password updated successfully.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch {
+      setPassError('Something went wrong. Please try again.');
+    } finally {
+      setPassSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -1441,46 +1493,102 @@ Fill out the short form here to get started:
                       </div>
                     </div>
 
-                    <form className="space-y-4 max-w-lg">
+                    <form onSubmit={handleChangePassword} className="space-y-4 max-w-2xl">
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Current Password
                         </label>
-                        <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
-                          type="password"
-                          placeholder="••••••••"
-                        />
+                        <div className="relative">
+                          <input
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all pr-10"
+                            type={showCurrentPassword ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {showCurrentPassword ? 'visibility_off' : 'visibility'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           New Password
                         </label>
-                        <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
-                          type="password"
-                          placeholder="••••••••"
-                        />
+                        <div className="relative">
+                          <input
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all pr-10"
+                            type={showNewPassword ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {showNewPassword ? 'visibility_off' : 'visibility'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Confirm New Password
                         </label>
-                        <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
-                          type="password"
-                          placeholder="••••••••"
-                        />
+                        <div className="relative">
+                          <input
+                            className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all pr-10"
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            placeholder="••••••••"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <span className="material-symbols-outlined text-lg">
+                              {showConfirmPassword ? 'visibility_off' : 'visibility'}
+                            </span>
+                          </button>
+                        </div>
                       </div>
+
+                      {passError && (
+                        <p className="font-body text-sm text-error flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[16px]">error</span>
+                          {passError}
+                        </p>
+                      )}
+                      {passSuccess && (
+                        <p className="font-body text-sm text-green-600 flex items-center gap-1.5">
+                          <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                          {passSuccess}
+                        </p>
+                      )}
 
                       <div className="pt-2">
                         <button
-                          type="button"
-                          className="bg-bright-cyan text-white px-6 py-3 rounded-xl font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md"
+                          type="submit"
+                          disabled={passSubmitting}
+                          className="bg-bright-cyan text-white px-6 py-3 rounded-xl font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          Update Password
+                          {passSubmitting ? 'Updating…' : 'Update Password'}
                         </button>
                       </div>
                     </form>
