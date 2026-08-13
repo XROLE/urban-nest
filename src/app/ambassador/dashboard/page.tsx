@@ -376,6 +376,71 @@ export default function AmbassadorDashboard() {
     setNetworkError('');
   };
 
+  const initialPersonal = () => ({
+    emergencyContact: profile?.emergency_contact?.phone ?? '',
+  });
+
+  const [personalDraft, setPersonalDraft] = useState(initialPersonal);
+  const [savedPersonal, setSavedPersonal] = useState(initialPersonal);
+  const personalSeededRef = useRef(false);
+  const [personalSaving, setPersonalSaving] = useState(false);
+  const [personalError, setPersonalError] = useState('');
+  const [personalSuccessOpen, setPersonalSuccessOpen] = useState(false);
+
+  const personalHasChanges =
+    JSON.stringify(personalDraft) !== JSON.stringify(savedPersonal);
+
+  const handlePersonalFieldChange =
+    (field: keyof ReturnType<typeof initialPersonal>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setPersonalError('');
+      setPersonalDraft((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const savePersonalChanges = async () => {
+    setPersonalError('');
+
+    const phone = personalDraft.emergencyContact.trim();
+    if (!phone) {
+      setPersonalError('Please provide an emergency contact number.');
+      return;
+    }
+
+    setPersonalSaving(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          emergencyContact: {
+            ...(profile?.emergency_contact ?? {}),
+            phone,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        setPersonalError(await parseApiError(res));
+        return;
+      }
+
+      setSavedPersonal({ emergencyContact: phone });
+      setPersonalSuccessOpen(true);
+    } catch {
+      setPersonalError('Something went wrong. Please try again.');
+    } finally {
+      setPersonalSaving(false);
+    }
+  };
+
+  const discardPersonalChanges = () => {
+    setPersonalDraft({ ...savedPersonal });
+    setPersonalError('');
+  };
+
   const initializeVettingInfo = () => ({
     socialMediaPlatform:
       (Array.isArray(profile?.social_media_platform) &&
@@ -388,6 +453,16 @@ export default function AmbassadorDashboard() {
   });
 
   const [vettingDraft, setVettingDraft] = useState(initializeVettingInfo);
+  const [savedVetting, setSavedVetting] = useState(initializeVettingInfo);
+  const vettingSeededRef = useRef(false);
+
+  const vettingHasChanges =
+    JSON.stringify(vettingDraft) !== JSON.stringify(savedVetting);
+
+  const vettingCompleted =
+    Boolean(savedVetting.socialMediaPlatform) &&
+    Boolean(savedVetting.socialMediaHandle.trim()) &&
+    Boolean(savedVetting.socialMediaTargetAudience);
 
   const handleVettingFieldChange =
     (field: keyof ReturnType<typeof initializeVettingInfo>) =>
@@ -448,6 +523,7 @@ export default function AmbassadorDashboard() {
       }
 
       setVettingSuccessOpen(true);
+      setSavedVetting({ ...vettingDraft });
     } catch {
       setVettingError('Something went wrong. Please try again.');
     } finally {
@@ -622,6 +698,35 @@ export default function AmbassadorDashboard() {
       networkSeededRef.current = true;
       setNetworkDraft(seeded);
       setSavedNetwork(seeded);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (profile && !vettingSeededRef.current) {
+      const seeded = {
+        socialMediaPlatform:
+          (Array.isArray(profile.social_media_platform) &&
+            profile.social_media_platform[0]) ||
+          '',
+        socialMediaHandle: (profile.social_media_handle ?? '').trim()
+          ? `@${(profile.social_media_handle ?? '').replace(/^@/, '')}`
+          : '',
+        socialMediaTargetAudience: profile.social_media_target_audience ?? '',
+      };
+      vettingSeededRef.current = true;
+      setVettingDraft(seeded);
+      setSavedVetting(seeded);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    if (profile && !personalSeededRef.current) {
+      const seeded = {
+        emergencyContact: profile.emergency_contact?.phone ?? '',
+      };
+      personalSeededRef.current = true;
+      setPersonalDraft(seeded);
+      setSavedPersonal(seeded);
     }
   }, [profile]);
 
@@ -1990,11 +2095,17 @@ Fill out the short form here to get started:
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
                           Gender
                         </label>
-                        <input
-                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
-                          type="text"
-                          defaultValue="Female"
-                        />
+                        <div className="relative">
+                          <input
+                            className="w-full bg-slate-50/50 border border-slate-200 rounded-xl py-2.5 px-4 pr-10 font-body text-sm text-slate-500 cursor-not-allowed transition-all"
+                            type="text"
+                            value="Female"
+                            readOnly
+                          />
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-[18px] text-slate-400">
+                            lock
+                          </span>
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-2">
@@ -2005,9 +2116,18 @@ Fill out the short form here to get started:
                           className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="tel"
                           placeholder="+234 ..."
+                          value={personalDraft.emergencyContact}
+                          onChange={handlePersonalFieldChange('emergencyContact')}
                         />
                       </div>
                     </div>
+
+                    {personalError && (
+                      <p className="font-body text-sm text-error flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[16px]">error</span>
+                        {personalError}
+                      </p>
+                    )}
                   </form>
                 </div>
                 ) : settingsTab === 'Network & Hubs' ? (
@@ -2426,6 +2546,32 @@ Fill out the short form here to get started:
                 )}
 
                 {/* Sticky Action Bar */}
+                {personalHasChanges &&
+                  settingsTab === 'Personal Details' && (
+                <div className="sticky bottom-6 mt-8 flex items-center justify-between gap-4 px-5 py-3 z-20 rounded-xl bg-primary-container text-white shadow-lg">
+                  <span className="font-body text-sm">
+                    Unsaved changes detected
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={discardPersonalChanges}
+                      className="font-body text-sm text-on-primary-container opacity-80 hover:brightness-110 transition-all"
+                    >
+                      Discard
+                    </button>
+                    <button
+                      type="button"
+                      onClick={savePersonalChanges}
+                      disabled={personalSaving}
+                      className="bg-bright-cyan text-white px-4 py-2 rounded-lg font-body text-sm hover:brightness-110 active:scale-95 transition-all shadow-md disabled:opacity-60"
+                    >
+                      {personalSaving ? 'Saving…' : 'Save Changes'}
+                    </button>
+                  </div>
+                </div>
+                )}
+
                 {hasUnsavedChanges &&
                   settingsTab === 'Network & Hubs' && (
                 <div className="sticky bottom-6 mt-8 flex items-center justify-between gap-4 px-5 py-3 z-20 rounded-xl bg-primary-container text-white shadow-lg">
@@ -2519,12 +2665,30 @@ Fill out the short form here to get started:
                   </div>
                   {/* Step 3 */}
                   <div className="flex flex-col items-center gap-2 relative bg-surface-container-lowest px-4">
-                    <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
-                      <span className="font-body text-xs font-bold">3</span>
-                    </div>
-                    <span className="font-body text-xs font-semibold text-on-surface-variant">
-                      Vetting Details
-                    </span>
+                    {vettingCompleted ? (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                          <span
+                            className="material-symbols-outlined text-[16px]"
+                            style={{ fontVariationSettings: `'FILL' 1` }}
+                          >
+                            check
+                          </span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-primary">
+                          Vetting Details
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
+                          <span className="font-body text-xs font-bold">3</span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-on-surface-variant">
+                          Vetting Details
+                        </span>
+                      </>
+                    )}
                   </div>
                   {/* Step 4 */}
                   <div className="flex flex-col items-center gap-2 relative px-4">
@@ -2703,14 +2867,15 @@ Fill out the short form here to get started:
                             required
                           >
                             <option value="">Select Platform</option>
-                            <option>Instagram</option>
-                            <option>TikTok</option>
-                            <option>X (Twitter)</option>
-                            <option>Facebook</option>
-                            <option>WhatsApp</option>
-                            <option>YouTube</option>
-                            <option>LinkedIn</option>
-                            <option>Other</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="tiktok">TikTok</option>
+                            <option value="twitter">X (Twitter)</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="snapchat">Snapchat</option>
+                            <option value="youtube">YouTube</option>
+                            <option value="telegram">Telegram</option>
                           </select>
                         </div>
                         <div className="flex flex-col gap-1">
@@ -2759,7 +2924,7 @@ Fill out the short form here to get started:
                       </div>
                       <button
                         type="submit"
-                        disabled={!contactVerified || vettingSaving}
+                        disabled={!contactVerified || vettingSaving || !vettingHasChanges}
                         className={`mt-2 px-5 py-2.5 rounded-[12px] font-body text-xs font-semibold w-full md:w-auto md:self-end ${
                           contactVerified
                             ? 'bg-sky-blue text-white hover:bg-sky-blue/90 transition-colors disabled:opacity-60'
@@ -3562,6 +3727,15 @@ Fill out the short form here to get started:
           onClose={() => setBankSuccessOpen(false)}
           details="Your bank account details have been updated successfully."
           onPrimary={() => setBankSuccessOpen(false)}
+        />
+      )}
+
+      {personalSuccessOpen && (
+        <SuccessModal
+          open={personalSuccessOpen}
+          onClose={() => setPersonalSuccessOpen(false)}
+          details="Your personal details have been updated successfully."
+          onPrimary={() => setPersonalSuccessOpen(false)}
         />
       )}
 
