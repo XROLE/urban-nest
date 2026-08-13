@@ -377,7 +377,9 @@ export default function AmbassadorDashboard() {
   };
 
   const initialPersonal = () => ({
-    emergencyContact: profile?.emergency_contact?.phone ?? '',
+    emergencyName: profile?.emergency_contact?.name ?? '',
+    emergencyPhone: profile?.emergency_contact?.phone ?? '',
+    emergencyRelationship: profile?.emergency_contact?.relationship ?? '',
   });
 
   const [personalDraft, setPersonalDraft] = useState(initialPersonal);
@@ -400,9 +402,21 @@ export default function AmbassadorDashboard() {
   const savePersonalChanges = async () => {
     setPersonalError('');
 
-    const phone = personalDraft.emergencyContact.trim();
-    if (!phone) {
-      setPersonalError('Please provide an emergency contact number.');
+    const name = personalDraft.emergencyName.trim();
+    const phone = personalDraft.emergencyPhone.trim();
+    const relationship = personalDraft.emergencyRelationship.trim();
+
+    const missing: string[] = [];
+    if (!name) missing.push('emergency contact name');
+    if (!phone) missing.push('emergency contact phone');
+    if (!relationship) missing.push('relationship');
+
+    if (missing.length > 0) {
+      setPersonalError(
+        `Please fill in the required field${missing.length > 1 ? 's' : ''}: ${missing.join(
+          ', '
+        )}.`
+      );
       return;
     }
 
@@ -415,10 +429,7 @@ export default function AmbassadorDashboard() {
           Authorization: `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify({
-          emergencyContact: {
-            ...(profile?.emergency_contact ?? {}),
-            phone,
-          },
+          emergencyContact: { name, phone, relationship },
         }),
       });
 
@@ -427,7 +438,11 @@ export default function AmbassadorDashboard() {
         return;
       }
 
-      setSavedPersonal({ emergencyContact: phone });
+      setSavedPersonal({
+        emergencyName: name,
+        emergencyPhone: phone,
+        emergencyRelationship: relationship,
+      });
       setPersonalSuccessOpen(true);
     } catch {
       setPersonalError('Something went wrong. Please try again.');
@@ -722,7 +737,9 @@ export default function AmbassadorDashboard() {
   useEffect(() => {
     if (profile && !personalSeededRef.current) {
       const seeded = {
-        emergencyContact: profile.emergency_contact?.phone ?? '',
+        emergencyName: profile.emergency_contact?.name ?? '',
+        emergencyPhone: profile.emergency_contact?.phone ?? '',
+        emergencyRelationship: profile.emergency_contact?.relationship ?? '',
       };
       personalSeededRef.current = true;
       setPersonalDraft(seeded);
@@ -2110,14 +2127,40 @@ Fill out the short form here to get started:
 
                       <div className="flex flex-col gap-2">
                         <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
-                          Emergency Contact
+                          Emergency Contact Name
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="text"
+                          placeholder="Full name"
+                          value={personalDraft.emergencyName}
+                          onChange={handlePersonalFieldChange('emergencyName')}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Emergency Contact Phone
                         </label>
                         <input
                           className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
                           type="tel"
                           placeholder="+234 ..."
-                          value={personalDraft.emergencyContact}
-                          onChange={handlePersonalFieldChange('emergencyContact')}
+                          value={personalDraft.emergencyPhone}
+                          onChange={handlePersonalFieldChange('emergencyPhone')}
+                        />
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide">
+                          Relationship
+                        </label>
+                        <input
+                          className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                          type="text"
+                          placeholder="e.g. Mother, Brother, Spouse"
+                          value={personalDraft.emergencyRelationship}
+                          onChange={handlePersonalFieldChange('emergencyRelationship')}
                         />
                       </div>
                     </div>
