@@ -14,7 +14,7 @@ import SuccessModal from '@/components/modals/SuccessModal';
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
 
-type View = 'dashboard' | 'referrals' | 'earnings' | 'notifications' | 'settings' | 'checkings';
+type View = 'dashboard' | 'referrals' | 'earnings' | 'activity' | 'notifications' | 'settings' | 'checkings';
 
 interface StatusCfg {
   label: string;
@@ -244,6 +244,29 @@ const SAMPLE_PAYOUT_HISTORY: PayoutRow[] = [
   { date: 'Jun 30, 2023', ref: 'TRF_1102934', amount: 5500 },
 ];
 
+interface EarningsActivityRow {
+  name: string;
+  hub: string;
+  date: string;
+  time: string;
+  category: 'Matching Fee' | 'Bonus Referral';
+  amount: number;
+  status: 'Cleared' | 'Pending';
+}
+
+const SAMPLE_EARNINGS_ACTIVITY: EarningsActivityRow[] = [
+  { name: 'Chinedu Okeke', hub: 'Yaba Tech Hub', date: '12 Oct 2023', time: '14:32 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
+  { name: 'Funmi Ojo', hub: 'Lekki Phase 1', date: '11 Oct 2023', time: '09:15 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
+  { name: 'Amaka Eze', hub: 'UNILAG Campus', date: '09 Oct 2023', time: '16:45 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
+  { name: 'Ibrahim Babatunde', hub: 'Ibadan Central', date: '05 Oct 2023', time: '11:20 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
+  { name: 'Chidi O.', hub: 'UNILAG Hub', date: '03 Oct 2023', time: '10:24 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
+  { name: 'Aisha M.', hub: 'UI Campus', date: '01 Oct 2023', time: '14:15 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
+  { name: 'Tunde B.', hub: 'Yaba Referral', date: '28 Sep 2023', time: '08:05 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
+  { name: 'Ngozi K.', hub: 'UNN Hub', date: '25 Sep 2023', time: '17:40 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
+  { name: 'Kelechi Nduka', hub: 'Ojota Hub', date: '21 Sep 2023', time: '12:10 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
+  { name: 'Rita Ani', hub: 'Enugu Central', date: '18 Sep 2023', time: '15:55 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
+];
+
 export default function AmbassadorDashboard() {
   const router = useRouter();
   const { user, profile, logout, isAuthenticated, session } = useAuth();
@@ -270,6 +293,11 @@ export default function AmbassadorDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<ReferralRow['status'] | 'All'>('All');
   const [currentPage, setCurrentPage] = useState(1);
+  const [activitySearch, setActivitySearch] = useState('');
+  const [activityFilter, setActivityFilter] = useState<
+    'All' | 'Cleared' | 'Pending'
+  >('All');
+  const [activityVisibleCount, setActivityVisibleCount] = useState(5);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -1120,6 +1148,16 @@ Fill out the short form here to get started:
     return true;
   });
 
+  const filteredActivity = SAMPLE_EARNINGS_ACTIVITY.filter((row) => {
+    const q = activitySearch.toLowerCase();
+    const matchesSearch =
+      row.name.toLowerCase().includes(q) || row.hub.toLowerCase().includes(q);
+    const matchesFilter =
+      activityFilter === 'All' || row.status === activityFilter;
+    return matchesSearch && matchesFilter;
+  });
+  const visibleActivity = filteredActivity.slice(0, activityVisibleCount);
+
   const totalPages = Math.max(1, Math.ceil(filteredReferrals.length / PAGE_SIZE));
   const page = Math.min(currentPage, totalPages);
   const pageRows = filteredReferrals.slice(
@@ -1133,12 +1171,16 @@ Fill out the short form here to get started:
       (next === 'dashboard' ||
         next === 'referrals' ||
         next === 'earnings' ||
+        next === 'activity' ||
         next === 'settings');
     const target = locked ? 'checkings' : next;
     setView(target);
     setSearchQuery('');
     setStatusFilter('All');
     setCurrentPage(1);
+    setActivitySearch('');
+    setActivityFilter('All');
+    setActivityVisibleCount(5);
     setMobileSidebarOpen(false);
   };
 
@@ -1176,6 +1218,10 @@ Fill out the short form here to get started:
           ) : view === 'earnings' ? (
             <h2 className="font-display text-xl font-bold text-primary hidden md:block">
               Earnings &amp; Payouts
+            </h2>
+          ) : view === 'activity' ? (
+            <h2 className="font-display text-xl font-bold text-primary hidden md:block">
+              All Earnings Activity
             </h2>
         ) : (
             <h2 className="font-display text-xl font-bold text-primary hidden md:block">
@@ -1394,14 +1440,14 @@ Fill out the short form here to get started:
               onClick={() => applyView('earnings')}
               disabled={isUnverified}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
-                view === 'earnings'
+                view === 'earnings' || view === 'activity'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
-                  view === 'earnings' ? 'icon-filled' : ''
+                  view === 'earnings' || view === 'activity' ? 'icon-filled' : ''
                 }`}
               >
                 payments
@@ -2089,7 +2135,7 @@ Fill out the short form here to get started:
                     Recent Activity
                   </h4>
                   <button
-                    onClick={() => applyView('referrals')}
+                    onClick={() => applyView('activity')}
                     className="font-body text-xs font-bold text-bright-cyan hover:underline"
                   >
                     View All
@@ -2207,6 +2253,199 @@ Fill out the short form here to get started:
                   </table>
                 </div>
               </div>
+            </div>
+          </div>
+        ) : view === 'activity' ? (
+          <div className="flex flex-col gap-5">
+            {/* Breadcrumbs */}
+            <nav aria-label="Breadcrumb" className="flex">
+              <ol className="inline-flex items-center space-x-1 font-body text-xs text-slate-500">
+                <li className="inline-flex items-center">
+                  <button
+                    onClick={() => applyView('dashboard')}
+                    className="hover:text-primary transition-colors"
+                  >
+                    Dashboard
+                  </button>
+                </li>
+                <li>
+                  <div className="flex items-center">
+                    <span className="material-symbols-outlined text-sm mx-1">
+                      chevron_right
+                    </span>
+                    <button
+                      onClick={() => applyView('earnings')}
+                      className="hover:text-primary transition-colors"
+                    >
+                      Earnings
+                    </button>
+                  </div>
+                </li>
+                <li aria-current="page">
+                  <div className="flex items-center">
+                    <span className="material-symbols-outlined text-sm mx-1">
+                      chevron_right
+                    </span>
+                    <span className="text-primary font-bold">All Activity</span>
+                  </div>
+                </li>
+              </ol>
+            </nav>
+
+            {/* Page Header & Filters */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <h1 className="font-display text-xl md:text-2xl font-extrabold text-dark-slate">
+                All Earnings Activity
+              </h1>
+              <div className="flex flex-col sm:flex-row gap-3 items-center w-full lg:w-auto">
+                {/* Search Bar */}
+                <div className="relative w-full sm:w-64">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Search by name or hub..."
+                    value={activitySearch}
+                    onChange={(e) => {
+                      setActivitySearch(e.target.value);
+                      setActivityVisibleCount(5);
+                    }}
+                    className="bg-white border border-slate-200 text-dark-slate font-body text-sm rounded-lg focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan outline-none block w-full pl-10 pr-3 py-2.5 transition-all"
+                  />
+                </div>
+                {/* Filter Chips */}
+                <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
+                  {(['All', 'Cleared', 'Pending'] as const).map((f) => (
+                    <button
+                      key={f}
+                      onClick={() => {
+                        setActivityFilter(f);
+                        setActivityVisibleCount(5);
+                      }}
+                      className={`px-4 py-2 rounded-full font-body text-xs font-semibold whitespace-nowrap transition-colors ${
+                        activityFilter === f
+                          ? 'bg-primary text-white'
+                          : 'bg-slate-100 border border-slate-200 text-slate-500 hover:bg-slate-200'
+                      }`}
+                    >
+                      {f === 'All' ? 'All Activity' : f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Activity Table */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-body text-sm">
+                  <thead>
+                    <tr className="text-slate-500 bg-slate-50 text-[11px] font-bold uppercase border-b border-slate-200">
+                      <th className="px-5 py-3" scope="col">
+                        User
+                      </th>
+                      <th className="px-5 py-3" scope="col">
+                        Date / Time
+                      </th>
+                      <th className="px-5 py-3" scope="col">
+                        Category
+                      </th>
+                      <th className="px-5 py-3 text-right" scope="col">
+                        Amount
+                      </th>
+                      <th className="px-5 py-3 text-center" scope="col">
+                        Status
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {visibleActivity.map((row) => {
+                      const initials = row.name
+                        .split(' ')
+                        .map((p) => p[0])
+                        .slice(0, 2)
+                        .join('')
+                        .toUpperCase();
+                      const cleared = row.status === 'Cleared';
+                      return (
+                        <tr
+                          key={`${row.name}-${row.date}`}
+                          className="hover:bg-slate-50 transition-colors"
+                        >
+                          <td className="px-5 py-3.5">
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-slate-200 text-primary flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                {initials}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-dark-slate text-sm">
+                                  {row.name}
+                                </div>
+                                <div className="text-[11px] text-slate-400">
+                                  {row.hub}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 whitespace-nowrap">
+                            <div className="text-dark-slate">{row.date}</div>
+                            <div className="text-[11px] text-slate-400">
+                              {row.time}
+                            </div>
+                          </td>
+                          <td className="px-5 py-3.5 text-slate-500">
+                            {row.category}
+                          </td>
+                          <td className="px-5 py-3.5 text-right font-bold text-dark-slate">
+                            +₦{row.amount.toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
+                          <td className="px-5 py-3.5 text-center">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                                cleared
+                                  ? 'bg-mint/10 text-mint'
+                                  : 'bg-amber-50 text-amber-600'
+                              }`}
+                            >
+                              {row.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {visibleActivity.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="py-10 text-center text-slate-400"
+                        >
+                          No activity matches your filters.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Load More */}
+            <div className="flex flex-col items-center gap-2">
+              {activityVisibleCount < filteredActivity.length && (
+                <button
+                  onClick={() => setActivityVisibleCount((c) => c + 5)}
+                  className="px-6 py-2.5 rounded-lg border border-primary text-primary font-body text-xs font-semibold hover:bg-slate-100 transition-colors"
+                >
+                  Load More Activity
+                </button>
+              )}
+              <span className="font-body text-[11px] text-slate-400">
+                Showing {visibleActivity.length} of {filteredActivity.length}{' '}
+                activities
+              </span>
             </div>
           </div>
         ) : view === 'settings' ? (
