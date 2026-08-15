@@ -16,6 +16,13 @@ import { autoTable } from 'jspdf-autotable';
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
 
+const CONTACT_SUBJECT_TITLES: Record<string, string> = {
+  account: 'Account Access',
+  earnings: 'Earnings & Payouts',
+  referrals: 'Referral Tracking',
+  other: 'Other Inquiry',
+};
+
 type View = 'dashboard' | 'referrals' | 'earnings' | 'activity' | 'notifications' | 'settings' | 'checkings';
 
 interface StatusCfg {
@@ -292,6 +299,8 @@ export default function AmbassadorDashboard() {
   const [bankModalOpen, setBankModalOpen] = useState(false);
   const [contactSent, setContactSent] = useState(false);
   const [contactForm, setContactForm] = useState({ subject: '', message: '' });
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactError, setContactError] = useState('');
   const [notifications, setNotifications] =
     useState<NotificationItem[]>(SAMPLE_NOTIFICATIONS);
   const [notificationFilter, setNotificationFilter] =
@@ -417,6 +426,45 @@ export default function AmbassadorDashboard() {
   const discardNetworkChanges = () => {
     setNetworkDraft({ ...savedNetwork });
     setNetworkError('');
+  };
+
+  const handleContactSubmit = async () => {
+    setContactError('');
+    if (!contactForm.subject || !contactForm.message.trim()) {
+      setContactError('Please select a subject and enter a message.');
+      return;
+    }
+
+    setContactLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    try {
+      const res = await fetch(`${BASE_URL}/support`, {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          title: CONTACT_SUBJECT_TITLES[contactForm.subject] ?? contactForm.subject,
+          message: contactForm.message,
+        }),
+      });
+
+      if (!res.ok) {
+        setContactError(await parseApiError(res));
+        return;
+      }
+
+      setContactForm({ subject: '', message: '' });
+      setContactSent(true);
+    } catch {
+      setContactError('Something went wrong. Please try again.');
+    } finally {
+      clearTimeout(timeout);
+      setContactLoading(false);
+    }
   };
 
   const initialPersonal = () => ({
@@ -3910,6 +3958,7 @@ Fill out the short form here to get started:
           setContactOpen(false);
           setContactSent(false);
           setContactForm({ subject: '', message: '' });
+          setContactError('');
         }}
         title="Contact Support"
         size="md"
@@ -3931,6 +3980,7 @@ Fill out the short form here to get started:
                 setContactOpen(false);
                 setContactSent(false);
                 setContactForm({ subject: '', message: '' });
+                setContactError('');
               }}
               className="mt-8 w-full sm:w-auto px-8 py-3 rounded-full bg-bright-cyan text-white font-display font-semibold text-sm hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98]"
             >
@@ -4007,26 +4057,44 @@ Fill out the short form here to get started:
               </div>
             </div>
 
-            <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 rounded-b-2xl">
-              <button
-                type="button"
-                onClick={() => {
-                  setContactOpen(false);
-                  setContactSent(false);
-                  setContactForm({ subject: '', message: '' });
-                }}
-                className="px-6 py-3 rounded-full font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-100 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => setContactSent(true)}
-                className="px-6 py-3 rounded-full flex items-center gap-2 bg-bright-cyan text-white font-display font-semibold text-sm hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98]"
-              >
-                <span>Send Message</span>
-                <span className="material-symbols-outlined text-lg">send</span>
-              </button>
+            <div className="p-6 sm:p-8 bg-slate-50 border-t border-slate-100 rounded-b-2xl">
+              {contactError && (
+                <p className="mb-4 px-4 py-3 rounded-xl bg-red-50 text-red-600 font-body text-sm">
+                  {contactError}
+                </p>
+              )}
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactOpen(false);
+                    setContactSent(false);
+                    setContactForm({ subject: '', message: '' });
+                    setContactError('');
+                  }}
+                  className="px-6 py-3 rounded-full font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleContactSubmit}
+                  disabled={contactLoading}
+                  className="px-6 py-3 rounded-full flex items-center gap-2 bg-bright-cyan text-white font-display font-semibold text-sm hover:bg-bright-cyan/90 transition-all shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {contactLoading ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Message</span>
+                      <span className="material-symbols-outlined text-lg">send</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </>
         )}
