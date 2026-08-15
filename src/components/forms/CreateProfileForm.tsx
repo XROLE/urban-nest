@@ -181,7 +181,6 @@ export default function CreateProfileForm() {
 
   const buildPayload = () => {
     const phone = `+234${formData.whatsapp.replace(/\D/g, '').replace(/^0/, '')}`;
-    const ref = new URLSearchParams(window.location.search).get('ref');
     return {
       email: formData.email.trim(),
       fullName: formData.fullName.trim(),
@@ -203,7 +202,6 @@ export default function CreateProfileForm() {
         ? { personalBio: formData.bio.trim() }
         : {}),
       agreedToTerms: true,
-      ...(ref ? { ref } : {}),
     };
   };
 
@@ -239,14 +237,16 @@ export default function CreateProfileForm() {
       }
       setSubmitting(true);
       try {
-        const res = await fetch(
-          'https://rmts-backend.onrender.com/api/v1/profiles',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(buildPayload()),
-          }
-        );
+        const ref = new URLSearchParams(window.location.search).get('ref');
+        const endpoint = 'https://rmts-backend.onrender.com/api/v1/profiles';
+        const url = ref
+          ? `${endpoint}?ref=${encodeURIComponent(ref)}`
+          : endpoint;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload()),
+        });
 
         if (!res.ok) {
           let message = 'Something went wrong. Please try again.';
