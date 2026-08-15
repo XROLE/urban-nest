@@ -10,6 +10,8 @@ import { LAGOS_AREAS } from '@/lib/lagosLocations';
 import { NIGERIAN_BANKS } from '@/lib/banks';
 import Modal from '@/components/Modal';
 import SuccessModal from '@/components/modals/SuccessModal';
+import { jsPDF } from 'jspdf';
+import { autoTable } from 'jspdf-autotable';
 
 const contactFieldClass =
   'w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan';
@@ -892,6 +894,114 @@ Fill out the short form here to get started:
     a.download = 'payout-history.csv';
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadReferralsPdf = () => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 12;
+
+    const BRAND_NAVY: [number, number, number] = [9, 20, 38];
+    const BRAND_CYAN: [number, number, number] = [41, 182, 246];
+    const DARK_SLATE: [number, number, number] = [30, 41, 59];
+    const MUTED_SLATE: [number, number, number] = [100, 116, 139];
+    const LIGHT_CYAN: [number, number, number] = [224, 247, 255];
+
+    // Brand header bar (dark navy) with Roommate NG + Urban Nest parent mark
+    doc.setFillColor(...BRAND_NAVY);
+    doc.rect(0, 0, pageWidth, 30, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(255, 255, 255);
+    doc.text('ROOMMATE NG', margin, 19);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('A product of Urban Nest', pageWidth - margin, 19, {
+      align: 'right',
+    });
+
+    // Title + subtitle
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(...DARK_SLATE);
+    doc.text('Referrals Report', margin, 48);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...MUTED_SLATE);
+    doc.text(
+      `Generated on ${new Date().toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      })}  |  ${filteredReferrals.length} referral${
+        filteredReferrals.length === 1 ? '' : 's'
+      }`,
+      margin,
+      55
+    );
+
+    // Prepared-for box personalized with ambassador name + referral code
+    doc.setFillColor(...LIGHT_CYAN);
+    doc.roundedRect(margin, 60, pageWidth - margin * 2, 28, 4, 4, 'F');
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...MUTED_SLATE);
+    doc.text('Prepared for:', 22, 72);
+    doc.text('Referral Code:', 22, 81);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...DARK_SLATE);
+    doc.text(
+      fullName,
+      22 + doc.getTextWidth('Prepared for:') + 6,
+      72
+    );
+    doc.text(
+      referralCode,
+      22 + doc.getTextWidth('Referral Code:') + 6,
+      81
+    );
+
+    autoTable(doc, {
+      startY: 94,
+      head: [['Name', 'Date Referred', 'State', 'Preferred Locations', 'Status']],
+      body: filteredReferrals.map((r) => [
+        r.name,
+        r.date,
+        r.state || '—',
+        r.preferredLocations.length > 0
+          ? r.preferredLocations.join(', ')
+          : '—',
+        r.status,
+      ]),
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        textColor: DARK_SLATE,
+        cellPadding: 3,
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: BRAND_CYAN,
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'left',
+      },
+      alternateRowStyles: { fillColor: [241, 245, 249] },
+      margin: { left: 10, right: 10 },
+    });
+
+    // Footer with parent-company attribution
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...BRAND_CYAN);
+    doc.text('Roommate NG  ·  A product of Urban Nest', pageWidth / 2, pageHeight - 10, {
+      align: 'center',
+    });
+
+    doc.save('referrals-report.pdf');
   };
 
   const handleCopy = () => {
@@ -1928,7 +2038,10 @@ Fill out the short form here to get started:
                 </div>
               </div>
 
-              <button className="hidden sm:flex items-center gap-2 border border-slate-300 text-dark-slate font-semibold text-sm px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+              <button
+                onClick={downloadReferralsPdf}
+                className="hidden sm:flex items-center gap-2 border border-slate-300 text-dark-slate font-semibold text-sm px-4 py-2 rounded-lg hover:bg-slate-50 transition-colors"
+              >
                 <span className="material-symbols-outlined text-lg">
                   download
                 </span>
