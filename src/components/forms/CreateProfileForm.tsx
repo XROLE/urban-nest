@@ -184,6 +184,7 @@ export default function CreateProfileForm() {
     return {
       email: formData.email.trim(),
       fullName: formData.fullName.trim(),
+      state: formData.state,
       phoneNumber: phone,
       gender: formData.gender as 'male' | 'female' | 'no_preference',
       ageRange: formData.ageRange,
@@ -1016,16 +1017,6 @@ export default function CreateProfileForm() {
                 {parseInt(formData.maxBudget || '0').toLocaleString()}
               </div>
             </div>
-          </div>
-
-          <div className="pt-4 flex flex-col sm:flex-row justify-center gap-4">
-            <button
-              type="button"
-              className="bg-bright-cyan text-white px-8 py-3.5 rounded-full font-display font-semibold hover:bg-bright-cyan/90 transition-colors shadow-md"
-              onClick={() => setStep(1)}
-            >
-              Create Another Profile
-            </button>
           </div>
         </div>
       )}
