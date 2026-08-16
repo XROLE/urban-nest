@@ -290,6 +290,7 @@ export default function AmbassadorDashboard() {
     pendingPayments: 0,
     totalEarned: 0,
     availableBalance: 0,
+    successfulPayments: 0,
   });
   const [activitySearch, setActivitySearch] = useState('');
   const [activityFilter, setActivityFilter] = useState<
@@ -933,6 +934,7 @@ export default function AmbassadorDashboard() {
             pendingPayments?: number;
             totalEarned?: number;
             availableBalance?: number;
+            successfulPayments?: number;
           };
         };
         if (!active) return;
@@ -940,6 +942,7 @@ export default function AmbassadorDashboard() {
           pendingPayments: json?.data?.pendingPayments ?? 0,
           totalEarned: json?.data?.totalEarned ?? 0,
           availableBalance: json?.data?.availableBalance ?? 0,
+          successfulPayments: json?.data?.successfulPayments ?? 0,
         });
       } catch {
         if (!active) return;
@@ -947,6 +950,7 @@ export default function AmbassadorDashboard() {
           pendingPayments: 0,
           totalEarned: 0,
           availableBalance: 0,
+          successfulPayments: 0,
         });
       }
     })();
@@ -1949,7 +1953,7 @@ Fill out the short form here to get started:
                   Successful Payments
                 </h4>
                 <p className="font-display text-2xl font-extrabold text-dark-slate">
-                  10
+                  {paymentSummary.successfulPayments}
                 </p>
               </div>
 
