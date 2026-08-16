@@ -301,7 +301,7 @@ const mapActivityRow = (t: ApiTransaction): EarningsActivityRow => {
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
-  const { user, profile, logout, isAuthenticated, session } = useAuth();
+  const { user, profile, logout, isAuthenticated, session, hydrated } = useAuth();
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
   const [withdrawn, setWithdrawn] = useState(false);
@@ -925,12 +925,13 @@ export default function AmbassadorDashboard() {
   };
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!isAuthenticated) {
       router.replace('/ambassador/login');
     } else if (user?.role === 'admin') {
       router.replace('/admin/dashboard');
     }
-  }, [isAuthenticated, user?.role, router]);
+  }, [hydrated, isAuthenticated, user?.role, router]);
 
   useEffect(() => {
     const token = session?.accessToken;

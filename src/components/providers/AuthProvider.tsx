@@ -75,6 +75,7 @@ interface AuthContextValue {
   profile: AmbassadorProfile | null;
   session: AuthSession | null;
   isAuthenticated: boolean;
+  hydrated: boolean;
   login: (email: string, password: string) => Promise<AmbassadorUser | null>;
   register: (payload: RegisterPayload) => Promise<AmbassadorUser | null>;
   logout: () => void;
@@ -110,6 +111,7 @@ export default function AuthProvider({
   children: React.ReactNode;
 }) {
   const [stored, setStored] = useState<StoredAuth | null>(null);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     try {
@@ -119,6 +121,8 @@ export default function AuthProvider({
       if (raw) setStored(JSON.parse(raw) as StoredAuth);
     } catch {
       /* ignore corrupt storage */
+    } finally {
+      setHydrated(true);
     }
   }, []);
 
@@ -189,11 +193,12 @@ export default function AuthProvider({
       profile: stored?.profile ?? null,
       session: stored?.session ?? null,
       isAuthenticated: Boolean(stored?.session?.accessToken),
+      hydrated,
       login,
       register,
       logout,
     }),
-    [stored, login, register, logout]
+    [stored, hydrated, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -17,18 +17,19 @@ interface Profile {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, hydrated } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!isAuthenticated) {
       router.replace('/ambassador/login');
     } else if (user?.role !== 'admin') {
       router.replace('/ambassador/dashboard');
     }
-  }, [isAuthenticated, user?.role, router]);
+  }, [hydrated, isAuthenticated, user?.role, router]);
 
   const adminName = user?.full_name || 'Admin';
   const firstName = adminName.trim().split(/\s+/)[0] || adminName;
