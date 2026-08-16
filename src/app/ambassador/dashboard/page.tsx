@@ -1982,7 +1982,10 @@ Fill out the short form here to get started:
                 </h4>
                 <div className="flex justify-between items-end pt-0.5">
                   <p className="font-display text-2xl font-extrabold text-bright-cyan">
-                    ₦{pendingBalance.toLocaleString()}
+                    ₦{paymentSummary.availableBalance.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </p>
                   <button
                     onClick={handleWithdraw}
