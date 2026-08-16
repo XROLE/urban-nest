@@ -211,15 +211,49 @@ interface EarningsFeedItem {
   hub: string;
   time: string;
   amount: number;
-  status: 'Cleared' | 'Pending';
+  status: 'paid' | 'pending';
 }
 
-const SAMPLE_EARNINGS_FEED: EarningsFeedItem[] = [
-  { name: 'Chidi O.', hub: 'UNILAG Hub', time: 'Today, 10:24 AM', amount: 1000, status: 'Cleared' },
-  { name: 'Aisha M.', hub: 'UI Campus', time: 'Yesterday, 2:15 PM', amount: 1000, status: 'Pending' },
-  { name: 'Tunde B.', hub: 'Yaba Referral', time: 'Aug 12, 2023', amount: 1000, status: 'Cleared' },
-  { name: 'Ngozi K.', hub: 'UNN Hub', time: 'Aug 10, 2023', amount: 1000, status: 'Cleared' },
-];
+const shortName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return parts[0] ?? fullName;
+  const last = parts[parts.length - 1];
+  return `${parts[0]} ${last.charAt(0).toUpperCase()}.`;
+};
+
+interface ApiTransaction {
+  id: string;
+  type: string;
+  direction: string;
+  amountNg: number;
+  roommateName: string;
+  roommateLocation?: string[];
+  description: string;
+  reference: string;
+  createdAt: string;
+  paidAt: string | null;
+}
+
+const mapTransaction = (t: ApiTransaction): EarningsFeedItem => ({
+  name: shortName(t.roommateName),
+  hub: (t.roommateLocation ?? []).join(', '),
+  time: formatTransactionTime(t.createdAt),
+  amount: t.amountNg,
+  status: t.direction === 'credit' ? 'paid' : 'pending',
+});
+
+function formatTransactionTime(value: string): string {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return `${d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })}, ${d.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+  })}`;
+}
 
 interface PayoutRow {
   date: string;
@@ -239,23 +273,24 @@ interface EarningsActivityRow {
   hub: string;
   date: string;
   time: string;
-  category: 'Matching Fee' | 'Bonus Referral';
+  category: string;
   amount: number;
-  status: 'Cleared' | 'Pending';
+  status: 'paid' | 'pending';
 }
 
-const SAMPLE_EARNINGS_ACTIVITY: EarningsActivityRow[] = [
-  { name: 'Chinedu Okeke', hub: 'Yaba Tech Hub', date: '12 Oct 2023', time: '14:32 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
-  { name: 'Funmi Ojo', hub: 'Lekki Phase 1', date: '11 Oct 2023', time: '09:15 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
-  { name: 'Amaka Eze', hub: 'UNILAG Campus', date: '09 Oct 2023', time: '16:45 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
-  { name: 'Ibrahim Babatunde', hub: 'Ibadan Central', date: '05 Oct 2023', time: '11:20 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
-  { name: 'Chidi O.', hub: 'UNILAG Hub', date: '03 Oct 2023', time: '10:24 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
-  { name: 'Aisha M.', hub: 'UI Campus', date: '01 Oct 2023', time: '14:15 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
-  { name: 'Tunde B.', hub: 'Yaba Referral', date: '28 Sep 2023', time: '08:05 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
-  { name: 'Ngozi K.', hub: 'UNN Hub', date: '25 Sep 2023', time: '17:40 WAT', category: 'Matching Fee', amount: 15000, status: 'Cleared' },
-  { name: 'Kelechi Nduka', hub: 'Ojota Hub', date: '21 Sep 2023', time: '12:10 WAT', category: 'Matching Fee', amount: 15000, status: 'Pending' },
-  { name: 'Rita Ani', hub: 'Enugu Central', date: '18 Sep 2023', time: '15:55 WAT', category: 'Bonus Referral', amount: 5000, status: 'Cleared' },
-];
+const mapActivityRow = (t: ApiTransaction): EarningsActivityRow => {
+  const d = new Date(t.createdAt);
+  const valid = !Number.isNaN(d.getTime());
+  return {
+    name: t.roommateName,
+    hub: (t.roommateLocation ?? []).join(', '),
+    date: valid ? d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : t.createdAt,
+    time: valid ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
+    category: t.direction === 'credit' ? 'Referral Bonus' : 'Earning Withdrawals',
+    amount: t.amountNg,
+    status: t.direction === 'credit' ? 'paid' : 'pending',
+  };
+};
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
@@ -292,9 +327,13 @@ export default function AmbassadorDashboard() {
     availableBalance: 0,
     successfulPayments: 0,
   });
+  const [transactions, setTransactions] = useState<EarningsFeedItem[]>([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [activityRows, setActivityRows] = useState<EarningsActivityRow[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [activitySearch, setActivitySearch] = useState('');
   const [activityFilter, setActivityFilter] = useState<
-    'All' | 'Cleared' | 'Pending'
+    'All' | 'Paid' | 'Withdrawals'
   >('All');
   const [activityVisibleCount, setActivityVisibleCount] = useState(5);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
@@ -960,6 +999,43 @@ export default function AmbassadorDashboard() {
   }, [session?.accessToken]);
 
   useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      setTransactionsLoading(true);
+      setActivityLoading(true);
+      try {
+        const res = await fetch(`${BASE_URL}/payments/transactions`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(await parseApiError(res));
+        const json = (await res.json()) as {
+          data?: { transactions?: ApiTransaction[] };
+        };
+        const list = json?.data?.transactions ?? [];
+        if (active) {
+          setTransactions(list.map(mapTransaction));
+          setActivityRows(list.map(mapActivityRow));
+        }
+      } catch {
+        if (active) {
+          setTransactions([]);
+          setActivityRows([]);
+        }
+      } finally {
+        if (active) {
+          setTransactionsLoading(false);
+          setActivityLoading(false);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
+
+  useEffect(() => {
     if (profile && !networkSeededRef.current) {
       const seeded = {
         audienceCategory:
@@ -1464,12 +1540,14 @@ Fill out the short form here to get started:
     return true;
   });
 
-  const filteredActivity = SAMPLE_EARNINGS_ACTIVITY.filter((row) => {
+  const filteredActivity = activityRows.filter((row) => {
     const q = activitySearch.toLowerCase();
     const matchesSearch =
       row.name.toLowerCase().includes(q) || row.hub.toLowerCase().includes(q);
     const matchesFilter =
-      activityFilter === 'All' || row.status === activityFilter;
+      activityFilter === 'All' ||
+      (activityFilter === 'Paid' && row.status === 'paid') ||
+      (activityFilter === 'Withdrawals' && row.status === 'pending');
     return matchesSearch && matchesFilter;
   });
   const visibleActivity = filteredActivity.slice(0, activityVisibleCount);
@@ -2477,7 +2555,7 @@ Fill out the short form here to get started:
             </div>
 
             {/* Bottom Grid: Feed & Logs */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
               {/* Recent Activity */}
               <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
                 <div className="flex justify-between items-center mb-1 border-b border-slate-200 pb-3.5">
@@ -2492,11 +2570,22 @@ Fill out the short form here to get started:
                   </button>
                 </div>
                 <div className="flex flex-col">
-                  {SAMPLE_EARNINGS_FEED.map((item) => {
-                    const cleared = item.status === 'Cleared';
+                  {transactionsLoading ? (
+                    <div className="py-6 text-center">
+                      <div className="mx-auto w-6 h-6 border-2 border-slate-200 border-t-bright-cyan rounded-full animate-spin" />
+                    </div>
+                  ) : transactions.length === 0 ? (
+                    <div className="py-6 text-center">
+                      <p className="font-body text-sm text-slate-400">
+                        No activity yet.
+                      </p>
+                    </div>
+                  ) : (
+                    transactions.map((item, idx) => {
+                    const cleared = item.status === 'paid';
                     return (
                       <div
-                        key={`${item.name}-${item.time}`}
+                        key={`${item.name}-${idx}`}
                         className="flex items-center justify-between py-3 border-b border-slate-100 last:border-0"
                       >
                         <div className="flex items-center gap-3.5">
@@ -2546,7 +2635,8 @@ Fill out the short form here to get started:
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                  )}
                 </div>
               </div>
 
@@ -2666,7 +2756,7 @@ Fill out the short form here to get started:
                 </div>
                 {/* Filter Chips */}
                 <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
-                  {(['All', 'Cleared', 'Pending'] as const).map((f) => (
+                  {(['All', 'Paid', 'Withdrawals'] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => {
@@ -2710,14 +2800,24 @@ Fill out the short form here to get started:
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {visibleActivity.map((row) => {
+                    {activityLoading ? (
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="py-10 text-center"
+                        >
+                          <div className="mx-auto w-6 h-6 border-2 border-slate-200 border-t-bright-cyan rounded-full animate-spin" />
+                        </td>
+                      </tr>
+                    ) : (
+                      visibleActivity.map((row) => {
                       const initials = row.name
                         .split(' ')
                         .map((p) => p[0])
                         .slice(0, 2)
                         .join('')
                         .toUpperCase();
-                      const cleared = row.status === 'Cleared';
+                      const cleared = row.status === 'paid';
                       return (
                         <tr
                           key={`${row.name}-${row.date}`}
@@ -2766,8 +2866,9 @@ Fill out the short form here to get started:
                           </td>
                         </tr>
                       );
-                    })}
-                    {visibleActivity.length === 0 && (
+                    })
+                    )}
+                    {!activityLoading && visibleActivity.length === 0 && (
                       <tr>
                         <td
                           colSpan={5}
