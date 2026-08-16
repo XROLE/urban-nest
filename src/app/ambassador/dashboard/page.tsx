@@ -287,6 +287,11 @@ export default function AmbassadorDashboard() {
   const [referrals, setReferrals] = useState<ReferralRow[]>([]);
   const [referralsLoading, setReferralsLoading] = useState(true);
   const [referralsError, setReferralsError] = useState('');
+  const [paymentSummary, setPaymentSummary] = useState({
+    pendingPayments: 0,
+    totalEarned: 0,
+    availableBalance: 0,
+  });
   const [activitySearch, setActivitySearch] = useState('');
   const [activityFilter, setActivityFilter] = useState<
     'All' | 'Cleared' | 'Pending'
@@ -824,6 +829,43 @@ export default function AmbassadorDashboard() {
   }, [session?.accessToken]);
 
   useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/payments/summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(await parseApiError(res));
+        const json = (await res.json()) as {
+          data?: {
+            pendingPayments?: number;
+            totalEarned?: number;
+            availableBalance?: number;
+          };
+        };
+        if (!active) return;
+        setPaymentSummary({
+          pendingPayments: json?.data?.pendingPayments ?? 0,
+          totalEarned: json?.data?.totalEarned ?? 0,
+          availableBalance: json?.data?.availableBalance ?? 0,
+        });
+      } catch {
+        if (!active) return;
+        setPaymentSummary({
+          pendingPayments: 0,
+          totalEarned: 0,
+          availableBalance: 0,
+        });
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
+
+  useEffect(() => {
     if (profile && !networkSeededRef.current) {
       const seeded = {
         audienceCategory:
@@ -921,7 +963,6 @@ Fill out the short form here to get started:
   const totalReferrals = profile?.total_referrals ?? 24;
   const totalEarnings = profile?.total_earnings_ngn ?? 6000;
   const pendingBalance = profile?.pending_balance_ngn ?? 4500;
-  const pendingEarnings = 5000;
 
   const maskAccountNumber = (num: string) => {
     const clean = num.replace(/\s+/g, '');
@@ -2245,7 +2286,7 @@ Fill out the short form here to get started:
                     Available for Payout
                   </p>
                   <p className="font-display text-3xl md:text-4xl font-extrabold text-mint tracking-tight">
-                    ₦{pendingBalance.toLocaleString(undefined, {
+                    ₦{paymentSummary.availableBalance.toLocaleString(undefined, {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}
@@ -2258,7 +2299,7 @@ Fill out the short form here to get started:
                         Pending Earnings
                       </p>
                       <p className="font-body text-base text-white font-semibold">
-                        ₦{pendingEarnings.toLocaleString(undefined, {
+                        ₦{paymentSummary.pendingPayments.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -2269,7 +2310,7 @@ Fill out the short form here to get started:
                         Lifetime Commissions
                       </p>
                       <p className="font-body text-base text-white font-semibold">
-                        ₦{totalEarnings.toLocaleString(undefined, {
+                        ₦{paymentSummary.totalEarned.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -3234,7 +3275,13 @@ Fill out the short form here to get started:
                             Available Balance
                           </p>
                           <h3 className="font-display text-2xl font-extrabold text-dark-slate mt-1">
-                            ₦ 450,000.00
+                            ₦{paymentSummary.availableBalance.toLocaleString(
+                              undefined,
+                              {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              }
+                            )}
                           </h3>
                         </div>
                         <span className="material-symbols-outlined text-bright-cyan">
