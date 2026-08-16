@@ -211,7 +211,8 @@ interface EarningsFeedItem {
   hub: string;
   time: string;
   amount: number;
-  status: 'paid' | 'pending';
+  status: 'paid' | 'pending' | 'failed';
+  direction: 'credit' | 'debit';
 }
 
 const shortName = (fullName: string): string => {
@@ -239,7 +240,8 @@ const mapTransaction = (t: ApiTransaction): EarningsFeedItem => ({
   hub: (t.roommateLocation ?? []).join(', '),
   time: formatTransactionTime(t.createdAt),
   amount: t.amountNg,
-  status: t.direction === 'credit' ? 'paid' : 'pending',
+  status: String(t.type ?? '').trim().toLowerCase() as EarningsFeedItem['status'],
+  direction: String(t.direction ?? '').trim().toLowerCase() as EarningsFeedItem['direction'],
 });
 
 function formatTransactionTime(value: string): string {
@@ -269,26 +271,31 @@ const SAMPLE_PAYOUT_HISTORY: PayoutRow[] = [
 ];
 
 interface EarningsActivityRow {
+  id: string;
   name: string;
   hub: string;
   date: string;
   time: string;
   category: string;
   amount: number;
-  status: 'paid' | 'pending';
+  status: 'paid' | 'pending' | 'failed';
+  direction: 'credit' | 'debit';
 }
 
 const mapActivityRow = (t: ApiTransaction): EarningsActivityRow => {
   const d = new Date(t.createdAt);
   const valid = !Number.isNaN(d.getTime());
+  const direction = String(t.direction ?? '').trim().toLowerCase();
   return {
+    id: t.id,
     name: t.roommateName,
     hub: (t.roommateLocation ?? []).join(', '),
     date: valid ? d.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) : t.createdAt,
     time: valid ? d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '',
-    category: t.direction === 'credit' ? 'Referral Bonus' : 'Earning Withdrawals',
+    category: direction === 'credit' ? 'Referral Bonus' : 'Earning Withdrawals',
     amount: t.amountNg,
-    status: t.direction === 'credit' ? 'paid' : 'pending',
+    status: String(t.type ?? '').trim().toLowerCase() as EarningsActivityRow['status'],
+    direction: direction as EarningsActivityRow['direction'],
   };
 };
 
@@ -333,9 +340,9 @@ export default function AmbassadorDashboard() {
   const [activityLoading, setActivityLoading] = useState(true);
   const [activitySearch, setActivitySearch] = useState('');
   const [activityFilter, setActivityFilter] = useState<
-    'All' | 'Paid' | 'Withdrawals'
+    'All' | 'Paid' | 'Pending' | 'Failed'
   >('All');
-  const [activityVisibleCount, setActivityVisibleCount] = useState(5);
+  const [activityVisibleCount, setActivityVisibleCount] = useState(10);
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -1547,7 +1554,8 @@ Fill out the short form here to get started:
     const matchesFilter =
       activityFilter === 'All' ||
       (activityFilter === 'Paid' && row.status === 'paid') ||
-      (activityFilter === 'Withdrawals' && row.status === 'pending');
+      (activityFilter === 'Pending' && row.status === 'pending') ||
+      (activityFilter === 'Failed' && row.status === 'failed');
     return matchesSearch && matchesFilter;
   });
   const visibleActivity = filteredActivity.slice(0, activityVisibleCount);
@@ -1574,7 +1582,7 @@ Fill out the short form here to get started:
     setCurrentPage(1);
     setActivitySearch('');
     setActivityFilter('All');
-    setActivityVisibleCount(5);
+    setActivityVisibleCount(10);
     setMobileSidebarOpen(false);
   };
 
@@ -2581,8 +2589,14 @@ Fill out the short form here to get started:
                       </p>
                     </div>
                   ) : (
-                    transactions.map((item, idx) => {
+                    transactions.slice(0, 5).map((item, idx) => {
                     const cleared = item.status === 'paid';
+                    const failed = item.status === 'failed';
+                    const stateClass = cleared
+                      ? 'bg-mint/10 text-mint'
+                      : failed
+                        ? 'bg-red-50/50 text-red-400'
+                        : 'bg-amber-50 text-amber-600';
                     return (
                       <div
                         key={`${item.name}-${idx}`}
@@ -2590,11 +2604,7 @@ Fill out the short form here to get started:
                       >
                         <div className="flex items-center gap-3.5">
                           <div
-                            className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                              cleared
-                                ? 'bg-mint/10 text-mint'
-                                : 'bg-amber-50 text-amber-600'
-                            }`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center ${stateClass}`}
                           >
                             <span className="material-symbols-outlined text-[20px]">
                               {cleared ? 'person_add' : 'hourglass_empty'}
@@ -2615,20 +2625,21 @@ Fill out the short form here to get started:
                         <div className="text-right">
                           <p
                             className={`font-body text-sm font-bold ${
-                              cleared ? 'text-mint' : 'text-amber-600'
+                              cleared
+                                ? 'text-mint'
+                                : failed
+                                  ? 'text-red-400'
+                                  : 'text-amber-600'
                             }`}
                           >
-                            +₦{item.amount.toLocaleString(undefined, {
+                            {item.direction === 'credit' ? '+' : '-'}₦
+                            {item.amount.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
                           </p>
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 uppercase tracking-wider ${
-                              cleared
-                                ? 'bg-mint/10 text-mint'
-                                : 'bg-amber-50 text-amber-600'
-                            }`}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 tracking-wider ${stateClass}`}
                           >
                             {item.status}
                           </span>
@@ -2749,19 +2760,19 @@ Fill out the short form here to get started:
                     value={activitySearch}
                     onChange={(e) => {
                       setActivitySearch(e.target.value);
-                      setActivityVisibleCount(5);
+                      setActivityVisibleCount(10);
                     }}
                     className="bg-white border border-slate-200 text-dark-slate font-body text-sm rounded-lg focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan outline-none block w-full pl-10 pr-3 py-2.5 transition-all"
                   />
                 </div>
                 {/* Filter Chips */}
                 <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
-                  {(['All', 'Paid', 'Withdrawals'] as const).map((f) => (
+                  {(['All', 'Paid', 'Pending', 'Failed'] as const).map((f) => (
                     <button
                       key={f}
                       onClick={() => {
                         setActivityFilter(f);
-                        setActivityVisibleCount(5);
+                        setActivityVisibleCount(10);
                       }}
                       className={`px-4 py-2 rounded-full font-body text-xs font-semibold whitespace-nowrap transition-colors ${
                         activityFilter === f
@@ -2818,9 +2829,20 @@ Fill out the short form here to get started:
                         .join('')
                         .toUpperCase();
                       const cleared = row.status === 'paid';
+                      const failed = row.status === 'failed';
+                      const stateClass = cleared
+                        ? 'bg-mint/10 text-mint'
+                        : failed
+                          ? 'bg-red-50/50 text-red-400'
+                          : 'bg-amber-50 text-amber-600';
+                      const amountClass = cleared
+                        ? 'text-mint'
+                        : failed
+                          ? 'text-red-400'
+                          : 'text-amber-600';
                       return (
                         <tr
-                          key={`${row.name}-${row.date}`}
+                          key={row.id}
                           className="hover:bg-slate-50 transition-colors"
                         >
                           <td className="px-5 py-3.5">
@@ -2847,19 +2869,18 @@ Fill out the short form here to get started:
                           <td className="px-5 py-3.5 text-slate-500">
                             {row.category}
                           </td>
-                          <td className="px-5 py-3.5 text-right font-bold text-dark-slate">
-                            +₦{row.amount.toLocaleString(undefined, {
+                          <td
+                            className={`px-5 py-3.5 text-right font-bold ${amountClass}`}
+                          >
+                            {row.direction === 'credit' ? '+' : '-'}₦
+                            {row.amount.toLocaleString(undefined, {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
                             })}
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             <span
-                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                                cleared
-                                  ? 'bg-mint/10 text-mint'
-                                  : 'bg-amber-50 text-amber-600'
-                              }`}
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${stateClass}`}
                             >
                               {row.status}
                             </span>
