@@ -804,7 +804,7 @@ export default function AmbassadorDashboard() {
     setBankSaving(true);
     try {
       const res = await fetch(`${BASE_URL}/ambassadors/me/bank`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.accessToken}`,
