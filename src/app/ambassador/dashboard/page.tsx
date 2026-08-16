@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { BASE_URL, parseApiError } from '@/lib/api';
 import { LAGOS_AREAS } from '@/lib/lagosLocations';
-import { NIGERIAN_BANKS } from '@/lib/banks';
 import Modal from '@/components/Modal';
 import SuccessModal from '@/components/modals/SuccessModal';
 import { jsPDF } from 'jspdf';
@@ -651,12 +650,48 @@ export default function AmbassadorDashboard() {
   const [bankDraft, setBankDraft] = useState(emptyBank);
   const [savedBank, setSavedBank] = useState(emptyBank);
   const bankSeededRef = useRef(false);
+  const [banks, setBanks] = useState<{ code: string; name: string }[]>([]);
   const [bankSaving, setBankSaving] = useState(false);
+  const [bankVerifying, setBankVerifying] = useState(false);
+  const [bankVerified, setBankVerified] = useState(false);
   const [bankError, setBankError] = useState('');
   const [bankSuccessOpen, setBankSuccessOpen] = useState(false);
 
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/ambassadors/banks`, {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        const list: Record<string, unknown>[] = Array.isArray(json)
+          ? json
+          : Array.isArray(json?.data)
+            ? json.data
+            : [];
+        const normalized = list
+          .map((b: Record<string, unknown>) => ({
+            code: String(b.bankCode ?? b.code ?? b.id ?? ''),
+            name: String(b.name ?? b.bankName ?? ''),
+          }))
+          .filter((x): x is { code: string; name: string } => !!x.code && !!x.name);
+        if (active) setBanks(normalized);
+      } catch {
+        // ignore fetch errors; dropdown simply stays empty
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
+
   const openBankModal = () => {
     setBankError('');
+    setBankVerified(false);
     setBankDraft({
       bankCode: savedBank.bankCode,
       bankName: savedBank.bankName,
@@ -677,13 +712,64 @@ export default function AmbassadorDashboard() {
     e: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const code = e.target.value;
-    const option = NIGERIAN_BANKS.find((b) => b.code === code);
+    const option = banks.find((b) => b.code === code);
     setBankError('');
+    setBankVerified(false);
     setBankDraft((prev) => ({
       ...prev,
       bankCode: code,
       bankName: option?.name ?? '',
+      accountNumber: '',
+      accountName: '',
     }));
+  };
+
+  const handleAccountNumberChange = (value: string) => {
+    const numeric = value.replace(/\D/g, '').slice(0, 10);
+    setBankError('');
+    setBankVerified(false);
+    setBankDraft((prev) => ({ ...prev, accountNumber: numeric, accountName: '' }));
+    if (bankDraft.bankCode && /^\d{10}$/.test(numeric)) {
+      verifyBankAccount(numeric);
+    }
+  };
+
+  const verifyBankAccount = async (accountNumber: string) => {
+    if (!accountNumber) return;
+    setBankError('');
+    setBankVerified(false);
+    setBankVerifying(true);
+    try {
+      const res = await fetch(`${BASE_URL}/ambassadors/me/bank/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({
+          bankCode: bankDraft.bankCode,
+          accountNumber,
+        }),
+      });
+
+      if (!res.ok) {
+        setBankError(await parseApiError(res));
+        return;
+      }
+
+      const data = await res.json();
+      const accountName = data?.data?.accountName as string | undefined;
+      if (accountName) {
+        setBankDraft((prev) => ({ ...prev, accountName }));
+        setBankVerified(true);
+      } else {
+        setBankError('Could not resolve the account name. Try again.');
+      }
+    } catch {
+      setBankError('Something went wrong. Please try again.');
+    } finally {
+      setBankVerifying(false);
+    }
   };
 
   const saveBankChanges = async () => {
@@ -709,10 +795,14 @@ export default function AmbassadorDashboard() {
       setBankError('Account name must be at most 100 characters.');
       return;
     }
+    if (!bankVerified) {
+      setBankError('Please verify the account first.');
+      return;
+    }
 
     setBankSaving(true);
     try {
-      const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+      const res = await fetch(`${BASE_URL}/ambassadors/me/bank`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -4194,7 +4284,7 @@ Fill out the short form here to get started:
                   <option disabled value="">
                     Select a bank
                   </option>
-                  {NIGERIAN_BANKS.map((bank) => (
+                  {banks.map((bank) => (
                     <option key={bank.code} value={bank.code}>
                       {bank.name}
                     </option>
@@ -4218,10 +4308,20 @@ Fill out the short form here to get started:
                 type="text"
                 inputMode="numeric"
                 maxLength={10}
+                readOnly={!bankDraft.bankCode}
                 value={bankDraft.accountNumber}
-                onChange={handleBankFieldChange('accountNumber')}
-                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm font-mono text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                onChange={(e) => handleAccountNumberChange(e.target.value)}
+                placeholder={bankDraft.bankCode ? 'Enter 10-digit account number' : 'Select a bank first'}
+                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm font-mono text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
               />
+              {bankVerifying && (
+                <p className="font-body text-xs text-bright-cyan flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px] animate-spin">
+                    progress_activity
+                  </span>
+                  Verifying account…
+                </p>
+              )}
             </div>
 
             <div className="flex flex-col gap-2">
@@ -4235,13 +4335,14 @@ Fill out the short form here to get started:
                 id="account_name"
                 type="text"
                 maxLength={100}
+                readOnly
                 value={bankDraft.accountName}
                 onChange={handleBankFieldChange('accountName')}
-                placeholder="Enter account name"
-                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all"
+                placeholder="Account name appears after verification"
+                className="w-full bg-white border border-slate-200 rounded-xl py-2.5 px-4 font-body text-sm text-dark-slate focus:outline-none focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan transition-all bg-slate-50 text-slate-500 cursor-not-allowed"
               />
               <p className="font-body text-xs text-slate-400">
-                Please enter the name on the account.
+                Filled in automatically after your account is verified.
               </p>
             </div>
 
@@ -4266,10 +4367,10 @@ Fill out the short form here to get started:
           <button
             type="button"
             onClick={saveBankChanges}
-            disabled={bankSaving}
-            className="px-5 py-2.5 rounded-lg bg-bright-cyan text-white font-body text-sm hover:brightness-110 transition-all shadow-sm flex items-center gap-2 disabled:opacity-60"
+            disabled={!bankVerified || bankSaving}
+            className="px-5 py-2.5 rounded-lg bg-bright-cyan text-white font-body text-sm hover:brightness-110 transition-all shadow-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {bankSaving ? 'Saving…' : 'Save Changes'}
+            {bankSaving ? 'Saving…' : 'Continue'}
           </button>
         </div>
       </Modal>
