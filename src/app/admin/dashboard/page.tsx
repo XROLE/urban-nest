@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -751,6 +751,18 @@ function RoommateDirectory() {
   const [query, setQuery] = useState('');
   const [stateFilter, setStateFilter] = useState('State: Lagos');
   const [statusFilter, setStatusFilter] = useState('Status: All Statuses');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
 
   const filteredRows = DIRECTORY_ALL_ROWS.filter((row) => {
     const q = query.toLowerCase();
@@ -900,10 +912,46 @@ function RoommateDirectory() {
                   <td className="px-4 py-3">
                     <span className="text-[13px] text-slate-500">{row.ambassador}</span>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <button className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100">
+                  <td className="px-4 py-3 text-right relative">
+                    <button
+                      onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                      className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
+                    >
                       <span className="material-symbols-outlined text-lg">more_vert</span>
                     </button>
+                    {openMenuId === row.id && (
+                      <div
+                        ref={menuRef}
+                        className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1.5"
+                      >
+                        {[
+                          { icon: 'person', label: 'View Full Profile' },
+                          { icon: 'group_add', label: 'Manual Match Workspace' },
+                          { icon: 'message', label: 'Send WhatsApp Reminder' },
+                        ].map((item) => (
+                          <button
+                            key={item.label}
+                            onClick={() => setOpenMenuId(null)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-slate-50 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[17px] text-slate-500">
+                              {item.icon}
+                            </span>
+                            <span className="text-[13px] text-dark-slate">{item.label}</span>
+                          </button>
+                        ))}
+                        <div className="my-1.5 border-t border-slate-100" />
+                        <button
+                          onClick={() => setOpenMenuId(null)}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-red-50 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-[17px] text-red-600">
+                            delete
+                          </span>
+                          <span className="text-[13px] text-red-600">Archive Profile</span>
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
