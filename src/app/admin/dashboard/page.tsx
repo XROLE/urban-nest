@@ -1017,6 +1017,302 @@ interface AmbassadorRow {
   imageUrl?: string;
 }
 
+interface AmbassadorDetailData {
+  fullName: string;
+  code: string;
+  joined: string;
+  unverified: boolean;
+  email: string;
+  phone: string;
+  socials: string[];
+  emergencyName: string;
+  emergencyPhone: string;
+  institution: string;
+  targetAudience: string;
+  jurisdictions: string[];
+  commissionRate: string;
+  bankName: string;
+  bankNumber: string;
+  referralCount: number;
+  conversionPercent: number;
+  pendingBalance: string;
+  settledPayouts: string;
+  payoutNote: string;
+  checklist: string[];
+}
+
+const AMBASSADOR_DETAILS: Record<string, AmbassadorDetailData> = {
+  'amb-1': {
+    fullName: 'Jide Adeshina',
+    code: 'AMB-JIDE',
+    joined: '14 March 2026',
+    unverified: false,
+    email: 'jide@unilag.edu.ng',
+    phone: '+234 801 234 5678',
+    socials: ['@jide_unilag (IG)', '@jide_dev (X)', '@jide_housing (TikTok)'],
+    emergencyName: 'Mrs. Folake Adeshina (Mother)',
+    emergencyPhone: '+234 802 987 6543',
+    institution: 'University of Lagos (UNILAG)',
+    targetAudience: 'Undergraduates & Freshers (200L CS)',
+    jurisdictions: ['UNILAG (Akoka)', 'Yaba / Sabo'],
+    commissionRate: '50% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2012345678',
+    referralCount: 38,
+    conversionPercent: 68,
+    pendingBalance: '₦45,000',
+    settledPayouts: '₦180,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+  'amb-2': {
+    fullName: 'Chioma Okafor',
+    code: 'AMB-CHIOMA',
+    joined: '2 February 2026',
+    unverified: false,
+    email: 'chioma@gwarinpa.edu.ng',
+    phone: '+234 803 555 1122',
+    socials: ['@chioma_o (IG)', '@chioma_abuja (X)'],
+    emergencyName: 'Mr. Ike Okafor (Father)',
+    emergencyPhone: '+234 805 444 7788',
+    institution: 'University of Abuja',
+    targetAudience: 'NYSC Members & Professionals',
+    jurisdictions: ['Gwarinpa', 'Kubwa'],
+    commissionRate: '50% Commission',
+    bankName: 'OPay',
+    bankNumber: '8091234567',
+    referralCount: 42,
+    conversionPercent: 71,
+    pendingBalance: '₦30,000',
+    settledPayouts: '₦150,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+  'amb-3': {
+    fullName: 'Emeka Eze',
+    code: 'AMB-EMEKA',
+    joined: '20 March 2026',
+    unverified: true,
+    email: 'emeka@ikeja.edu.ng',
+    phone: '+234 806 222 3344',
+    socials: ['@emeka_e (IG)', '@emeka_dev (X)'],
+    emergencyName: 'Mrs. Ngozi Eze (Mother)',
+    emergencyPhone: '+234 807 111 8899',
+    institution: 'Lagos State University',
+    targetAudience: 'Undergraduates (LASU Ojo)',
+    jurisdictions: ['Ikeja', 'Ojota'],
+    commissionRate: '40% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2044567890',
+    referralCount: 12,
+    conversionPercent: 55,
+    pendingBalance: '₦20,000',
+    settledPayouts: '₦50,000',
+    payoutNote: 'Pending verification',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+    ],
+  },
+  'amb-4': {
+    fullName: 'Amina Bello',
+    code: 'AMB-AMINA',
+    joined: '11 January 2026',
+    unverified: false,
+    email: 'amina@buk.edu.ng',
+    phone: '+234 808 333 5566',
+    socials: ['@amina_b (IG)', '@amina_kano (TikTok)'],
+    emergencyName: 'Mr. Sani Bello (Father)',
+    emergencyPhone: '+234 809 222 4455',
+    institution: 'Bayero University Kano',
+    targetAudience: 'Undergraduates (BUK)',
+    jurisdictions: ['BUK / Old Site', 'BUK / New Site'],
+    commissionRate: '50% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2056789012',
+    referralCount: 35,
+    conversionPercent: 66,
+    pendingBalance: '₦40,000',
+    settledPayouts: '₦140,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+  'amb-5': {
+    fullName: 'Tunde Salami',
+    code: 'AMB-TUNDE',
+    joined: '5 April 2026',
+    unverified: true,
+    email: 'tunde@ui.edu.ng',
+    phone: '+234 810 444 6677',
+    socials: ['@tunde_s (IG)'],
+    emergencyName: 'Mrs. Bukola Salami (Mother)',
+    emergencyPhone: '+234 811 333 2211',
+    institution: 'University of Ibadan',
+    targetAudience: 'Undergraduates (UI)',
+    jurisdictions: ['UI / Agbowo'],
+    commissionRate: '40% Commission',
+    bankName: 'OPay',
+    bankNumber: '8085566778',
+    referralCount: 8,
+    conversionPercent: 40,
+    pendingBalance: '₦10,000',
+    settledPayouts: '₦25,000',
+    payoutNote: 'Pending verification',
+    checklist: [
+      'Phone & WhatsApp Active',
+    ],
+  },
+  'amb-6': {
+    fullName: 'Fatima Kailani',
+    code: 'AMB-FATIMA',
+    joined: '18 March 2026',
+    unverified: false,
+    email: 'fatima@abu.edu.ng',
+    phone: '+234 812 555 8899',
+    socials: ['@fatima_k (IG)', '@fatima_zaria (X)'],
+    emergencyName: 'Mr. Musa Kailani (Father)',
+    emergencyPhone: '+234 813 444 5566',
+    institution: 'Ahmadu Bello University',
+    targetAudience: 'Undergraduates (ABU Zaria)',
+    jurisdictions: ['Zaria / Samaru'],
+    commissionRate: '50% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2067890123',
+    referralCount: 19,
+    conversionPercent: 62,
+    pendingBalance: '₦25,000',
+    settledPayouts: '₦75,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+  'amb-7': {
+    fullName: 'Chidi Nwosu',
+    code: 'AMB-CHIDI',
+    joined: '28 February 2026',
+    unverified: true,
+    email: 'chidi@unn.edu.ng',
+    phone: '+234 814 666 3344',
+    socials: ['@chidi_n (IG)', '@chidi_unn (TikTok)'],
+    emergencyName: 'Mrs. Ada Nwosu (Mother)',
+    emergencyPhone: '+234 815 555 7788',
+    institution: 'University of Nigeria, Nsukka',
+    targetAudience: 'Undergraduates (UNN)',
+    jurisdictions: ['UNN / Nsukka'],
+    commissionRate: '50% Commission',
+    bankName: 'OPay',
+    bankNumber: '8086677889',
+    referralCount: 52,
+    conversionPercent: 74,
+    pendingBalance: '₦60,000',
+    settledPayouts: '₦225,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+    ],
+  },
+  'amb-8': {
+    fullName: 'Ngozi Peters',
+    code: 'AMB-NGOZI',
+    joined: '9 March 2026',
+    unverified: false,
+    email: 'ngozi@uniport.edu.ng',
+    phone: '+234 816 777 9900',
+    socials: ['@ngozi_p (IG)', '@ngozi_port (X)'],
+    emergencyName: 'Mr. Emeka Peters (Father)',
+    emergencyPhone: '+234 817 666 1122',
+    institution: 'University of Port Harcourt',
+    targetAudience: 'Undergraduates (Uniport)',
+    jurisdictions: ['Uniport / Choba'],
+    commissionRate: '50% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2078901234',
+    referralCount: 15,
+    conversionPercent: 58,
+    pendingBalance: '₦18,000',
+    settledPayouts: '₦55,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+  'amb-9': {
+    fullName: 'Ibrahim Musa',
+    code: 'AMB-IBRAHIM',
+    joined: '22 April 2026',
+    unverified: true,
+    email: 'ibrahim@buk.edu.ng',
+    phone: '+234 818 888 4455',
+    socials: ['@ibrahim_m (IG)'],
+    emergencyName: 'Mrs. Hauwa Musa (Mother)',
+    emergencyPhone: '+234 819 777 8899',
+    institution: 'Bayero University Kano',
+    targetAudience: 'Undergraduates (BUK)',
+    jurisdictions: ['BUK / New Site'],
+    commissionRate: '40% Commission',
+    bankName: 'OPay',
+    bankNumber: '8087788990',
+    referralCount: 9,
+    conversionPercent: 38,
+    pendingBalance: '₦8,000',
+    settledPayouts: '₦20,000',
+    payoutNote: 'Pending verification',
+    checklist: ['Phone & WhatsApp Active'],
+  },
+  'amb-10': {
+    fullName: 'Zainab Lawal',
+    code: 'AMB-ZAINAB',
+    joined: '15 January 2026',
+    unverified: false,
+    email: 'zainab@edu.ng',
+    phone: '+234 820 999 1122',
+    socials: ['@zainab_l (IG)', '@zainab_abj (TikTok)'],
+    emergencyName: 'Mr. Lawal (Father)',
+    emergencyPhone: '+234 821 888 3344',
+    institution: 'University of Abuja',
+    targetAudience: 'NYSC Members & Professionals',
+    jurisdictions: ['Gwarinpa', 'Wuse'],
+    commissionRate: '50% Commission',
+    bankName: 'Kuda Bank',
+    bankNumber: '2089012345',
+    referralCount: 38,
+    conversionPercent: 70,
+    pendingBalance: '₦35,000',
+    settledPayouts: '₦155,000',
+    payoutNote: 'Historically via Paystack',
+    checklist: [
+      'Phone & WhatsApp Active',
+      'Social Media Handles Cross-Checked',
+      'Bank Account Name Match Confirmed',
+      'Primary & Secondary Locations Assigned',
+    ],
+  },
+};
+
 const AMBASSADOR_ROWS: AmbassadorRow[] = [
   { id: 'amb-1', name: 'Jide A.', tier: 'Gold', state: 'Lagos', location: 'UNILAG / Akoka', status: 'Verified', seekers: 24, matches: 18, commission: '₦90,000' },
   { id: 'amb-2', name: 'Chioma O.', tier: 'Silver', state: 'Abuja', location: 'Gwarinpa', status: 'Verified', seekers: 42, matches: 30, commission: '₦150,000' },
@@ -1052,7 +1348,7 @@ const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: str
   Unverified: { icon: 'error', cls: 'text-outline', label: 'Unverified' },
 };
 
-function AmbassadorDirectory() {
+function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => void }) {
   const [query, setQuery] = useState('');
   const [verification, setVerification] = useState('Verification: All');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -1202,7 +1498,11 @@ function AmbassadorDirectory() {
               {filteredRows.map((row) => {
                 const st = AMB_STATUS_BADGE[row.status];
                 return (
-                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                  <tr
+                    key={row.id}
+                    onClick={() => onSelect(row)}
+                    className="hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     <td className="p-4">
                       <div className="flex items-center gap-4">
                         <div className="relative shrink-0">
@@ -1245,7 +1545,10 @@ function AmbassadorDirectory() {
                     <td className="p-4 text-sm font-semibold text-dark-slate">{row.commission}</td>
                     <td className="p-4 text-center relative">
                       <button
-                        onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === row.id ? null : row.id);
+                        }}
                         className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
                       >
                         <span className="material-symbols-outlined text-lg">more_vert</span>
@@ -1253,6 +1556,7 @@ function AmbassadorDirectory() {
                       {openMenuId === row.id && (
                         <div
                           ref={menuRef}
+                          onClick={(e) => e.stopPropagation()}
                           className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1.5"
                         >
                           {[
@@ -1322,6 +1626,270 @@ function AmbassadorDirectory() {
   );
 }
 
+function AmbassadorDetail({
+  ambassador,
+  onBack,
+}: {
+  ambassador: AmbassadorRow;
+  onBack: () => void;
+}) {
+  const d = AMBASSADOR_DETAILS[ambassador.id];
+  const [verified, setVerified] = useState(!d.unverified);
+
+  const initials = d.fullName
+    .split(/\s+/)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  return (
+    <div className="flex flex-col gap-8 w-full">
+      {/* Breadcrumb / Back */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <button onClick={onBack} className="hover:text-primary flex items-center gap-1.5 transition-colors font-medium">
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          Back to Ambassadors
+        </button>
+        <span className="mx-1 text-slate-300">/</span>
+        <span className="text-primary font-semibold">{d.code}</span>
+      </div>
+
+      {/* Profile Header */}
+      <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div className="flex items-center gap-6">
+          <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center font-display text-2xl font-bold shadow-sm">
+            {initials}
+          </div>
+          <div>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="font-display text-3xl font-bold text-dark-slate tracking-tight">
+                {d.fullName}
+              </h1>
+              <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[11px] font-bold uppercase tracking-wider">
+                {d.code}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
+              <span className="flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                Joined: {d.joined}
+              </span>
+              <span className="w-1 h-1 rounded-full bg-slate-300" />
+              <span className={`flex items-center gap-1.5 font-medium ${verified ? 'text-[#00a472]' : 'text-amber-600'}`}>
+                <span className="material-symbols-outlined text-[16px]">{verified ? 'check_circle' : 'pending'}</span>
+                {verified ? 'Verified Account' : 'Unverified Account'}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg font-medium text-sm hover:bg-red-50 transition-colors shadow-sm">
+            <span className="material-symbols-outlined text-[18px]">flag</span>
+            Flag Account
+          </button>
+          <button className="flex items-center justify-center gap-2 px-4 py-2 bg-white text-[#00668a] border border-[#00668a]/20 rounded-lg font-medium text-sm hover:bg-sky-50 transition-colors shadow-sm">
+            <span className="material-symbols-outlined text-[18px]">chat</span>
+            Contact
+          </button>
+          <button
+            onClick={() => setVerified((v) => !v)}
+            className="flex items-center justify-center gap-2 px-5 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition-all shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[18px]">check_circle</span>
+            {verified ? 'Mark as Unverified' : 'Mark as Verified'}
+          </button>
+        </div>
+      </section>
+
+      {/* Performance Metrics */}
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col">
+          <div className="flex items-center gap-3 mb-3 text-slate-500">
+            <span className="material-symbols-outlined text-[20px]">group</span>
+            <h3 className="font-medium text-sm">Total Referrals</h3>
+          </div>
+          <div className="flex items-end gap-2">
+            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{d.referralCount}</p>
+            <span className="text-sm text-slate-500 mb-0.5">Seekers</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col">
+          <div className="flex items-center gap-3 mb-3 text-slate-500">
+            <span className="material-symbols-outlined text-[20px]">trending_up</span>
+            <h3 className="font-medium text-sm">Conversion Rate</h3>
+          </div>
+          <div className="flex items-end gap-3 mb-3">
+            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{d.conversionPercent}%</p>
+            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[12px] font-semibold mb-0.5">Paid Matches</span>
+          </div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+            <div className="bg-[#10B981] h-full rounded-full" style={{ width: `${d.conversionPercent}%` }} />
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-amber-500" />
+          <div className="flex items-center gap-3 mb-3 text-slate-500 pl-2">
+            <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
+            <h3 className="font-medium text-sm">Pending Balance</h3>
+          </div>
+          <p className="font-display text-3xl font-bold text-dark-slate leading-none pl-2">{d.pendingBalance}</p>
+        </div>
+
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col">
+          <div className="flex items-center gap-3 mb-3 text-slate-500">
+            <span className="material-symbols-outlined text-[20px]">payments</span>
+            <h3 className="font-medium text-sm">Settled Payouts</h3>
+          </div>
+          <p className="font-display text-3xl font-bold text-dark-slate leading-none mb-2">{d.settledPayouts}</p>
+          <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
+            <span className="material-symbols-outlined text-[14px]">history</span>
+            {d.payoutNote}
+          </p>
+        </div>
+      </section>
+
+      {/* Tabs + Overview */}
+      <section className="flex flex-col gap-8 bg-white rounded-2xl shadow-sm border border-slate-200 p-2 md:p-8">
+        <div className="flex border-b border-slate-200 w-full overflow-x-auto">
+          <button className="px-6 py-4 text-[15px] text-primary border-b-2 border-[#00668a] font-semibold whitespace-nowrap">
+            Overview &amp; Details
+          </button>
+          <button className="px-6 py-4 text-[15px] text-slate-500 hover:text-primary transition-colors whitespace-nowrap font-medium flex items-center gap-2">
+            Referred Seekers <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[11px] font-bold">{d.referralCount}</span>
+          </button>
+          <button className="px-6 py-4 text-[15px] text-slate-500 hover:text-primary transition-colors whitespace-nowrap font-medium">
+            Payout History
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left Column */}
+          <div className="flex flex-col gap-10">
+            <div>
+              <h3 className="text-base font-semibold text-primary mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-500 text-[20px]">person</span>
+                Personal Information
+              </h3>
+              <div className="flex flex-col gap-5 text-[15px]">
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
+                  <span className="font-medium text-slate-500">Email</span>
+                  <span className="text-primary font-medium">{d.email}</span>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
+                  <span className="font-medium text-slate-500">Phone</span>
+                  <span className="text-primary font-medium">{d.phone}</span>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
+                  <span className="font-medium text-slate-500 mt-1.5">Socials</span>
+                  <div className="flex flex-wrap gap-2">
+                    {d.socials.map((s) => (
+                      <span key={s} className="px-3 py-1.5 bg-slate-100 rounded-md text-[13px] text-primary font-medium border border-slate-100">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
+                  <span className="font-medium text-slate-500 mt-0.5">Emergency Contact</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-primary font-medium">{d.emergencyName}</span>
+                    <span className="text-primary font-medium">{d.emergencyPhone}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-slate-100" />
+
+            <div>
+              <h3 className="text-base font-semibold text-primary mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-500 text-[20px]">school</span>
+                Institutional Reach &amp; Context
+              </h3>
+              <div className="flex flex-col gap-5 text-[15px]">
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
+                  <span className="font-medium text-slate-500">State</span>
+                  <span className="text-primary font-medium">{ambassador.state} State</span>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
+                  <span className="font-medium text-slate-500">Institution</span>
+                  <span className="text-primary font-medium">{d.institution}</span>
+                </div>
+                <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
+                  <span className="font-medium text-slate-500">Target Audience</span>
+                  <span className="text-primary font-medium">{d.targetAudience}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="flex flex-col gap-10">
+            <div>
+              <h3 className="text-base font-semibold text-primary mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-500 text-[20px]">location_on</span>
+                Operational Details
+              </h3>
+              <div className="flex flex-col gap-8">
+                <div>
+                  <span className="block font-medium text-[13px] text-slate-500 mb-3">Assigned Jurisdiction</span>
+                  <div className="flex flex-wrap gap-2">
+                    {d.jurisdictions.map((j) => (
+                      <span key={j} className="px-3 py-1.5 bg-sky-100/60 text-sky-900 rounded-md font-medium text-sm">
+                        {j}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="block font-medium text-[13px] text-slate-500">Payout Account</span>
+                    <span className="px-2 py-1 bg-slate-100 rounded text-[11px] font-bold text-primary uppercase tracking-wider">
+                      {d.commissionRate}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="w-12 h-12 bg-[#4B1273] rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                      {initials[0]}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[15px] text-primary flex items-center gap-1.5 mb-1">
+                        {d.fullName.toUpperCase()}
+                        <span className="material-symbols-outlined icon-filled text-[16px] text-[#10B981]">verified</span>
+                      </p>
+                      <p className="text-sm text-slate-500 font-medium">{d.bankName} • {d.bankNumber}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <hr className="border-slate-100" />
+
+            <div>
+              <h3 className="text-base font-semibold text-primary mb-6 flex items-center gap-2">
+                <span className="material-symbols-outlined text-slate-500 text-[20px]">fact_check</span>
+                Verification Checklist
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {d.checklist.map((item) => (
+                  <div key={item} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <span className="material-symbols-outlined icon-filled text-[#10B981] text-[20px]">check_circle</span>
+                    <span className="text-sm font-medium text-primary">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
@@ -1330,7 +1898,8 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail'>('dashboard');
+  const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
 
   const handleRejectMatch = (pairId: string) => {
@@ -1461,6 +2030,10 @@ export default function AdminDashboard() {
           ) : activeView === 'ambassadors' ? (
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
               Ambassador Network &amp; Payout Operations
+            </h2>
+          ) : activeView === 'ambassador-detail' ? (
+            <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
+              Ambassador Profile
             </h2>
           ) : (
             <div className="relative hidden md:block">
@@ -1868,7 +2441,9 @@ export default function AdminDashboard() {
         ) : activeView === 'users' ? (
           <RoommateDirectory />
         ) : activeView === 'ambassadors' ? (
-          <AmbassadorDirectory />
+          <AmbassadorDirectory onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }} />
+        ) : activeView === 'ambassador-detail' && selectedAmbassador ? (
+          <AmbassadorDetail ambassador={selectedAmbassador} onBack={() => setActiveView('ambassadors')} />
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
