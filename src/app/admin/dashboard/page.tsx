@@ -1004,6 +1004,316 @@ function RoommateDirectory() {
   );
 }
 
+interface AmbassadorRow {
+  id: string;
+  name: string;
+  tier: 'Gold' | 'Silver' | 'Bronze';
+  state: string;
+  location: string;
+  status: 'Verified' | 'Pending' | 'Unverified';
+  seekers: number;
+  matches: number;
+  commission: string;
+  imageUrl?: string;
+}
+
+const AMBASSADOR_ROWS: AmbassadorRow[] = [
+  { id: 'amb-1', name: 'Jide A.', tier: 'Gold', state: 'Lagos', location: 'UNILAG / Akoka', status: 'Verified', seekers: 24, matches: 18, commission: '₦90,000' },
+  { id: 'amb-2', name: 'Chioma O.', tier: 'Silver', state: 'Abuja', location: 'Gwarinpa', status: 'Verified', seekers: 42, matches: 30, commission: '₦150,000' },
+  { id: 'amb-3', name: 'Emeka E.', tier: 'Silver', state: 'Lagos', location: 'Ikeja', status: 'Pending', seekers: 12, matches: 10, commission: '₦50,000' },
+  { id: 'amb-4', name: 'Amina B.', tier: 'Gold', state: 'Kano', location: 'BUK / Old Site', status: 'Verified', seekers: 35, matches: 28, commission: '₦140,000' },
+  { id: 'amb-5', name: 'Tunde S.', tier: 'Bronze', state: 'Oyo', location: 'UI / Agbowo', status: 'Unverified', seekers: 8, matches: 5, commission: '₦25,000' },
+  { id: 'amb-6', name: 'Fatima K.', tier: 'Silver', state: 'Kaduna', location: 'Zaria / Samaru', status: 'Verified', seekers: 19, matches: 15, commission: '₦75,000' },
+  { id: 'amb-7', name: 'Chidi N.', tier: 'Gold', state: 'Enugu', location: 'UNN / Nsukka', status: 'Pending', seekers: 52, matches: 45, commission: '₦225,000' },
+  { id: 'amb-8', name: 'Ngozi P.', tier: 'Bronze', state: 'Rivers', location: 'Uniport / Choba', status: 'Verified', seekers: 15, matches: 11, commission: '₦55,000' },
+  { id: 'amb-9', name: 'Ibrahim M.', tier: 'Silver', state: 'Kano', location: 'BUK / New Site', status: 'Unverified', seekers: 9, matches: 4, commission: '₦20,000' },
+  { id: 'amb-10', name: 'Zainab L.', tier: 'Gold', state: 'Abuja', location: 'Gwarinpa', status: 'Verified', seekers: 38, matches: 31, commission: '₦155,000' },
+];
+
+const AMBASSADOR_AVATARS: Record<string, string> = {
+  'amb-1': 'https://lh3.googleusercontent.com/aida/AP1WRLu55m5g8d6QBQiBic9Lr7CDc5r2BqvinbLI9RJiyLI3LouQWwKiOOu3_1Ra0qFYVJrsFwZcp5Engo8pclem6vm4ZqlMkvPBcDzqdT-AIO_0ru_suBD9gupkLA3SlOt5qVAU3XobM7agm_eaOCY0g_8YET_7FeVJ1lLMZDK8jc04fAXZgDhY-mSSDYPWV9GHnw8VqQ56Hm8-306s1wzuCvd9zRNSwF4VH5HWsJ-Tk8nN3d_8wOB5fk3c3iJ5',
+  'amb-2': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
+  'amb-3': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
+  'amb-4': 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=150',
+  'amb-5': 'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&q=80&w=150',
+  'amb-6': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+  'amb-7': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150',
+};
+
+const TIER_BADGE: Record<AmbassadorRow['tier'], string> = {
+  Gold: 'bg-amber-100 text-amber-800',
+  Silver: 'bg-slate-200 text-slate-700',
+  Bronze: 'bg-orange-100 text-orange-800',
+};
+
+const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: string; label: string }> = {
+  Verified: { icon: 'check_circle', cls: 'text-[#00a472]', label: 'Verified' },
+  Pending: { icon: 'pending', cls: 'text-amber-500', label: 'Pending' },
+  Unverified: { icon: 'error', cls: 'text-outline', label: 'Unverified' },
+};
+
+function AmbassadorDirectory() {
+  const [query, setQuery] = useState('');
+  const [verification, setVerification] = useState('Verification: All');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
+
+  const filteredRows = AMBASSADOR_ROWS.filter((row) => {
+    const q = query.toLowerCase();
+    const matchesSearch =
+      row.name.toLowerCase().includes(q) ||
+      row.location.toLowerCase().includes(q);
+    const matchesVerification =
+      verification === 'Verification: All' || row.status === verification;
+    return matchesSearch && matchesVerification;
+  });
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* Subtitle */}
+      <div>
+        <p className="text-sm text-slate-500">
+          Track referral performance, commission splits, and ambassador payouts.
+        </p>
+      </div>
+
+      {/* Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {[
+          { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: '32' },
+          { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: '412', badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
+          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: '₦240,000', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: '₦1.2M', badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
+          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: '12' },
+          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: '5', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+        ].map((c) => (
+          <div
+            key={c.label}
+            className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col gap-2"
+          >
+            <div className="flex items-center gap-2 text-slate-500">
+              <span className={`material-symbols-outlined text-[17px] ${c.iconCls}`}>{c.icon}</span>
+              <span className="text-[12px] font-medium">{c.label}</span>
+            </div>
+            <div className="flex items-end justify-between gap-2">
+              <span className="font-display text-2xl font-extrabold text-dark-slate leading-none">
+                {c.value}
+              </span>
+              {c.badge && (
+                <span className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-bold ${c.badgeCls}`}>
+                  {c.badge}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter Bar */}
+      <div className="bg-white p-3 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="flex-1 w-full relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+            search
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:border-bright-cyan focus:ring-2 focus:ring-bright-cyan/20 transition-all text-sm text-dark-slate"
+            placeholder="Search by ambassador name, referral code (AMB-JIDE), or campus..."
+            type="text"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
+            <option>State (Lagos)</option>
+            <option>State (Abuja)</option>
+            <option>State (Kano)</option>
+            <option>State (Oyo)</option>
+          </select>
+          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
+            <option>Location (UNILAG / Akoka)</option>
+            <option>Location (Gwarinpa)</option>
+            <option>Location (Ikeja)</option>
+          </select>
+          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
+            <option>All Payout States</option>
+            <option>Pending</option>
+            <option>Cleared</option>
+          </select>
+          <select
+            value={verification}
+            onChange={(e) => setVerification(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>Verification: All</option>
+            <option>Verified</option>
+            <option>Unverified</option>
+            <option>Pending</option>
+          </select>
+          <div className="h-8 border-l border-slate-200 mx-1" />
+          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1">
+            <button className="p-1 rounded bg-bright-cyan/10 text-bright-cyan">
+              <span className="material-symbols-outlined text-sm block">table_rows</span>
+            </button>
+            <button className="p-1 rounded text-slate-400 hover:text-dark-slate">
+              <span className="material-symbols-outlined text-sm block">grid_view</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50">
+                {['Ambassador', 'Tier', 'State', 'Location', 'Status', 'Referrals & Matches', 'Commission', ''].map((h, i) => (
+                  <th
+                    key={i}
+                    className={`p-4 text-[11px] text-slate-500 uppercase tracking-wider font-semibold whitespace-nowrap ${
+                      i === 7 ? 'w-12 text-center' : ''
+                    }`}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredRows.map((row) => {
+                const st = AMB_STATUS_BADGE[row.status];
+                return (
+                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative shrink-0">
+                          <img
+                            src={AMBASSADOR_AVATARS[row.id] ?? `https://i.pravatar.cc/100?u=${row.id}`}
+                            className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                            alt={row.name}
+                          />
+                          <span className="material-symbols-outlined icon-filled absolute -bottom-1 -right-1 bg-white rounded-full text-[#00668a] text-sm p-0.5">
+                            verified
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-dark-slate">{row.name}</span>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${TIER_BADGE[row.tier]}`}>
+                        {row.tier}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="inline-flex max-w-max px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-wider">
+                        {row.state}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-xs text-slate-500">{row.location}</span>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`material-symbols-outlined icon-filled text-sm ${st.cls}`}>
+                          {st.icon}
+                        </span>
+                        <span className="text-xs text-dark-slate">{st.label}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-sm text-dark-slate">
+                      {row.seekers} Seekers | {row.matches} Paid Matches
+                    </td>
+                    <td className="p-4 text-sm font-semibold text-dark-slate">{row.commission}</td>
+                    <td className="p-4 text-center relative">
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                        className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
+                      >
+                        <span className="material-symbols-outlined text-lg">more_vert</span>
+                      </button>
+                      {openMenuId === row.id && (
+                        <div
+                          ref={menuRef}
+                          className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1.5"
+                        >
+                          {[
+                            { icon: 'person', label: 'View Profile' },
+                            { icon: 'payments', label: 'Manage Payouts' },
+                            { icon: 'message', label: 'Send Message' },
+                          ].map((item) => (
+                            <button
+                              key={item.label}
+                              onClick={() => setOpenMenuId(null)}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-slate-50 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[17px] text-slate-500">
+                                {item.icon}
+                              </span>
+                              <span className="text-[13px] text-dark-slate">{item.label}</span>
+                            </button>
+                          ))}
+                          <div className="my-1.5 border-t border-slate-100" />
+                          <button
+                            onClick={() => setOpenMenuId(null)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-red-50 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[17px] text-red-600">
+                              block
+                            </span>
+                            <span className="text-[13px] text-red-600">Suspend Ambassador</span>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 rounded-b-xl">
+          <span className="text-sm text-slate-500">
+            Showing{' '}
+            <span className="font-semibold text-dark-slate">1</span> to{' '}
+            <span className="font-semibold text-dark-slate">{filteredRows.length}</span> of{' '}
+            <span className="font-semibold text-dark-slate">{AMBASSADOR_ROWS.length}</span> ambassadors
+          </span>
+          <div className="flex items-center gap-2">
+            <button disabled className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50">
+              <span className="material-symbols-outlined text-sm block">chevron_left</span>
+            </button>
+            {[1, 2, 3].map((n) => (
+              <button
+                key={n}
+                className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                  n === 1 ? 'bg-[#00668a] text-white' : 'hover:bg-slate-50'
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+            <button className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+              <span className="material-symbols-outlined text-sm block">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
@@ -1012,7 +1322,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors'>('dashboard');
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
 
   const handleRejectMatch = (pairId: string) => {
@@ -1140,6 +1450,10 @@ export default function AdminDashboard() {
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
               Roommate Directory &amp; Operations
             </h2>
+          ) : activeView === 'ambassadors' ? (
+            <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
+              Ambassador Network &amp; Payout Operations
+            </h2>
           ) : (
             <div className="relative hidden md:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
@@ -1222,6 +1536,17 @@ export default function AdminDashboard() {
           >
             <span className="material-symbols-outlined">person</span>
             Users
+          </button>
+          <button
+            onClick={() => setActiveView('ambassadors')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
+              activeView === 'ambassadors'
+                ? 'bg-slate-800 text-bright-cyan font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <span className="material-symbols-outlined">badge</span>
+            Ambassadors
           </button>
           <a
             href="#"
@@ -1534,6 +1859,8 @@ export default function AdminDashboard() {
           </>
         ) : activeView === 'users' ? (
           <RoommateDirectory />
+        ) : activeView === 'ambassadors' ? (
+          <AmbassadorDirectory />
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
