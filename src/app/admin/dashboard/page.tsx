@@ -2152,6 +2152,26 @@ const PAYOUT_ROWS: PayoutRow[] = [
   { id: 'out8', name: 'Grace Eke', code: 'AMB-GRACE', campus: 'UNN', bank: 'Kuda Bank', account: '5123456789', verified: 'GRACE EKE', balance: '₦16,600', amount: '₦12,000' },
 ];
 
+type RefundStatus = 'Pending Review' | 'Disputed' | 'Refunded';
+
+interface RefundRow {
+  id: string;
+  caseId: string;
+  date: string;
+  seeker: string;
+  amount: string;
+  reason: string;
+  impact: string;
+  impactError: boolean;
+  status: RefundStatus;
+}
+
+const REFUND_ROWS: RefundRow[] = [
+  { id: 'r1', caseId: 'REF-90218', date: '18 Aug 2026', seeker: 'Chidi O.', amount: '₦2,000', reason: 'Double Payment', impact: '-₦1,000 Split Recovery', impactError: true, status: 'Pending Review' },
+  { id: 'r2', caseId: 'REF-90215', date: '17 Aug 2026', seeker: 'Amina K.', amount: '₦5,000', reason: 'Match Cancelled', impact: 'No Impact', impactError: false, status: 'Disputed' },
+  { id: 'r3', caseId: 'REF-90210', date: '15 Aug 2026', seeker: 'Tunde W.', amount: '₦3,500', reason: 'Technical Issue', impact: '-₦1,750 Split Recovery', impactError: true, status: 'Refunded' },
+];
+
 function PaymentControl() {
   const [tab, setTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
   const [query, setQuery] = useState('');
@@ -2518,10 +2538,121 @@ function PaymentControl() {
         )}
 
         {tab === 'refunds' && (
-        <div className="p-10 flex-1 flex flex-col items-center justify-center text-center">
-          <span className="material-symbols-outlined text-4xl text-slate-300 mb-3">verified_user</span>
-          <p className="text-sm font-semibold text-slate-700">No refunds or disputes</p>
-          <p className="text-sm text-slate-400 mt-1">There are currently no refund requests or open disputes to review.</p>
+        <div className="p-0 flex-1 flex flex-col">
+          {/* Refunds Toolbar */}
+          <div className="p-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-slate-50">
+            <div className="flex items-center gap-4 flex-1 max-w-2xl">
+              <div className="relative flex-1">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                  search
+                </span>
+                <input
+                  className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#40c2fd] focus:ring-2 focus:ring-[#40c2fd]/20 transition-all"
+                  placeholder="Search by ref, seeker, or reason..."
+                  type="text"
+                />
+              </div>
+              <select className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm text-slate-600 font-medium focus:outline-none focus:border-[#40c2fd]">
+                <option>All Statuses</option>
+                <option>Pending Review</option>
+                <option>Disputed</option>
+                <option>Refunded</option>
+              </select>
+            </div>
+            <button className="flex items-center gap-2 bg-primary text-white text-sm font-medium px-4 py-2 rounded-lg hover:opacity-90 transition-all active:scale-95">
+              <span className="material-symbols-outlined text-sm">add</span>
+              New Dispute Case
+            </button>
+          </div>
+
+          {/* Refunds Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3 font-semibold">Case ID &amp; Date</th>
+                  <th className="px-4 py-3 font-semibold">Seeker / Transaction</th>
+                  <th className="px-4 py-3 font-semibold">Refund Reason</th>
+                  <th className="px-4 py-3 font-semibold">Ambassador Impact</th>
+                  <th className="px-4 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {REFUND_ROWS.map((row) => (
+                  <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
+                    <td className="px-4 py-3 align-top">
+                      <div className="text-sm font-semibold text-slate-800">{row.caseId}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{row.date}</div>
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="text-sm font-medium text-slate-800">{row.seeker}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">➔ {row.amount}</div>
+                    </td>
+                    <td className="px-4 py-3 align-top text-sm text-slate-700">{row.reason}</td>
+                    <td className={`px-4 py-3 align-top text-sm font-medium ${row.impactError ? 'text-red-600' : 'text-slate-500'}`}>
+                      {row.impact}
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      {row.status === 'Pending Review' && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-md border border-amber-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          Pending Review
+                        </span>
+                      )}
+                      {row.status === 'Disputed' && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-md border border-red-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          Disputed
+                        </span>
+                      )}
+                      {row.status === 'Refunded' && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-md border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Refunded
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 align-top text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {row.status !== 'Refunded' ? (
+                          <>
+                            <button className="bg-[#10B981] hover:opacity-90 text-white px-2 py-1 rounded text-xs font-bold transition-colors">
+                              Approve
+                            </button>
+                            <button className="bg-[#EF4444] hover:opacity-90 text-white px-2 py-1 rounded text-xs font-bold transition-colors">
+                              Reject
+                            </button>
+                          </>
+                        ) : (
+                          <button className="text-slate-400 hover:text-slate-700 p-1 transition-colors">
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                          </button>
+                        )}
+                        <button className="text-slate-400 hover:text-slate-700 p-1 transition-colors">
+                          <span className="material-symbols-outlined text-sm">more_vert</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Refunds Footer */}
+          <div className="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+            <span className="text-sm text-slate-500">Showing 3 of 3 dispute cases</span>
+            <div className="flex items-center gap-1">
+              <button disabled className="p-1 rounded text-slate-400 hover:bg-slate-100 transition-colors disabled:opacity-50">
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+              <button className="w-8 h-8 rounded bg-[#40c2fd] text-white text-sm flex items-center justify-center">1</button>
+              <button disabled className="p-1 rounded text-slate-400 hover:bg-slate-100 transition-colors disabled:opacity-50">
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
         </div>
         )}
       </section>
