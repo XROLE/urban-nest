@@ -1080,6 +1080,21 @@ function AmbassadorDirectory() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
+      {/* Section Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#00668a] to-[#00a472] p-5 shadow-sm flex items-center gap-4">
+        <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-white icon-filled">badge</span>
+        </div>
+        <div>
+          <h2 className="font-display text-lg font-bold text-white leading-tight">
+            Ambassador Network
+          </h2>
+          <p className="text-[12px] text-white/80 font-medium">
+            Referral performance, commission splits &amp; payout management
+          </p>
+        </div>
+      </div>
+
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
