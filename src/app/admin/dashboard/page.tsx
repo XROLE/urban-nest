@@ -2484,10 +2484,10 @@ function PaymentControl() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg border border-emerald-200 hover:bg-emerald-100 transition-colors">
+                        <button className="px-3 py-1.5 bg-emerald-700 text-white text-xs font-semibold rounded-lg hover:bg-emerald-800 shadow-sm transition-colors">
                           Process
                         </button>
-                        <button className="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-lg border border-red-200 hover:bg-red-100 transition-colors">
+                        <button className="px-3 py-1.5 bg-red-700 text-white text-xs font-semibold rounded-lg hover:bg-red-800 shadow-sm transition-colors">
                           Reject
                         </button>
                         <button className="p-1 rounded hover:bg-slate-100 text-slate-400 transition-colors">
