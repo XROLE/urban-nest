@@ -747,7 +747,81 @@ const STATUS_BADGE: Record<string, string> = {
   'Rematch Requested': 'bg-error-container text-on-error-container',
 };
 
-function RoommateDirectory() {
+interface UserDetailData {
+  fullName: string;
+  phone: string;
+  email: string;
+  gender: string;
+  ageBracket: string;
+  religion: string;
+  marStatus: string;
+  occupation: string;
+  schedule: string;
+  prefAreas: string;
+  budgetRange: string;
+  moveInDate: string;
+  bio: string;
+  feesPaid: string;
+  paymentsCount: string;
+  referralSource: string;
+  referralAttribution: string;
+  activeMatches: string;
+}
+
+const USER_DETAILS: Record<string, UserDetailData> = {
+  'RM-104': {
+    fullName: 'Chidi Okonkwo',
+    phone: '+234 812 345 6789',
+    email: 'chidi.o@gmail.com',
+    gender: 'Male',
+    ageBracket: '22 - 25',
+    religion: 'Christian',
+    marStatus: 'Single',
+    occupation: 'Software Engineer',
+    schedule: 'Hybrid',
+    prefAreas: 'UNILAG/Yaba',
+    budgetRange: '₦250k - ₦350k',
+    moveInDate: '15 Sept 2026',
+    bio: '"Quiet and organized tech guy looking for a neat roommate. I mostly work from home during the day and value a peaceful environment."',
+    feesPaid: '₦15,000',
+    paymentsCount: '3 Successful Payments',
+    referralSource: 'AMB-JIDE',
+    referralAttribution: 'Attributed to Jide Adeshina',
+    activeMatches: '2',
+  },
+};
+
+const FALLBACK_USER_DETAILS = (
+  row: DirectoryRow,
+  idx: number
+): UserDetailData => ({
+  fullName: row.name,
+  phone: '+234 8' + String(10 + (idx % 90)) + ' 000 000' + String(idx % 10),
+  email: `seeker${row.id.replace(/[^0-9]/g, '')}@gmail.com`,
+  gender: idx % 2 === 0 ? 'Male' : 'Female',
+  ageBracket: ['18 - 21', '22 - 25', '26 - 29'][idx % 3],
+  religion: ['Christian', 'Muslim'][idx % 2],
+  marStatus: 'Single',
+  occupation: ['Software Engineer', 'Designer', 'Student', 'Analyst'][idx % 4],
+  schedule: ['Remote', 'Hybrid', 'On-Site'][idx % 3],
+  prefAreas: row.location,
+  budgetRange: row.budget,
+  moveInDate: row.moveIn,
+  bio: `"Looking for a clean, respectful roommate in ${row.location}. Prefers a calm and organized living environment."`,
+  feesPaid: '₦' + String(10000 + idx * 5000),
+  paymentsCount: `${1 + (idx % 4)} Successful Payment${(1 + (idx % 4)) === 1 ? '' : 's'}`,
+  referralSource: row.ambassador.startsWith('Ref:') ? row.ambassador.replace('Ref: ', '') : 'Direct',
+  referralAttribution: row.ambassador.startsWith('Ref:') ? 'Attributed to ambassador referral' : 'No referral attribution',
+  activeMatches: String(idx % 3),
+});
+
+function getUserDetail(row: DirectoryRow): UserDetailData {
+  if (USER_DETAILS[row.id]) return USER_DETAILS[row.id];
+  const idx = DIRECTORY_ALL_ROWS.findIndex((r) => r.id === row.id);
+  return FALLBACK_USER_DETAILS(row, idx >= 0 ? idx : 0);
+}
+
+function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void }) {
   const [query, setQuery] = useState('');
   const [stateFilter, setStateFilter] = useState('State: Lagos');
   const [statusFilter, setStatusFilter] = useState('Status: All Statuses');
@@ -880,7 +954,11 @@ function RoommateDirectory() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rows.map((row) => (
-                <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                <tr
+                  key={row.id}
+                  onClick={() => onSelect(row)}
+                  className="hover:bg-slate-50 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
@@ -914,7 +992,10 @@ function RoommateDirectory() {
                   </td>
                   <td className="px-4 py-3 text-right relative">
                     <button
-                      onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === row.id ? null : row.id);
+                      }}
                       className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
                     >
                       <span className="material-symbols-outlined text-lg">more_vert</span>
@@ -922,6 +1003,7 @@ function RoommateDirectory() {
                     {openMenuId === row.id && (
                       <div
                         ref={menuRef}
+                        onClick={(e) => e.stopPropagation()}
                         className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1.5"
                       >
                         {[
@@ -1890,6 +1972,138 @@ function AmbassadorDetail({
   );
 }
 
+function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }) {
+  const d = getUserDetail(user);
+  const initials = user.initials;
+
+  const Field = ({ label, value, strong }: { label: string; value: string; strong?: boolean }) => (
+    <div className="flex flex-col gap-1">
+      <dt className="text-slate-500 font-medium text-[13px]">{label}</dt>
+      <dd className={`text-primary ${strong ? 'font-bold text-[16px]' : 'font-semibold text-[15px]'}`}>{value}</dd>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* Back */}
+      <div className="flex items-center gap-2 text-sm text-slate-500">
+        <button onClick={onBack} className="hover:text-primary flex items-center gap-1.5 transition-colors font-medium">
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          Back to Users
+        </button>
+        <span className="mx-1 text-slate-300">/</span>
+        <span className="text-primary font-semibold">{user.seekerId}</span>
+      </div>
+
+      {/* Header Banner */}
+      <section className="bg-white rounded-2xl shadow-sm p-6 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 border border-slate-100">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-primary font-bold text-[24px] shrink-0 border-4 border-white shadow-sm">
+            {initials}
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold text-xl text-primary tracking-tight">{d.fullName}</h2>
+              <span className="bg-slate-100 text-slate-500 font-bold text-xs px-2.5 py-1 rounded-md">{user.seekerId}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="bg-amber-50 text-amber-700 font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-amber-100/50">
+                <span className="w-2 h-2 rounded-full bg-amber-400" /> Seeking Roommate
+              </span>
+              <span className="bg-emerald-50 text-emerald-700 font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100/50">
+                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Account Active
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-3 w-full xl:w-auto">
+          <button className="bg-[#38BDF8] text-white font-semibold text-sm px-5 py-2.5 rounded-xl shadow-sm hover:bg-[#38BDF8]/90 transition-colors flex items-center gap-2 flex-1 xl:flex-none justify-center">
+            <span className="material-symbols-outlined text-[18px]">bolt</span> Force Manual Match
+          </button>
+          <button className="bg-white border border-emerald-200 text-emerald-600 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-emerald-50 transition-colors flex items-center gap-2 flex-1 xl:flex-none justify-center shadow-sm">
+            <span className="material-symbols-outlined text-[18px]">chat</span> Contact on WhatsApp
+          </button>
+          <button className="bg-white border border-red-200 text-red-500 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-red-50 transition-colors flex items-center gap-2 flex-1 xl:flex-none justify-center shadow-sm">
+            <span className="material-symbols-outlined text-[18px]">block</span> Suspend Account
+          </button>
+        </div>
+      </section>
+
+      {/* Metrics Row */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-slate-100">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="font-bold text-[11px] uppercase tracking-widest text-slate-400">Total Match Fees Paid</span>
+            <span className="material-symbols-outlined text-emerald-500 text-[20px]">payments</span>
+          </div>
+          <div className="font-bold text-3xl text-primary">{d.feesPaid}</div>
+          <div className="text-emerald-600 font-medium text-[13px] bg-emerald-50 self-start px-3 py-1 rounded-md">{d.paymentsCount}</div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-slate-100">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="font-bold text-[11px] uppercase tracking-widest text-slate-400">Referral Source</span>
+            <span className="material-symbols-outlined text-[#38BDF8] text-[20px]">share</span>
+          </div>
+          <div className="font-bold text-3xl text-primary">{d.referralSource}</div>
+          <div className="text-slate-600 font-medium text-[13px] bg-slate-100 self-start px-3 py-1 rounded-md">{d.referralAttribution}</div>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-slate-100">
+          <div className="flex justify-between items-center text-slate-500">
+            <span className="font-bold text-[11px] uppercase tracking-widest text-slate-400">Active Matches</span>
+            <span className="material-symbols-outlined text-[#38BDF8] text-[20px]">sync</span>
+          </div>
+          <div className="font-bold text-3xl text-primary">{d.activeMatches}</div>
+          <div className="text-blue-600 font-medium text-[13px] bg-blue-50 self-start px-3 py-1 rounded-md">In Progress</div>
+        </div>
+      </section>
+
+      {/* Tabbed Content */}
+      <section className="bg-white rounded-2xl shadow-sm flex flex-col border border-slate-100 overflow-hidden">
+        <div className="flex border-b border-slate-100 px-6 pt-2 bg-slate-50/50">
+          <button className="px-6 py-4 text-sm text-primary border-b-2 border-primary font-bold transition-colors">Profile &amp; Preferences</button>
+          <button className="px-6 py-4 text-sm text-slate-500 font-medium hover:text-primary transition-colors">Match History (4)</button>
+          <button className="px-6 py-4 text-sm text-slate-500 font-medium hover:text-primary transition-colors">Paystack Transactions (3)</button>
+        </div>
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="flex flex-col gap-6">
+            <h3 className="font-bold text-lg text-primary border-b border-slate-100 pb-4">Demographics &amp; Contact</h3>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
+              <Field label="Phone/WhatsApp" value={d.phone} />
+              <Field label="Email" value={d.email} />
+              <Field label="Gender" value={d.gender} />
+              <Field label="Age Bracket" value={d.ageBracket} />
+              <Field label="Religion" value={d.religion} />
+              <Field label="Status" value={d.marStatus} />
+              <Field label="Occupation" value={d.occupation} />
+              <Field label="Schedule" value={d.schedule} />
+            </dl>
+          </div>
+          <div className="flex flex-col gap-6">
+            <h3 className="font-bold text-lg text-primary border-b border-slate-100 pb-4">Location, Budget &amp; Co-living</h3>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
+              <Field label="State" value={user.state} />
+              <Field label="Preferred Areas" value={d.prefAreas} />
+              <Field label="Target Budget" value={user.budget} strong />
+              <Field label="Budget Range" value={d.budgetRange} />
+              <div className="col-span-full flex flex-col gap-1">
+                <dt className="text-slate-500 font-medium text-[13px]">Target Move-in Date</dt>
+                <dd className="text-primary font-semibold text-[15px]">{d.moveInDate}</dd>
+              </div>
+            </dl>
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mt-2">
+              <h4 className="font-semibold text-sm text-slate-700 mb-3 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[18px] text-slate-400">format_quote</span>
+                User Bio
+              </h4>
+              <p className="font-medium text-[15px] leading-relaxed text-slate-600 italic">{d.bio}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
@@ -1898,8 +2112,9 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail' | 'user-detail'>('dashboard');
   const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DirectoryRow | null>(null);
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
 
   const handleRejectMatch = (pairId: string) => {
@@ -2026,6 +2241,10 @@ export default function AdminDashboard() {
           ) : activeView === 'users' ? (
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
               Roommate Directory &amp; Operations
+            </h2>
+          ) : activeView === 'user-detail' ? (
+            <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
+              User Profile
             </h2>
           ) : activeView === 'ambassadors' ? (
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
@@ -2439,7 +2658,9 @@ export default function AdminDashboard() {
         </div>
           </>
         ) : activeView === 'users' ? (
-          <RoommateDirectory />
+          <RoommateDirectory onSelect={(row) => { setSelectedUser(row); setActiveView('user-detail'); }} />
+        ) : activeView === 'user-detail' && selectedUser ? (
+          <UserDetail user={selectedUser} onBack={() => setActiveView('users')} />
         ) : activeView === 'ambassadors' ? (
           <AmbassadorDirectory onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }} />
         ) : activeView === 'ambassador-detail' && selectedAmbassador ? (
