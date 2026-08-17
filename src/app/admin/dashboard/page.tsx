@@ -1080,13 +1080,6 @@ function AmbassadorDirectory() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Subtitle */}
-      <div>
-        <p className="text-sm text-slate-500">
-          Track referral performance, commission splits, and ambassador payouts.
-        </p>
-      </div>
-
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
