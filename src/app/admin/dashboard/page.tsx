@@ -496,6 +496,466 @@ function MatchSettingsModal({ open, onClose }: { open: boolean; onClose: () => v
   ) : null;
 }
 
+interface DirectoryRow {
+  id: string;
+  initials: string;
+  name: string;
+  seekerId: string;
+  state: string;
+  location: string;
+  budget: string;
+  moveIn: string;
+  status: string;
+  ambassador: string;
+}
+
+const DIRECTORY_ROWS: DirectoryRow[] = [
+  {
+    id: 'RM-104',
+    initials: 'CO',
+    name: 'Chidi O.',
+    seekerId: '#RM-104',
+    state: 'Lagos',
+    location: 'UNILAG / Akoka',
+    budget: '₦200k/yr',
+    moveIn: 'Sept 2026',
+    status: 'Seeking',
+    ambassador: 'Ref: AMB-JIDE',
+  },
+  {
+    id: 'RM-105',
+    initials: 'AM',
+    name: 'Amina M.',
+    seekerId: '#RM-105',
+    state: 'Lagos',
+    location: 'Yaba',
+    budget: '₦350k/yr',
+    moveIn: 'Oct 2026',
+    status: 'Matched & Paid',
+    ambassador: '-',
+  },
+  {
+    id: 'RM-106',
+    initials: 'BO',
+    name: 'Blessing O.',
+    seekerId: '#RM-106',
+    state: 'Lagos',
+    location: 'Lekki Ph 1',
+    budget: '₦800k/yr',
+    moveIn: 'Aug 2026',
+    status: 'Pending Payment',
+    ambassador: 'Ref: AMB-TOLA',
+  },
+  {
+    id: 'RM-107',
+    initials: 'EN',
+    name: 'Emeka N.',
+    seekerId: '#RM-107',
+    state: 'Abuja',
+    location: 'Gwarinpa',
+    budget: '₦450k/yr',
+    moveIn: 'Nov 2026',
+    status: 'Rematch Requested',
+    ambassador: '-',
+  },
+  {
+    id: 'RM-108',
+    initials: 'FE',
+    name: 'Faith E.',
+    seekerId: '#RM-108',
+    state: 'Abuja',
+    location: 'Gwarinpa',
+    budget: '₦450k/yr',
+    moveIn: 'Nov 2026',
+    status: 'Seeking',
+    ambassador: '-',
+  },
+  {
+    id: 'RM-109',
+    initials: 'IK',
+    name: 'Ibrahim K.',
+    seekerId: '#RM-109',
+    state: 'Lagos',
+    location: 'Ikeja',
+    budget: '₦600k/yr',
+    moveIn: 'Jan 2027',
+    status: 'Matched & Paid',
+    ambassador: 'Ref: AMB-TOLA',
+  },
+  {
+    id: 'RM-110',
+    initials: 'ZA',
+    name: 'Zainab A.',
+    seekerId: '#RM-110',
+    state: 'Oyo',
+    location: 'Ibadan',
+    budget: '₦150k/yr',
+    moveIn: 'Dec 2026',
+    status: 'Pending Payment',
+    ambassador: '-',
+  },
+  {
+    id: 'RM-111',
+    initials: 'OS',
+    name: 'Oluwatobi S.',
+    seekerId: '#RM-111',
+    state: 'Lagos',
+    location: 'Lekki Ph 1',
+    budget: '₦1.2M/yr',
+    moveIn: 'Oct 2026',
+    status: 'Rematch Requested',
+    ambassador: 'Ref: AMB-JIDE',
+  },
+  {
+    id: 'RM-112',
+    initials: 'CV',
+    name: 'Chioma V.',
+    seekerId: '#RM-112',
+    state: 'Lagos',
+    location: 'Yaba',
+    budget: '₦300k/yr',
+    moveIn: 'Sept 2026',
+    status: 'Seeking',
+    ambassador: '-',
+  },
+  {
+    id: 'RM-113',
+    initials: 'MY',
+    name: 'Musa Y.',
+    seekerId: '#RM-113',
+    state: 'Kano',
+    location: 'Tarauni',
+    budget: '₦200k/yr',
+    moveIn: 'Feb 2027',
+    status: 'Matched & Paid',
+    ambassador: 'Ref: AMB-TOLA',
+  },
+];
+
+const EXTRA_NAMES: [string, string][] = [
+  ['Ada', 'Adeyemi'],
+  ['Tunde', 'Bello'],
+  ['Funmi', 'Coker'],
+  ['Segun', 'Dada'],
+  ['Hauwa', 'Eze'],
+  ['Ngozi', 'Fagbemi'],
+  ['Ifeanyi', 'Garba'],
+  ['Kemi', 'Hassan'],
+  ['Lola', 'Ibrahim'],
+  ['Mubarak', 'Jallow'],
+  ['Nneka', 'Kalu'],
+  ['Obinna', 'Lawal'],
+  ['Precious', 'Mohammed'],
+  ['Rukayat', 'Nwachukwu'],
+  ['Sade', 'Okafor'],
+  ['Tayo', 'Peters'],
+  ['Uche', 'Quadri'],
+  ['Victoria', 'Raji'],
+  ['Wale', 'Salami'],
+  ['Yemi', 'Tijani'],
+  ['Zara', 'Umar'],
+  ['Akin', 'Victor'],
+  ['Bola', 'Williams'],
+  ['Chinwe', 'Xavier'],
+  ['Dayo', 'Yusuf'],
+  ['Emeka', 'Adeleke'],
+  ['Femi', 'Balogun'],
+  ['Gbenga', 'Chukwu'],
+  ['Halima', 'Danladi'],
+  ['Ireti', 'Ekwere'],
+];
+
+const EXTRA_STATES: [string, string][] = [
+  ['Lagos', 'Surulere'],
+  ['Lagos', 'Victoria Island'],
+  ['Lagos', 'Ajegunle'],
+  ['Abuja', 'Wuse 2'],
+  ['Abuja', 'Maitama'],
+  ['Oyo', 'Ogbomoso'],
+  ['Oyo', 'Iwo'],
+  ['Kano', 'Fagge'],
+  ['Kano', 'Nassarawa'],
+  ['Rivers', 'Port Harcourt'],
+  ['Rivers', 'Trans Amadi'],
+  ['Enugu', 'Independence Layout'],
+  ['Kaduna', 'Barnawa'],
+  ['Anambra', 'Awka'],
+  ['Delta', 'Warri'],
+];
+
+const EXTRA_BUDGETS = [
+  '₦180k/yr',
+  '₦250k/yr',
+  '₦320k/yr',
+  '₦410k/yr',
+  '₦520k/yr',
+  '₦650k/yr',
+  '₦780k/yr',
+  '₦900k/yr',
+  '₦1.1M/yr',
+  '₦1.4M/yr',
+];
+
+const EXTRA_MOVE_INS = [
+  'Jan 2026',
+  'Feb 2026',
+  'Mar 2026',
+  'Apr 2026',
+  'May 2026',
+  'Jun 2026',
+  'Jul 2026',
+  'Aug 2026',
+  'Sept 2026',
+  'Oct 2026',
+  'Nov 2026',
+  'Dec 2026',
+];
+
+const EXTRA_STATUSES = [
+  'Seeking',
+  'Matched & Paid',
+  'Pending Payment',
+  'Rematch Requested',
+];
+
+const EXTRA_AMBASSADORS = ['Ref: AMB-JIDE', 'Ref: AMB-TOLA', 'Ref: AMB-SIMA', '-'];
+
+const EXTRA_MOCK_ROWS: DirectoryRow[] = EXTRA_NAMES.map(([first, last], i) => {
+  const id = 114 + i;
+  const initials = `${first[0]}${last[0]}`.toUpperCase();
+  const [state, location] = EXTRA_STATES[i % EXTRA_STATES.length];
+  return {
+    id: `RM-${id}`,
+    initials,
+    name: `${first} ${last.charAt(0)}.`,
+    seekerId: `#RM-${id}`,
+    state,
+    location,
+    budget: EXTRA_BUDGETS[i % EXTRA_BUDGETS.length],
+    moveIn: EXTRA_MOVE_INS[i % EXTRA_MOVE_INS.length],
+    status: EXTRA_STATUSES[i % EXTRA_STATUSES.length],
+    ambassador: EXTRA_AMBASSADORS[i % EXTRA_AMBASSADORS.length],
+  };
+});
+
+const DIRECTORY_ALL_ROWS: DirectoryRow[] = [...DIRECTORY_ROWS, ...EXTRA_MOCK_ROWS];
+
+const STATUS_BADGE: Record<string, string> = {
+  Seeking: 'bg-[#E0F2FE] text-[#0369A1]',
+  'Matched & Paid': 'bg-[#D1FAE5] text-[#047857]',
+  'Pending Payment': 'bg-[#FEF3C7] text-[#B45309]',
+  'Rematch Requested': 'bg-error-container text-on-error-container',
+};
+
+function RoommateDirectory() {
+  const [query, setQuery] = useState('');
+  const [stateFilter, setStateFilter] = useState('State: Lagos');
+  const [statusFilter, setStatusFilter] = useState('Status: All Statuses');
+
+  const filteredRows = DIRECTORY_ALL_ROWS.filter((row) => {
+    const q = query.toLowerCase();
+    const matchesSearch =
+      row.name.toLowerCase().includes(q) ||
+      row.seekerId.toLowerCase().includes(q);
+    const matchesState = stateFilter.includes(row.state);
+    return matchesSearch && matchesState;
+  });
+
+  const buildStatus = (row: DirectoryRow) => {
+    if (statusFilter === 'Status: Seeking') return row.status === 'Seeking';
+    if (statusFilter === 'Status: Matched & Paid') return row.status === 'Matched & Paid';
+    return true;
+  };
+
+  const rows = filteredRows.filter(buildStatus);
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* Metrics Row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: 'Total Profiles', value: 254, icon: 'group', iconBg: 'bg-surface-container', iconColor: 'text-on-surface-variant' },
+          { label: 'Seeking Unmatched', value: 48, icon: 'search', iconBg: 'bg-[#E0F2FE]', iconColor: 'text-[#0369A1]' },
+          { label: 'Pending Payment', value: 12, icon: 'payments', iconBg: 'bg-[#FEF3C7]', iconColor: 'text-[#B45309]' },
+          { label: 'Matched & Paid', value: 194, icon: 'task_alt', iconBg: 'bg-[#D1FAE5]', iconColor: 'text-[#047857]' },
+        ].map((c) => (
+          <div
+            key={c.label}
+            className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow"
+          >
+            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+              {c.label}
+            </span>
+            <div className="mt-3 flex items-end justify-between">
+              <span className="font-headline-xl text-2xl font-extrabold text-dark-slate">
+                {c.value}
+              </span>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${c.iconBg} ${c.iconColor}`}>
+                <span className="material-symbols-outlined text-[18px]">{c.icon}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter & Action Bar */}
+      <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200 flex flex-col xl:flex-row gap-3 items-start xl:items-center justify-between">
+        <div className="flex-1 w-full relative">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+            search
+          </span>
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-1.5 bg-slate-50 rounded-lg border border-slate-200 focus:outline-none focus:border-bright-cyan focus:ring-2 focus:ring-bright-cyan/20 text-[13px] transition-all"
+            placeholder="Search by name, phone, or Seeker ID (#RM-104)..."
+            type="text"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 w-full xl:w-auto">
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>State: Lagos</option>
+            <option>State: Abuja</option>
+            <option>State: Oyo</option>
+            <option>State: Kano</option>
+          </select>
+          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan">
+            <option>Loc: All</option>
+            <option>Loc: UNILAG / Akoka</option>
+            <option>Loc: Yaba</option>
+            <option>Loc: Lekki</option>
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>Status: All Statuses</option>
+            <option>Status: Seeking</option>
+            <option>Status: Matched & Paid</option>
+            <option>Status: Pending Payment</option>
+            <option>Status: Rematch Requested</option>
+          </select>
+          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan">
+            <option>Budget: Any Range</option>
+            <option>Budget: &lt; 100k</option>
+            <option>Budget: 100k - 300k</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-auto max-h-[560px]">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50 sticky top-0 z-10">
+                {['Seeker Name & ID', 'State & Location', 'Budget & Move-In', 'Status', 'Ambassador', ''].map((h, i) => (
+                  <th
+                    key={i}
+                    className={`px-4 py-3 text-[10px] text-slate-400 uppercase tracking-wider font-semibold ${
+                      i === 5 ? 'text-right' : ''
+                    }`}
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {rows.map((row) => (
+                <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+                        {row.initials}
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-semibold text-dark-slate">{row.name}</p>
+                        <p className="text-[11px] text-slate-400">{row.seekerId}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] uppercase font-semibold">
+                        {row.state}
+                      </span>
+                      <span className="text-[13px] text-slate-500">{row.location}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <p className="text-[13px] font-medium text-dark-slate">{row.budget}</p>
+                    <p className="text-[11px] text-slate-400">{row.moveIn}</p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${STATUS_BADGE[row.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                      {row.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-[13px] text-slate-500">{row.ambassador}</span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100">
+                      <span className="material-symbols-outlined text-lg">more_vert</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* Pagination */}
+        <div className="border-t border-slate-100 bg-slate-50 px-4 py-2.5 flex items-center justify-between sm:px-5">
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs text-slate-400">
+                Showing <span className="font-medium text-dark-slate">1</span> to{' '}
+                <span className="font-medium text-dark-slate">{rows.length}</span> of{' '}
+                <span className="font-medium text-dark-slate">{DIRECTORY_ALL_ROWS.length}</span> results
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <a className="relative inline-flex items-center px-2 py-1.5 rounded-l-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
+                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+                </a>
+                {[1, 2, 3].map((n) => (
+                  <a
+                    key={n}
+                    href="#"
+                    className={`relative inline-flex items-center px-3.5 py-1.5 border text-xs font-medium ${
+                      n === 1
+                        ? 'z-10 bg-[#E0F2FE] border-sky-400 text-[#0369A1]'
+                        : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-100'
+                    }`}
+                  >
+                    {n}
+                  </a>
+                ))}
+                <span className="relative inline-flex items-center px-3.5 py-1.5 border border-slate-200 bg-white text-xs font-medium text-slate-400">
+                  ...
+                </span>
+                <a className="relative inline-flex items-center px-3.5 py-1.5 border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
+                  25
+                </a>
+                <a className="relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </a>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
@@ -504,7 +964,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'matches'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users'>('dashboard');
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
 
   const handleRejectMatch = (pairId: string) => {
@@ -628,6 +1088,10 @@ export default function AdminDashboard() {
                 </p>
               </div>
             </div>
+          ) : activeView === 'users' ? (
+            <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
+              Roommate Directory &amp; Operations
+            </h2>
           ) : (
             <div className="relative hidden md:block">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
@@ -699,6 +1163,17 @@ export default function AdminDashboard() {
           >
             <span className="material-symbols-outlined">group</span>
             Match Workspace
+          </button>
+          <button
+            onClick={() => setActiveView('users')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
+              activeView === 'users'
+                ? 'bg-slate-800 text-bright-cyan font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <span className="material-symbols-outlined">person</span>
+            Users
           </button>
           <a
             href="#"
@@ -1009,6 +1484,8 @@ export default function AdminDashboard() {
           </section>
         </div>
           </>
+        ) : activeView === 'users' ? (
+          <RoommateDirectory />
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
