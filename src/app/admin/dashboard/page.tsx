@@ -159,6 +159,7 @@ interface MatchWorkspaceProps {
   pairs: MatchPairTrack[];
   onReject: (pairId: string) => void;
   onConfirm: (pairId: string) => void;
+  onOpenSettings: () => void;
 }
 
 function MatchUserSide({ user }: { user: MatchUserFace }) {
@@ -279,6 +280,7 @@ function MatchWorkspace({
   pairs,
   onReject,
   onConfirm,
+  onOpenSettings,
 }: MatchWorkspaceProps) {
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -323,7 +325,10 @@ function MatchWorkspace({
             <span className="material-symbols-outlined text-[17px]">refresh</span>
             Re-run Algorithm
           </button>
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low text-on-surface hover:bg-surface-container-high rounded-lg font-label-md text-xs transition-colors border border-outline-variant/30">
+          <button
+            onClick={onOpenSettings}
+            className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low text-on-surface hover:bg-surface-container-high rounded-lg font-label-md text-xs transition-colors border border-outline-variant/30"
+          >
             <span className="material-symbols-outlined text-[17px]">tune</span>
             Match Settings
           </button>
@@ -347,10 +352,155 @@ function MatchWorkspace({
   );
 }
 
+function MatchSettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [weights, setWeights] = useState({ budget: 40, lifestyle: 30, location: 20, moveIn: 10 });
+  const [minScore, setMinScore] = useState(75);
+  const [strictSmoker, setStrictSmoker] = useState(true);
+  const [enforceGender, setEnforceGender] = useState(false);
+
+  const setWeight = (key: keyof typeof weights, value: number) => {
+    setWeights((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return open ? (
+    <div className="fixed inset-0 z-[100] flex items-center justify-end p-4 sm:p-6">
+      <div
+        className="absolute inset-0 bg-primary/40 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative w-full max-w-sm h-full bg-surface-container-lowest rounded-xl shadow-xl flex flex-col overflow-hidden border border-outline-variant/20 animate-in slide-in-from-right duration-300">
+        <div className="px-5 py-4 border-b border-outline-variant/20 flex items-center justify-between">
+          <div>
+            <h2 className="font-headline-md text-lg text-primary">Match Settings</h2>
+            <p className="text-xs text-on-surface-variant">Tune the auto-matching algorithm weights</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 hover:bg-surface-container-high rounded-full transition-colors"
+            aria-label="Close settings"
+          >
+            <span className="material-symbols-outlined text-lg text-on-surface-variant">close</span>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-7">
+          <section>
+            <h3 className="font-label-md text-xs text-primary mb-4 uppercase tracking-wider">
+              Weighting Controls
+            </h3>
+            <div className="space-y-5">
+              {(
+                [
+                  ['budget', 'Budget Match'],
+                  ['lifestyle', 'Lifestyle Compatibility'],
+                  ['location', 'Location Proximity'],
+                  ['moveIn', 'Move-in Date Alignment'],
+                ] as [keyof typeof weights, string][]
+              ).map(([key, label]) => (
+                <div key={key} className="space-y-2">
+                  <div className="flex justify-between text-[13px] font-medium text-primary">
+                    <span>{label}</span>
+                    <span className="text-secondary">{weights[key]}%</span>
+                  </div>
+                  <input
+                    className="w-full h-1.5 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-sky-blue"
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={weights[key]}
+                    onChange={(e) => setWeight(key, Number(e.target.value))}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h3 className="font-label-md text-xs text-primary mb-4 uppercase tracking-wider">
+              Threshold Settings
+            </h3>
+            <div className="space-y-2">
+              <div className="flex justify-between text-[13px] font-medium text-primary">
+                <span>Minimum Match Score</span>
+                <span className="text-secondary">{minScore}%</span>
+              </div>
+              <input
+                className="w-full h-1.5 bg-surface-container-high rounded-lg appearance-none cursor-pointer accent-sky-blue"
+                type="range"
+                min={0}
+                max={100}
+                value={minScore}
+                onChange={(e) => setMinScore(Number(e.target.value))}
+              />
+            </div>
+          </section>
+
+          <section>
+            <h3 className="font-label-md text-xs text-primary mb-4 uppercase tracking-wider">
+              Lifestyle Toggles
+            </h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-on-surface-variant">Strict Smoker Match</span>
+                <button
+                  onClick={() => setStrictSmoker((v) => !v)}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${
+                    strictSmoker ? 'bg-sky-blue' : 'bg-surface-container-high'
+                  }`}
+                  aria-pressed={strictSmoker}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${
+                      strictSmoker ? 'right-0.5' : 'left-0.5'
+                    }`}
+                  ></span>
+                </button>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] text-on-surface-variant">Gender Preference Enforcement</span>
+                <button
+                  onClick={() => setEnforceGender((v) => !v)}
+                  className={`w-10 h-5 rounded-full relative transition-colors ${
+                    enforceGender ? 'bg-sky-blue' : 'bg-surface-container-high'
+                  }`}
+                  aria-pressed={enforceGender}
+                >
+                  <span
+                    className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${
+                      enforceGender ? 'right-0.5' : 'left-0.5'
+                    }`}
+                  ></span>
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div className="px-5 py-4 border-t border-outline-variant/20 flex items-center gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 bg-surface-container-low text-on-surface-variant py-2.5 rounded-lg font-label-md text-xs hover:bg-surface-container-high transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onClose}
+            className="flex-1 bg-sky-blue text-white py-2.5 rounded-lg font-label-md text-xs shadow-md hover:bg-secondary transition-all active:scale-95 shadow-sky-blue/20"
+          >
+            Update
+          </button>
+        </div>
+      </div>
+    </div>
+  ) : null;
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [matchSettingsOpen, setMatchSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
@@ -864,9 +1014,15 @@ export default function AdminDashboard() {
             pairs={proposedPairs}
             onReject={handleRejectMatch}
             onConfirm={handleConfirmMatch}
+            onOpenSettings={() => setMatchSettingsOpen(true)}
           />
         )}
       </main>
+
+      <MatchSettingsModal
+        open={matchSettingsOpen}
+        onClose={() => setMatchSettingsOpen(false)}
+      />
 
       {/* Logout Confirmation Modal */}
       <Modal
