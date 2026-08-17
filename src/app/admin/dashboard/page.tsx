@@ -2104,6 +2104,290 @@ function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }
   );
 }
 
+interface PaymentRow {
+  id: string;
+  ref: string;
+  date: string;
+  seeker: string;
+  seekerId: string;
+  match: string;
+  matchId: string;
+  fee: string;
+  attribution: string;
+  split: string;
+  status: 'Paid' | 'Pending';
+}
+
+const PAYMENT_ROWS: PaymentRow[] = [
+  { id: 'p1', ref: 'T902183910', date: '17 Aug 2026', seeker: 'Chidi O.', seekerId: '#RM-104', match: 'Emeka K.', matchId: '#RM-208', fee: '₦2,000', attribution: 'Ref: AMB-JIDE', split: '(₦1,000 Split)', status: 'Paid' },
+  { id: 'p2', ref: 'T902183911', date: '17 Aug 2026', seeker: 'Sarah A.', seekerId: '#RM-105', match: 'Bella N.', matchId: '#RM-209', fee: '₦2,000', attribution: 'Ref: AMB-MARK', split: '(₦1,000 Split)', status: 'Pending' },
+  { id: 'p3', ref: 'T902183912', date: '16 Aug 2026', seeker: 'John D.', seekerId: '#RM-106', match: 'Paul S.', matchId: '#RM-210', fee: '₦2,000', attribution: 'Direct', split: '(No split)', status: 'Paid' },
+  { id: 'p4', ref: 'T902183913', date: '16 Aug 2026', seeker: 'Amina K.', seekerId: '#RM-107', match: 'David L.', matchId: '#RM-211', fee: '₦2,000', attribution: 'Ref: AMB-CHRIS', split: '(₦1,000 Split)', status: 'Paid' },
+  { id: 'p5', ref: 'T902183914', date: '15 Aug 2026', seeker: 'Femi A.', seekerId: '#RM-108', match: 'Grace E.', matchId: '#RM-212', fee: '₦2,000', attribution: 'Direct', split: '(No split)', status: 'Pending' },
+  { id: 'p6', ref: 'T902183915', date: '15 Aug 2026', seeker: 'Ibrahim M.', seekerId: '#RM-109', match: 'Hope S.', matchId: '#RM-213', fee: '₦2,000', attribution: 'Ref: AMB-JIDE', split: '(₦1,000 Split)', status: 'Paid' },
+  { id: 'p7', ref: 'T902183916', date: '14 Aug 2026', seeker: 'Kelechi U.', seekerId: '#RM-110', match: 'Linda O.', matchId: '#RM-214', fee: '₦2,000', attribution: 'Direct', split: '(No split)', status: 'Paid' },
+  { id: 'p8', ref: 'T902183917', date: '14 Aug 2026', seeker: 'Musa B.', seekerId: '#RM-111', match: 'Ngozi P.', matchId: '#RM-215', fee: '₦2,000', attribution: 'Ref: AMB-MARK', split: '(₦1,000 Split)', status: 'Pending' },
+];
+
+function PaymentControl() {
+  const [query, setQuery] = useState('');
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onMouseDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    return () => document.removeEventListener('mousedown', onMouseDown);
+  }, []);
+
+  const filteredRows = PAYMENT_ROWS.filter((r) =>
+    r.ref.toLowerCase().includes(query.toLowerCase())
+  );
+
+  return (
+    <div className="flex flex-col gap-6 w-full">
+      {/* Top Financial Metrics */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        {/* Card 1: Paystack Payout Balance (Highlighted) */}
+        <div className="bg-primary text-white rounded-xl p-5 shadow-sm relative overflow-hidden flex flex-col justify-between h-28 border border-slate-800">
+          <div className="absolute top-0 right-0 p-3 opacity-10">
+            <span className="material-symbols-outlined icon-filled text-6xl">account_balance</span>
+          </div>
+          <div>
+            <p className="text-xs text-slate-400 mb-1">Paystack Payout Balance</p>
+            <h3 className="font-display text-xl font-bold">₦520,000</h3>
+          </div>
+          <div className="mt-auto self-start">
+            <button className="bg-[#40c2fd] hover:bg-[#7bd0ff] text-white text-xs px-3 py-1 rounded-md font-bold shadow-sm transition-all">
+              Top Up
+            </button>
+          </div>
+        </div>
+        {/* Card 2: Total Gross Revenue */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">Total Gross Revenue</p>
+            <h3 className="font-display text-xl font-bold text-dark-slate">₦1,850,000</h3>
+          </div>
+          <div className="mt-auto">
+            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md text-xs font-semibold">
+              <span className="material-symbols-outlined text-[14px]">trending_up</span>
+              +12%
+            </span>
+          </div>
+        </div>
+        {/* Card 3: Pending Match Payments */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">Pending Match Payments</p>
+            <h3 className="font-display text-xl font-bold text-dark-slate">14 Seekers</h3>
+          </div>
+          <div className="mt-auto">
+            <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 px-2 py-0.5 rounded-md text-xs font-semibold border border-sky-100">
+              <span className="material-symbols-outlined text-[14px]">hourglass_empty</span>
+              Awaiting action
+            </span>
+          </div>
+        </div>
+        {/* Card 4: Pending Ambassador Payouts */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">Pending Ambassador Payouts</p>
+            <h3 className="font-display text-xl font-bold text-dark-slate">₦240,000</h3>
+          </div>
+          <div className="mt-auto">
+            <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-xs font-semibold">
+              <span className="material-symbols-outlined text-[14px]">people</span>
+              8 pending
+            </span>
+          </div>
+        </div>
+        {/* Card 5: Net Platform Earnings */}
+        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
+          <div>
+            <p className="text-xs text-slate-500 mb-1">Net Platform Earnings</p>
+            <h3 className="font-display text-xl font-bold text-emerald-700">₦925,000</h3>
+          </div>
+          <div className="mt-auto">
+            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-emerald-400 w-[50%]" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tabbed Control Canvas */}
+      <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+        {/* Tabs */}
+        <div className="border-b border-slate-200 flex px-4 pt-2 bg-slate-50">
+          <button className="px-6 py-3 text-sm text-primary font-bold border-b-2 border-primary relative -mb-[1px]">
+            Inbound Match Fees &amp; Links
+          </button>
+          <button className="px-6 py-3 text-sm text-slate-500 font-medium hover:bg-slate-100 transition-colors relative -mb-[1px] flex items-center gap-2">
+            Ambassador Payout Queue
+            <span className="bg-slate-200 text-slate-600 text-[10px] px-1.5 py-0.5 rounded-full font-bold">8</span>
+          </button>
+          <button className="px-6 py-3 text-sm text-slate-500 font-medium hover:bg-slate-100 transition-colors relative -mb-[1px]">
+            Refunds &amp; Disputes
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-0 flex-1 flex flex-col">
+          {/* Toolbar */}
+          <div className="p-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 bg-white">
+            <div className="relative max-w-sm w-full">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                search
+              </span>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#40c2fd] focus:ring-2 focus:ring-[#40c2fd]/20 transition-all"
+                placeholder="Search payment reference (T90218)..."
+                type="text"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 text-sm hover:bg-slate-50 transition-colors">
+                <span className="material-symbols-outlined text-sm">filter_list</span>
+                Status: All
+                <span className="material-symbols-outlined text-sm">expand_more</span>
+              </button>
+              <button className="flex items-center gap-2 px-3 py-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 text-sm hover:bg-slate-50 transition-colors">
+                <span className="material-symbols-outlined text-sm">calendar_today</span>
+                Date Range
+                <span className="material-symbols-outlined text-sm">expand_more</span>
+              </button>
+              <button className="flex items-center justify-center p-1.5 border border-slate-200 rounded-lg bg-white text-slate-700 hover:bg-slate-50 transition-colors">
+                <span className="material-symbols-outlined text-sm">file_download</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Data Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                  <th className="px-4 py-3 font-semibold">Paystack Ref &amp; Date</th>
+                  <th className="px-4 py-3 font-semibold">Seeker &amp; Match Pair</th>
+                  <th className="px-4 py-3 font-semibold text-right">Match Fee</th>
+                  <th className="px-4 py-3 font-semibold">Ambassador Attribution</th>
+                  <th className="px-4 py-3 font-semibold">Payment Status</th>
+                  <th className="px-4 py-3 font-semibold text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-on-surface">
+                {filteredRows.map((row) => (
+                  <tr key={row.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 align-top">
+                      <div className="text-sm font-semibold text-slate-800">{row.ref}</div>
+                      <div className="text-slate-500 text-xs mt-0.5">{row.date}</div>
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm">{row.seeker}</span>
+                        <span className="text-slate-400 text-xs">{row.seekerId}</span>
+                        <span className="material-symbols-outlined text-slate-400 text-xs">arrow_forward</span>
+                        <span className="font-medium text-sm">{row.match}</span>
+                        <span className="text-slate-400 text-xs">{row.matchId}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 align-top text-right font-medium text-sm">{row.fee}</td>
+                    <td className="px-4 py-3 align-top">
+                      <div className="font-medium text-sm">{row.attribution}</div>
+                      <div className="text-slate-500 text-xs mt-0.5">{row.split}</div>
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      {row.status === 'Paid' ? (
+                        <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md text-xs border border-emerald-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Paid
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-800 px-2 py-1 rounded-md text-xs border border-sky-100">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#00658d]" />
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 align-top text-center relative">
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === row.id ? null : row.id)}
+                        className="text-slate-400 hover:text-primary transition-colors p-1 rounded-md hover:bg-slate-100"
+                      >
+                        <span className="material-symbols-outlined text-sm">more_vert</span>
+                      </button>
+                      {openMenuId === row.id && (
+                        <div
+                          ref={menuRef}
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg z-20 py-1.5 text-left"
+                        >
+                          {[
+                            { icon: 'receipt_long', label: 'View Receipt' },
+                            { icon: 'link', label: 'Resend Payment Link' },
+                            { icon: 'check_circle', label: 'Mark as Paid' },
+                          ].map((item) => (
+                            <button
+                              key={item.label}
+                              onClick={() => setOpenMenuId(null)}
+                              className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-slate-50 transition-colors"
+                            >
+                              <span className="material-symbols-outlined text-[17px] text-slate-500">
+                                {item.icon}
+                              </span>
+                              <span className="text-[13px] text-slate-800">{item.label}</span>
+                            </button>
+                          ))}
+                          <div className="my-1.5 border-t border-slate-100" />
+                          <button
+                            onClick={() => setOpenMenuId(null)}
+                            className="w-full flex items-center gap-2.5 px-3.5 py-2 text-left hover:bg-red-50 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[17px] text-red-600">
+                              currency_exchange
+                            </span>
+                            <span className="text-[13px] text-red-600">Refund</span>
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Footer */}
+          <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-between">
+            <span className="text-sm text-slate-500">Showing 1 to 3 of 124 entries</span>
+            <div className="flex items-center gap-1">
+              <button disabled className="p-1 rounded text-slate-400 hover:bg-slate-100 transition-colors disabled:opacity-50">
+                <span className="material-symbols-outlined text-sm">chevron_left</span>
+              </button>
+              <button className="w-8 h-8 rounded bg-[#40c2fd] text-white text-sm flex items-center justify-center">1</button>
+              {[2, 3].map((n) => (
+                <button key={n} className="w-8 h-8 rounded hover:bg-slate-100 text-slate-500 text-sm flex items-center justify-center transition-colors">
+                  {n}
+                </button>
+              ))}
+              <button className="p-1 rounded text-slate-400 hover:bg-slate-100 transition-colors">
+                <span className="material-symbols-outlined text-sm">chevron_right</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const router = useRouter();
   const { user, isAuthenticated, hydrated, logout } = useAuth();
@@ -2112,7 +2396,7 @@ export default function AdminDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
-  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail' | 'user-detail'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail' | 'user-detail' | 'payments'>('dashboard');
   const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
   const [selectedUser, setSelectedUser] = useState<DirectoryRow | null>(null);
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
@@ -2246,6 +2530,10 @@ export default function AdminDashboard() {
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
               User Profile
             </h2>
+          ) : activeView === 'payments' ? (
+            <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
+              Payments
+            </h2>
           ) : activeView === 'ambassadors' ? (
             <h2 className="font-display font-bold text-base text-dark-slate hidden md:block">
               Ambassador Network &amp; Payout Operations
@@ -2348,13 +2636,17 @@ export default function AdminDashboard() {
             <span className="material-symbols-outlined">badge</span>
             Ambassadors
           </button>
-          <a
-            href="#"
-            className="flex items-center gap-3 px-4 py-3 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors text-sm"
+          <button
+            onClick={() => setActiveView('payments')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
+              activeView === 'payments'
+                ? 'bg-slate-800 text-bright-cyan font-bold'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
           >
             <span className="material-symbols-outlined">payments</span>
             Payments
-          </a>
+          </button>
         </nav>
 
         <div className="mt-auto pt-4 border-t border-slate-800">
@@ -2665,6 +2957,8 @@ export default function AdminDashboard() {
           <AmbassadorDirectory onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }} />
         ) : activeView === 'ambassador-detail' && selectedAmbassador ? (
           <AmbassadorDetail ambassador={selectedAmbassador} onBack={() => setActiveView('ambassadors')} />
+        ) : activeView === 'payments' ? (
+          <PaymentControl />
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
