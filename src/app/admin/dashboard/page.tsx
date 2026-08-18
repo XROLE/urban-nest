@@ -948,7 +948,7 @@ function statusPill(rawStatus: string): { label: string; cls: string; dot: strin
 function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void }) {
   const { session } = useAuth();
   const [query, setQuery] = useState('');
-  const [stateFilter, setStateFilter] = useState('State: Lagos');
+  const [stateFilter, setStateFilter] = useState('All States');
   const [statusFilter, setStatusFilter] = useState('Status: All Statuses');
   const [budgetFilter, setBudgetFilter] = useState('Any Range');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -1004,7 +1004,8 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
       row.name.toLowerCase().includes(q) ||
       row.seekerId.toLowerCase().includes(q) ||
       row.state.toLowerCase().includes(q);
-    const matchesState = stateFilter.includes(row.state);
+    const matchesState =
+      stateFilter === 'All States' ? true : row.state === stateFilter.replace('State: ', '');
     return matchesSearch && matchesState;
   });
 
@@ -1090,6 +1091,7 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
             onChange={(e) => setStateFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
           >
+            <option>All States</option>
             {(Array.from(new Set(users.map((u) => u.state).filter(Boolean))).length > 0
               ? Array.from(new Set(users.map((u) => u.state).filter(Boolean)))
               : ['Lagos', 'Abuja', 'Oyo', 'Kano']
@@ -1265,9 +1267,9 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-xs text-slate-400">
-                Showing <span className="font-medium text-dark-slate">{total === 0 ? 0 : offset + 1}</span> to{' '}
-                <span className="font-medium text-dark-slate">{Math.min(offset + users.length, total)}</span> of{' '}
-                <span className="font-medium text-dark-slate">{total}</span> results
+                Showing <span className="font-medium text-dark-slate">{rows.length === 0 ? 0 : 1}</span> to{' '}
+                <span className="font-medium text-dark-slate">{rows.length}</span> of{' '}
+                <span className="font-medium text-dark-slate">{rows.length}</span> results
               </p>
             </div>
             <div>
