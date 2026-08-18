@@ -113,6 +113,22 @@ export default function CreateProfileForm() {
 
   const availableStates = ['Lagos'];
 
+  // Budget bounds shared with the admin dashboard users section (BUDGET_TIERS).
+  const budgetOptions = [
+    { value: '50000', label: '₦50,000 / yr' },
+    { value: '150000', label: '₦150,000 / yr' },
+    { value: '300000', label: '₦300,000 / yr' },
+    { value: '500000', label: '₦500,000 / yr' },
+    { value: '800000', label: '₦800,000 / yr' },
+    { value: '1200000', label: '₦1,200,000 / yr' },
+    { value: '2000000', label: '₦2,000,000 / yr' },
+  ];
+  // Max budget must be at least the next bound above the selected min
+  // (lowest selectable max is ₦150,000 / yr).
+  const maxBudgetOptions = budgetOptions.filter(
+    (o) => Number(o.value) >= 150000 && Number(o.value) > Number(formData.minBudget || 0)
+  );
+
   const [areaDropdownOpen, setAreaDropdownOpen] = useState(false);
   const [searchArea, setSearchArea] = useState('');
   const [showTerms, setShowTerms] = useState(false);
@@ -186,7 +202,7 @@ export default function CreateProfileForm() {
       fullName: formData.fullName.trim(),
       state: formData.state,
       phoneNumber: phone,
-      gender: formData.gender as 'male' | 'female' | 'no_preference',
+      gender: formData.gender as 'male' | 'female',
       ageRange: formData.ageRange,
       maritalStatus: formData.maritalStatus,
       religion: formData.religion,
@@ -452,8 +468,8 @@ export default function CreateProfileForm() {
 
                   <div>
                     <span className={labelClass}>Gender</span>
-                    <div className="grid grid-cols-3 gap-3">
-                      {['male', 'female', 'no_preference'].map((g) => (
+                    <div className="grid grid-cols-2 gap-3">
+                      {['male', 'female'].map((g) => (
                         <button
                           key={g}
                           type="button"
@@ -547,7 +563,6 @@ export default function CreateProfileForm() {
                       <option value="single">Single</option>
                       <option value="married">Married</option>
                       <option value="divorced">Divorced</option>
-                      <option value="prefer_not_to_say">Prefer not to say</option>
                     </select>
                     {fieldErrorText('maritalStatus')}
                     <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
@@ -685,33 +700,54 @@ export default function CreateProfileForm() {
                       <label className={labelClass}>Budget per year</label>
                       <div className="flex items-center gap-2">
                         <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">
-                            ₦
-                          </span>
-                          <input
-                            className="w-full text-sm bg-surface-container-low border border-outline-variant rounded-xl pl-8 pr-4 py-3 text-dark-slate outline-none focus:ring-2 focus:ring-bright-cyan/30"
-                            placeholder="Min"
-                            type="number"
+                          <select
+                            className={selectClass}
                             value={formData.minBudget}
-                            onChange={(e) =>
-                              handleInputChange('minBudget', e.target.value)
-                            }
-                          />
+                            onChange={(e) => {
+                              handleInputChange('minBudget', e.target.value);
+                              if (
+                                formData.maxBudget &&
+                                Number(formData.maxBudget) <=
+                                  Number(e.target.value)
+                              ) {
+                                handleInputChange('maxBudget', '');
+                              }
+                            }}
+                          >
+                            <option value="" disabled>
+                              Min
+                            </option>
+                            {budgetOptions.slice(0, -1).map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
+                            expand_more
+                          </span>
                         </div>
                         <span className="text-on-surface-variant">-</span>
                         <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-outline text-sm">
-                            ₦
-                          </span>
-                          <input
-                            className="w-full text-sm bg-surface-container-low border border-outline-variant rounded-xl pl-8 pr-4 py-3 text-dark-slate outline-none focus:ring-2 focus:ring-bright-cyan/30"
-                            placeholder="Max"
-                            type="number"
+                          <select
+                            className={selectClass}
                             value={formData.maxBudget}
                             onChange={(e) =>
                               handleInputChange('maxBudget', e.target.value)
                             }
-                          />
+                          >
+                            <option value="" disabled>
+                              Max
+                            </option>
+                            {maxBudgetOptions.map((o) => (
+                              <option key={o.value} value={o.value}>
+                                {o.label}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline pointer-events-none">
+                            expand_more
+                          </span>
                         </div>
                       </div>
                       <div className="flex gap-2">
