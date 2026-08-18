@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
-import { fetchProfiles, type ProfileItem } from '@/lib/api';
+import { fetchProfiles, fetchAmbassadors, type ProfileItem, type AmbassadorItem } from '@/lib/api';
 
 interface Profile {
   id: string;
@@ -1337,316 +1337,67 @@ interface AmbassadorRow {
   matches: number;
   commission: string;
   imageUrl?: string;
-}
-
-interface AmbassadorDetailData {
-  fullName: string;
   code: string;
-  joined: string;
-  unverified: boolean;
-  email: string;
-  phone: string;
-  socials: string[];
-  emergencyName: string;
-  emergencyPhone: string;
-  institution: string;
-  targetAudience: string;
-  jurisdictions: string[];
-  commissionRate: string;
-  bankName: string;
-  bankNumber: string;
-  referralCount: number;
-  conversionPercent: number;
+  totalEarnings: string;
   pendingBalance: string;
-  settledPayouts: string;
-  payoutNote: string;
-  checklist: string[];
+  availableBalance: string;
+  totalWithdrawn: string;
+  bankName: string;
+  bankAccount: string;
+  accountName: string;
+  institution: string;
+  operating: string;
+  createdAt: string;
 }
 
-const AMBASSADOR_DETAILS: Record<string, AmbassadorDetailData> = {
-  'amb-1': {
-    fullName: 'Jide Adeshina',
-    code: 'AMB-JIDE',
-    joined: '14 March 2026',
-    unverified: false,
-    email: 'jide@unilag.edu.ng',
-    phone: '+234 801 234 5678',
-    socials: ['@jide_unilag (IG)', '@jide_dev (X)', '@jide_housing (TikTok)'],
-    emergencyName: 'Mrs. Folake Adeshina (Mother)',
-    emergencyPhone: '+234 802 987 6543',
-    institution: 'University of Lagos (UNILAG)',
-    targetAudience: 'Undergraduates & Freshers (200L CS)',
-    jurisdictions: ['UNILAG (Akoka)', 'Yaba / Sabo'],
-    commissionRate: '50% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2012345678',
-    referralCount: 38,
-    conversionPercent: 68,
-    pendingBalance: '₦45,000',
-    settledPayouts: '₦180,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-  'amb-2': {
-    fullName: 'Chioma Okafor',
-    code: 'AMB-CHIOMA',
-    joined: '2 February 2026',
-    unverified: false,
-    email: 'chioma@gwarinpa.edu.ng',
-    phone: '+234 803 555 1122',
-    socials: ['@chioma_o (IG)', '@chioma_abuja (X)'],
-    emergencyName: 'Mr. Ike Okafor (Father)',
-    emergencyPhone: '+234 805 444 7788',
-    institution: 'University of Abuja',
-    targetAudience: 'NYSC Members & Professionals',
-    jurisdictions: ['Gwarinpa', 'Kubwa'],
-    commissionRate: '50% Commission',
-    bankName: 'OPay',
-    bankNumber: '8091234567',
-    referralCount: 42,
-    conversionPercent: 71,
-    pendingBalance: '₦30,000',
-    settledPayouts: '₦150,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-  'amb-3': {
-    fullName: 'Emeka Eze',
-    code: 'AMB-EMEKA',
-    joined: '20 March 2026',
-    unverified: true,
-    email: 'emeka@ikeja.edu.ng',
-    phone: '+234 806 222 3344',
-    socials: ['@emeka_e (IG)', '@emeka_dev (X)'],
-    emergencyName: 'Mrs. Ngozi Eze (Mother)',
-    emergencyPhone: '+234 807 111 8899',
-    institution: 'Lagos State University',
-    targetAudience: 'Undergraduates (LASU Ojo)',
-    jurisdictions: ['Ikeja', 'Ojota'],
-    commissionRate: '40% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2044567890',
-    referralCount: 12,
-    conversionPercent: 55,
-    pendingBalance: '₦20,000',
-    settledPayouts: '₦50,000',
-    payoutNote: 'Pending verification',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-    ],
-  },
-  'amb-4': {
-    fullName: 'Amina Bello',
-    code: 'AMB-AMINA',
-    joined: '11 January 2026',
-    unverified: false,
-    email: 'amina@buk.edu.ng',
-    phone: '+234 808 333 5566',
-    socials: ['@amina_b (IG)', '@amina_kano (TikTok)'],
-    emergencyName: 'Mr. Sani Bello (Father)',
-    emergencyPhone: '+234 809 222 4455',
-    institution: 'Bayero University Kano',
-    targetAudience: 'Undergraduates (BUK)',
-    jurisdictions: ['BUK / Old Site', 'BUK / New Site'],
-    commissionRate: '50% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2056789012',
-    referralCount: 35,
-    conversionPercent: 66,
-    pendingBalance: '₦40,000',
-    settledPayouts: '₦140,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-  'amb-5': {
-    fullName: 'Tunde Salami',
-    code: 'AMB-TUNDE',
-    joined: '5 April 2026',
-    unverified: true,
-    email: 'tunde@ui.edu.ng',
-    phone: '+234 810 444 6677',
-    socials: ['@tunde_s (IG)'],
-    emergencyName: 'Mrs. Bukola Salami (Mother)',
-    emergencyPhone: '+234 811 333 2211',
-    institution: 'University of Ibadan',
-    targetAudience: 'Undergraduates (UI)',
-    jurisdictions: ['UI / Agbowo'],
-    commissionRate: '40% Commission',
-    bankName: 'OPay',
-    bankNumber: '8085566778',
-    referralCount: 8,
-    conversionPercent: 40,
-    pendingBalance: '₦10,000',
-    settledPayouts: '₦25,000',
-    payoutNote: 'Pending verification',
-    checklist: [
-      'Phone & WhatsApp Active',
-    ],
-  },
-  'amb-6': {
-    fullName: 'Fatima Kailani',
-    code: 'AMB-FATIMA',
-    joined: '18 March 2026',
-    unverified: false,
-    email: 'fatima@abu.edu.ng',
-    phone: '+234 812 555 8899',
-    socials: ['@fatima_k (IG)', '@fatima_zaria (X)'],
-    emergencyName: 'Mr. Musa Kailani (Father)',
-    emergencyPhone: '+234 813 444 5566',
-    institution: 'Ahmadu Bello University',
-    targetAudience: 'Undergraduates (ABU Zaria)',
-    jurisdictions: ['Zaria / Samaru'],
-    commissionRate: '50% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2067890123',
-    referralCount: 19,
-    conversionPercent: 62,
-    pendingBalance: '₦25,000',
-    settledPayouts: '₦75,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-  'amb-7': {
-    fullName: 'Chidi Nwosu',
-    code: 'AMB-CHIDI',
-    joined: '28 February 2026',
-    unverified: true,
-    email: 'chidi@unn.edu.ng',
-    phone: '+234 814 666 3344',
-    socials: ['@chidi_n (IG)', '@chidi_unn (TikTok)'],
-    emergencyName: 'Mrs. Ada Nwosu (Mother)',
-    emergencyPhone: '+234 815 555 7788',
-    institution: 'University of Nigeria, Nsukka',
-    targetAudience: 'Undergraduates (UNN)',
-    jurisdictions: ['UNN / Nsukka'],
-    commissionRate: '50% Commission',
-    bankName: 'OPay',
-    bankNumber: '8086677889',
-    referralCount: 52,
-    conversionPercent: 74,
-    pendingBalance: '₦60,000',
-    settledPayouts: '₦225,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-    ],
-  },
-  'amb-8': {
-    fullName: 'Ngozi Peters',
-    code: 'AMB-NGOZI',
-    joined: '9 March 2026',
-    unverified: false,
-    email: 'ngozi@uniport.edu.ng',
-    phone: '+234 816 777 9900',
-    socials: ['@ngozi_p (IG)', '@ngozi_port (X)'],
-    emergencyName: 'Mr. Emeka Peters (Father)',
-    emergencyPhone: '+234 817 666 1122',
-    institution: 'University of Port Harcourt',
-    targetAudience: 'Undergraduates (Uniport)',
-    jurisdictions: ['Uniport / Choba'],
-    commissionRate: '50% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2078901234',
-    referralCount: 15,
-    conversionPercent: 58,
-    pendingBalance: '₦18,000',
-    settledPayouts: '₦55,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-  'amb-9': {
-    fullName: 'Ibrahim Musa',
-    code: 'AMB-IBRAHIM',
-    joined: '22 April 2026',
-    unverified: true,
-    email: 'ibrahim@buk.edu.ng',
-    phone: '+234 818 888 4455',
-    socials: ['@ibrahim_m (IG)'],
-    emergencyName: 'Mrs. Hauwa Musa (Mother)',
-    emergencyPhone: '+234 819 777 8899',
-    institution: 'Bayero University Kano',
-    targetAudience: 'Undergraduates (BUK)',
-    jurisdictions: ['BUK / New Site'],
-    commissionRate: '40% Commission',
-    bankName: 'OPay',
-    bankNumber: '8087788990',
-    referralCount: 9,
-    conversionPercent: 38,
-    pendingBalance: '₦8,000',
-    settledPayouts: '₦20,000',
-    payoutNote: 'Pending verification',
-    checklist: ['Phone & WhatsApp Active'],
-  },
-  'amb-10': {
-    fullName: 'Zainab Lawal',
-    code: 'AMB-ZAINAB',
-    joined: '15 January 2026',
-    unverified: false,
-    email: 'zainab@edu.ng',
-    phone: '+234 820 999 1122',
-    socials: ['@zainab_l (IG)', '@zainab_abj (TikTok)'],
-    emergencyName: 'Mr. Lawal (Father)',
-    emergencyPhone: '+234 821 888 3344',
-    institution: 'University of Abuja',
-    targetAudience: 'NYSC Members & Professionals',
-    jurisdictions: ['Gwarinpa', 'Wuse'],
-    commissionRate: '50% Commission',
-    bankName: 'Kuda Bank',
-    bankNumber: '2089012345',
-    referralCount: 38,
-    conversionPercent: 70,
-    pendingBalance: '₦35,000',
-    settledPayouts: '₦155,000',
-    payoutNote: 'Historically via Paystack',
-    checklist: [
-      'Phone & WhatsApp Active',
-      'Social Media Handles Cross-Checked',
-      'Bank Account Name Match Confirmed',
-      'Primary & Secondary Locations Assigned',
-    ],
-  },
-};
+function formatNaira(n: number | null | undefined): string {
+  return `₦${(n ?? 0).toLocaleString('en-NG')}`;
+}
 
-const AMBASSADOR_ROWS: AmbassadorRow[] = [
-  { id: 'amb-1', name: 'Jide A.', tier: 'Gold', state: 'Lagos', location: 'UNILAG / Akoka', status: 'Verified', seekers: 24, matches: 18, commission: '₦90,000' },
-  { id: 'amb-2', name: 'Chioma O.', tier: 'Silver', state: 'Abuja', location: 'Gwarinpa', status: 'Verified', seekers: 42, matches: 30, commission: '₦150,000' },
-  { id: 'amb-3', name: 'Emeka E.', tier: 'Silver', state: 'Lagos', location: 'Ikeja', status: 'Pending', seekers: 12, matches: 10, commission: '₦50,000' },
-  { id: 'amb-4', name: 'Amina B.', tier: 'Gold', state: 'Kano', location: 'BUK / Old Site', status: 'Verified', seekers: 35, matches: 28, commission: '₦140,000' },
-  { id: 'amb-5', name: 'Tunde S.', tier: 'Bronze', state: 'Oyo', location: 'UI / Agbowo', status: 'Unverified', seekers: 8, matches: 5, commission: '₦25,000' },
-  { id: 'amb-6', name: 'Fatima K.', tier: 'Silver', state: 'Kaduna', location: 'Zaria / Samaru', status: 'Verified', seekers: 19, matches: 15, commission: '₦75,000' },
-  { id: 'amb-7', name: 'Chidi N.', tier: 'Gold', state: 'Enugu', location: 'UNN / Nsukka', status: 'Pending', seekers: 52, matches: 45, commission: '₦225,000' },
-  { id: 'amb-8', name: 'Ngozi P.', tier: 'Bronze', state: 'Rivers', location: 'Uniport / Choba', status: 'Verified', seekers: 15, matches: 11, commission: '₦55,000' },
-  { id: 'amb-9', name: 'Ibrahim M.', tier: 'Silver', state: 'Kano', location: 'BUK / New Site', status: 'Unverified', seekers: 9, matches: 4, commission: '₦20,000' },
-  { id: 'amb-10', name: 'Zainab L.', tier: 'Gold', state: 'Abuja', location: 'Gwarinpa', status: 'Verified', seekers: 38, matches: 31, commission: '₦155,000' },
-];
+function titleCase(s: string | null | undefined): string {
+  if (!s) return 'Bronze';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
+  const rawStatus = (item.verification_status || '').toLowerCase();
+  const status: AmbassadorRow['status'] =
+    rawStatus === 'verified' ? 'Verified' : rawStatus === 'pending' ? 'Pending' : 'Unverified';
+  const tier = (titleCase(item.ambassador_ranking) as AmbassadorRow['tier']) || 'Bronze';
+  return {
+    id: item.id,
+    name: item.full_name?.trim() || item.referral_code || 'Ambassador',
+    tier: ['Gold', 'Silver', 'Bronze'].includes(tier) ? tier : 'Bronze',
+    state: item.state_covering?.[0] ?? '—',
+    location:
+      item.primary_operating ??
+      item.campus_or_region ??
+      item.secondary_operating ??
+      item.institution_or_organization ??
+      '—',
+    status,
+    seekers: item.total_referrals ?? 0,
+    matches: 0,
+    commission: formatNaira(item.total_earnings_ngn),
+    imageUrl: item.profile_picture_url ?? undefined,
+    code: item.referral_code || 'N/A',
+    totalEarnings: formatNaira(item.total_earnings_ngn),
+    pendingBalance: formatNaira(item.pending_balance_ngn),
+    availableBalance: formatNaira(item.available_balance_ngn),
+    totalWithdrawn: formatNaira(item.total_withdrawn_ngn),
+    bankName: item.bank_name ?? 'Not provided',
+    bankAccount: item.account_number ?? 'Not provided',
+    accountName: item.account_name ?? 'Not provided',
+    institution:
+      item.institution_or_organization ?? item.primary_operating ?? 'Not provided',
+    operating:
+      [item.primary_operating, item.secondary_operating].filter(Boolean).join(', ') ||
+      item.campus_or_region ||
+      'Not provided',
+    createdAt: item.created_at ? new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Unknown',
+  };
+}
+
 
 const AMBASSADOR_AVATARS: Record<string, string> = {
   'amb-1': 'https://lh3.googleusercontent.com/aida/AP1WRLu55m5g8d6QBQiBic9Lr7CDc5r2BqvinbLI9RJiyLI3LouQWwKiOOu3_1Ra0qFYVJrsFwZcp5Engo8pclem6vm4ZqlMkvPBcDzqdT-AIO_0ru_suBD9gupkLA3SlOt5qVAU3XobM7agm_eaOCY0g_8YET_7FeVJ1lLMZDK8jc04fAXZgDhY-mSSDYPWV9GHnw8VqQ56Hm8-306s1wzuCvd9zRNSwF4VH5HWsJ-Tk8nN3d_8wOB5fk3c3iJ5',
@@ -1671,6 +1422,13 @@ const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: str
 };
 
 function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => void }) {
+  const { session } = useAuth();
+  const [ambassadors, setAmbassadors] = useState<AmbassadorRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [limit] = useState(20);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
   const [query, setQuery] = useState('');
   const [verification, setVerification] = useState('Verification: All');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -1686,15 +1444,48 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, []);
 
-  const filteredRows = AMBASSADOR_ROWS.filter((row) => {
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchAmbassadors(token, { limit, offset });
+        if (active) {
+          setAmbassadors(data.items.map(toAmbassadorRow));
+          setTotal(data.pagination.total);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load ambassadors.');
+          setAmbassadors([]);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken, limit, offset]);
+
+  const filteredRows = ambassadors.filter((row) => {
     const q = query.toLowerCase();
     const matchesSearch =
       row.name.toLowerCase().includes(q) ||
-      row.location.toLowerCase().includes(q);
+      row.location.toLowerCase().includes(q) ||
+      row.id.toLowerCase().includes(q);
     const matchesVerification =
       verification === 'Verification: All' || row.status === verification;
     return matchesSearch && matchesVerification;
   });
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.floor(offset / limit) + 1;
+  const pageStart = Math.max(2, currentPage - 1);
+  const pageEnd = Math.min(totalPages - 1, currentPage + 1);
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -1716,7 +1507,7 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
-          { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: '32' },
+          { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: `${total}` },
           { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: '412', badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
           { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: '₦240,000', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
           { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: '₦1.2M', badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
@@ -1817,7 +1608,31 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRows.map((row) => {
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="p-10 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="w-6 h-6 border-2 border-slate-200 border-t-bright-cyan rounded-full animate-spin" />
+                      <span className="text-xs text-slate-400">Loading ambassadors...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={8} className="p-10 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="material-symbols-outlined text-2xl text-red-500">error_outline</span>
+                      <span className="text-xs text-red-600">{error}</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredRows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="p-10 text-center">
+                    <span className="text-xs text-slate-400">No ambassadors found.</span>
+                  </td>
+                </tr>
+              ) : filteredRows.map((row) => {
                 const st = AMB_STATUS_BADGE[row.status];
                 return (
                   <tr
@@ -1829,13 +1644,15 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
                       <div className="flex items-center gap-4">
                         <div className="relative shrink-0">
                           <img
-                            src={AMBASSADOR_AVATARS[row.id] ?? `https://i.pravatar.cc/100?u=${row.id}`}
+                            src={row.imageUrl ?? AMBASSADOR_AVATARS[row.id] ?? `https://i.pravatar.cc/100?u=${row.id}`}
                             className="w-12 h-12 rounded-full object-cover border border-slate-200"
                             alt={row.name}
                           />
-                          <span className="material-symbols-outlined icon-filled absolute -bottom-1 -right-1 bg-white rounded-full text-[#00668a] text-sm p-0.5">
-                            verified
-                          </span>
+                          {row.status === 'Verified' && (
+                            <span className="material-symbols-outlined icon-filled absolute -bottom-1 -right-1 bg-white rounded-full text-[#00668a] text-sm p-0.5">
+                              verified
+                            </span>
+                          )}
                         </div>
                         <span className="text-sm font-semibold text-dark-slate">{row.name}</span>
                       </div>
@@ -1920,25 +1737,54 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
         <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-slate-200 rounded-b-xl">
           <span className="text-sm text-slate-500">
             Showing{' '}
-            <span className="font-semibold text-dark-slate">1</span> to{' '}
-            <span className="font-semibold text-dark-slate">{filteredRows.length}</span> of{' '}
-            <span className="font-semibold text-dark-slate">{AMBASSADOR_ROWS.length}</span> ambassadors
+            <span className="font-semibold text-dark-slate">
+              {filteredRows.length === 0 ? 0 : offset + 1}
+            </span>{' '}
+            to{' '}
+            <span className="font-semibold text-dark-slate">
+              {Math.min(offset + filteredRows.length, total)}
+            </span>{' '}
+            of <span className="font-semibold text-dark-slate">{total}</span> ambassadors
           </span>
           <div className="flex items-center gap-2">
-            <button disabled className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50">
+            <button
+              disabled={currentPage === 1 || loading}
+              onClick={() => setOffset(Math.max(0, offset - limit))}
+              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
               <span className="material-symbols-outlined text-sm block">chevron_left</span>
             </button>
-            {[1, 2, 3].map((n) => (
-              <button
-                key={n}
-                className={`px-3 py-1 rounded-lg text-sm font-semibold ${
-                  n === 1 ? 'bg-[#00668a] text-white' : 'hover:bg-slate-50'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-            <button className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((n) => n === 1 || n === totalPages || (n >= pageStart && n <= pageEnd))
+              .reduce<(number | 'ellipsis')[]>((acc, n, idx, arr) => {
+                if (idx > 0 && n - (arr[idx - 1] as number) > 1) acc.push('ellipsis');
+                acc.push(n);
+                return acc;
+              }, [])
+              .map((n, i) =>
+                n === 'ellipsis' ? (
+                  <span key={`e${i}`} className="px-3 py-1 rounded-lg text-sm font-semibold text-slate-400">
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={n}
+                    onClick={() => setOffset((n - 1) * limit)}
+                    className={`px-3 py-1 rounded-lg text-sm font-semibold ${
+                      n === currentPage
+                        ? 'bg-[#00668a] text-white'
+                        : 'hover:bg-slate-50 text-dark-slate'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                )
+              )}
+            <button
+              disabled={currentPage === totalPages || loading}
+              onClick={() => setOffset(offset + limit)}
+              className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+            >
               <span className="material-symbols-outlined text-sm block">chevron_right</span>
             </button>
           </div>
@@ -1955,15 +1801,23 @@ function AmbassadorDetail({
   ambassador: AmbassadorRow;
   onBack: () => void;
 }) {
-  const d = AMBASSADOR_DETAILS[ambassador.id];
-  const [verified, setVerified] = useState(!d.unverified);
+  const [verified, setVerified] = useState(ambassador.status === 'Verified');
 
-  const initials = d.fullName
+  const hasBank =
+    ambassador.bankName !== 'Not provided' && ambassador.bankAccount !== 'Not provided';
+  const checklist = [
+    { label: 'Account Verified', done: verified },
+    { label: 'Bank Account Provided', done: hasBank },
+    { label: 'Institution / Organization', done: ambassador.institution !== 'Not provided' },
+    { label: 'Operating Areas Assigned', done: ambassador.operating !== 'Not provided' },
+  ];
+
+  const initials = (ambassador.name === 'Ambassador' ? ambassador.code : ambassador.name)
     .split(/\s+/)
     .map((p) => p[0])
     .slice(0, 2)
     .join('')
-    .toUpperCase();
+    .toUpperCase() || ambassador.code.slice(0, 2).toUpperCase();
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -1974,7 +1828,7 @@ function AmbassadorDetail({
           Back to Ambassadors
         </button>
         <span className="mx-1 text-slate-300">/</span>
-        <span className="text-primary font-semibold">{d.code}</span>
+        <span className="text-primary font-semibold">{ambassador.code}</span>
       </div>
 
       {/* Profile Header */}
@@ -1986,16 +1840,16 @@ function AmbassadorDetail({
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="font-display text-3xl font-bold text-dark-slate tracking-tight">
-                {d.fullName}
+                {ambassador.name}
               </h1>
               <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-[11px] font-bold uppercase tracking-wider">
-                {d.code}
+                {ambassador.code}
               </span>
             </div>
             <div className="flex items-center gap-4 text-sm text-slate-500 mt-2">
               <span className="flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                Joined: {d.joined}
+                Joined: {ambassador.createdAt}
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-300" />
               <span className={`flex items-center gap-1.5 font-medium ${verified ? 'text-[#00a472]' : 'text-amber-600'}`}>
@@ -2032,7 +1886,7 @@ function AmbassadorDetail({
             <h3 className="font-medium text-sm">Total Referrals</h3>
           </div>
           <div className="flex items-end gap-2">
-            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{d.referralCount}</p>
+            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{ambassador.seekers}</p>
             <span className="text-sm text-slate-500 mb-0.5">Seekers</span>
           </div>
         </div>
@@ -2043,11 +1897,11 @@ function AmbassadorDetail({
             <h3 className="font-medium text-sm">Conversion Rate</h3>
           </div>
           <div className="flex items-end gap-3 mb-3">
-            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{d.conversionPercent}%</p>
+            <p className="font-display text-3xl font-bold text-dark-slate leading-none">{ambassador.matches}%</p>
             <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[12px] font-semibold mb-0.5">Paid Matches</span>
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-            <div className="bg-[#10B981] h-full rounded-full" style={{ width: `${d.conversionPercent}%` }} />
+            <div className="bg-[#10B981] h-full rounded-full" style={{ width: `${ambassador.matches}%` }} />
           </div>
         </div>
 
@@ -2057,7 +1911,7 @@ function AmbassadorDetail({
             <span className="material-symbols-outlined text-[20px]">account_balance_wallet</span>
             <h3 className="font-medium text-sm">Pending Balance</h3>
           </div>
-          <p className="font-display text-3xl font-bold text-dark-slate leading-none pl-2">{d.pendingBalance}</p>
+          <p className="font-display text-3xl font-bold text-dark-slate leading-none pl-2">{ambassador.pendingBalance}</p>
         </div>
 
         <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 flex flex-col">
@@ -2065,10 +1919,10 @@ function AmbassadorDetail({
             <span className="material-symbols-outlined text-[20px]">payments</span>
             <h3 className="font-medium text-sm">Settled Payouts</h3>
           </div>
-          <p className="font-display text-3xl font-bold text-dark-slate leading-none mb-2">{d.settledPayouts}</p>
+          <p className="font-display text-3xl font-bold text-dark-slate leading-none mb-2">{ambassador.totalWithdrawn}</p>
           <p className="text-xs text-slate-500 flex items-center gap-1 font-medium">
             <span className="material-symbols-outlined text-[14px]">history</span>
-            {d.payoutNote}
+            {ambassador.availableBalance} available
           </p>
         </div>
       </section>
@@ -2080,7 +1934,7 @@ function AmbassadorDetail({
             Overview &amp; Details
           </button>
           <button className="px-6 py-4 text-[15px] text-slate-500 hover:text-primary transition-colors whitespace-nowrap font-medium flex items-center gap-2">
-            Referred Seekers <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[11px] font-bold">{d.referralCount}</span>
+            Referred Seekers <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full text-[11px] font-bold">{ambassador.seekers}</span>
           </button>
           <button className="px-6 py-4 text-[15px] text-slate-500 hover:text-primary transition-colors whitespace-nowrap font-medium">
             Payout History
@@ -2098,28 +1952,19 @@ function AmbassadorDetail({
               <div className="flex flex-col gap-5 text-[15px]">
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="font-medium text-slate-500">Email</span>
-                  <span className="text-primary font-medium">{d.email}</span>
+                  <span className="text-primary font-medium">Not provided</span>
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="font-medium text-slate-500">Phone</span>
-                  <span className="text-primary font-medium">{d.phone}</span>
+                  <span className="text-primary font-medium">Not provided</span>
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
                   <span className="font-medium text-slate-500 mt-1.5">Socials</span>
-                  <div className="flex flex-wrap gap-2">
-                    {d.socials.map((s) => (
-                      <span key={s} className="px-3 py-1.5 bg-slate-100 rounded-md text-[13px] text-primary font-medium border border-slate-100">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+                  <span className="text-primary font-medium">Not provided</span>
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-start">
                   <span className="font-medium text-slate-500 mt-0.5">Emergency Contact</span>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-primary font-medium">{d.emergencyName}</span>
-                    <span className="text-primary font-medium">{d.emergencyPhone}</span>
-                  </div>
+                  <span className="text-primary font-medium">Not provided</span>
                 </div>
               </div>
             </div>
@@ -2138,11 +1983,11 @@ function AmbassadorDetail({
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="font-medium text-slate-500">Institution</span>
-                  <span className="text-primary font-medium">{d.institution}</span>
+                  <span className="text-primary font-medium">{ambassador.institution}</span>
                 </div>
                 <div className="grid grid-cols-[120px_1fr] gap-4 items-center">
                   <span className="font-medium text-slate-500">Target Audience</span>
-                  <span className="text-primary font-medium">{d.targetAudience}</span>
+                  <span className="text-primary font-medium">Not provided</span>
                 </div>
               </div>
             </div>
@@ -2157,20 +2002,18 @@ function AmbassadorDetail({
               </h3>
               <div className="flex flex-col gap-8">
                 <div>
-                  <span className="block font-medium text-[13px] text-slate-500 mb-3">Assigned Jurisdiction</span>
+                  <span className="block font-medium text-[13px] text-slate-500 mb-3">Operating Areas</span>
                   <div className="flex flex-wrap gap-2">
-                    {d.jurisdictions.map((j) => (
-                      <span key={j} className="px-3 py-1.5 bg-sky-100/60 text-sky-900 rounded-md font-medium text-sm">
-                        {j}
-                      </span>
-                    ))}
+                    <span className="px-3 py-1.5 bg-sky-100/60 text-sky-900 rounded-md font-medium text-sm">
+                      {ambassador.operating}
+                    </span>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-3">
                     <span className="block font-medium text-[13px] text-slate-500">Payout Account</span>
                     <span className="px-2 py-1 bg-slate-100 rounded text-[11px] font-bold text-primary uppercase tracking-wider">
-                      {d.commissionRate}
+                      {ambassador.tier}
                     </span>
                   </div>
                   <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -2179,10 +2022,10 @@ function AmbassadorDetail({
                     </div>
                     <div>
                       <p className="font-semibold text-[15px] text-primary flex items-center gap-1.5 mb-1">
-                        {d.fullName.toUpperCase()}
+                        {ambassador.accountName.toUpperCase() || ambassador.name.toUpperCase()}
                         <span className="material-symbols-outlined icon-filled text-[16px] text-[#10B981]">verified</span>
                       </p>
-                      <p className="text-sm text-slate-500 font-medium">{d.bankName} • {d.bankNumber}</p>
+                      <p className="text-sm text-slate-500 font-medium">{ambassador.bankName} • {ambassador.bankAccount}</p>
                     </div>
                   </div>
                 </div>
@@ -2197,10 +2040,17 @@ function AmbassadorDetail({
                 Verification Checklist
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {d.checklist.map((item) => (
-                  <div key={item} className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                    <span className="material-symbols-outlined icon-filled text-[#10B981] text-[20px]">check_circle</span>
-                    <span className="text-sm font-medium text-primary">{item}</span>
+                {checklist.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <span className={`material-symbols-outlined icon-filled text-[20px] ${item.done ? 'text-[#10B981]' : 'text-slate-400'}`}>
+                        {item.done ? 'check_circle' : 'cancel'}
+                      </span>
+                      <span className="text-sm font-medium text-primary">{item.label}</span>
+                    </div>
+                    <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${item.done ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
+                      {item.done ? 'Verified' : 'Not Verified'}
+                    </span>
                   </div>
                 ))}
               </div>

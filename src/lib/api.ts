@@ -40,6 +40,61 @@ export interface ProfilesResponse {
   };
 }
 
+export interface AmbassadorItem {
+  id: string;
+  user_id: string;
+  full_name?: string | null;
+  referral_code: string;
+  total_referrals: number | null;
+  total_earnings_ngn: number | null;
+  pending_balance_ngn: number | null;
+  available_balance_ngn: number | null;
+  total_withdrawn_ngn: number | null;
+  bank_code: string | null;
+  bank_name: string | null;
+  account_number: string | null;
+  account_name: string | null;
+  campus_or_region: string | null;
+  is_approved: boolean | null;
+  profile_picture_url: string | null;
+  verification_status: string | null;
+  ambassador_ranking: string | null;
+  state_covering: string[] | null;
+  emergency_contact: unknown | null;
+  audience_category: string[] | null;
+  institution_or_organization: string | null;
+  primary_operating: string | null;
+  secondary_operating: string | null;
+  social_media_platform: string[] | null;
+  social_media_handle: string | null;
+  social_media_target_audience: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AmbassadorsResponse {
+  data: {
+    items: AmbassadorItem[];
+    pagination: PaginationMeta;
+  };
+}
+
+export async function fetchAmbassadors(
+  token: string,
+  { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {}
+): Promise<AmbassadorsResponse['data']> {
+  const res = await fetch(`${BASE_URL}/ambassadors?limit=${limit}&offset=${offset}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const data = (await res.json()) as AmbassadorsResponse;
+  return data.data;
+}
+
 export async function fetchProfiles(
   token: string,
   { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {}
