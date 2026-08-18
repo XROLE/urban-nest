@@ -2215,7 +2215,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Total Gross Revenue</p>
-            <h3 className="font-display text-xl font-bold text-dark-slate">₦1,850,000</h3>
+            <h3 className="font-display text-xl font-bold text-dark-slate">₦58,500,000</h3>
           </div>
           <div className="mt-auto">
             <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md text-xs font-semibold">
@@ -2228,7 +2228,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Pending Match Payments</p>
-            <h3 className="font-display text-xl font-bold text-dark-slate">14 Seekers</h3>
+            <h3 className="font-display text-xl font-bold text-dark-slate">45 Seekers</h3>
           </div>
           <div className="mt-auto">
             <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 px-2 py-0.5 rounded-md text-xs font-semibold border border-sky-100">
@@ -2254,7 +2254,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Net Platform Earnings</p>
-            <h3 className="font-display text-xl font-bold text-emerald-700">₦925,000</h3>
+            <h3 className="font-display text-xl font-bold text-emerald-700">₦36,500,000</h3>
           </div>
           <div className="mt-auto">
             <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
@@ -2887,15 +2887,15 @@ export default function AdminDashboard() {
             Match Workspace
           </button>
           <button
-            onClick={() => setActiveView('users')}
+            onClick={() => setActiveView('payments')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
-              activeView === 'users'
+              activeView === 'payments'
                 ? 'bg-slate-800 text-bright-cyan font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <span className="material-symbols-outlined">person</span>
-            Users
+            <span className="material-symbols-outlined">payments</span>
+            Payments
           </button>
           <button
             onClick={() => setActiveView('ambassadors')}
@@ -2909,15 +2909,15 @@ export default function AdminDashboard() {
             Ambassadors
           </button>
           <button
-            onClick={() => setActiveView('payments')}
+            onClick={() => setActiveView('users')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
-              activeView === 'payments'
+              activeView === 'users'
                 ? 'bg-slate-800 text-bright-cyan font-bold'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <span className="material-symbols-outlined">payments</span>
-            Payments
+            <span className="material-symbols-outlined">person</span>
+            Users
           </button>
         </nav>
 
