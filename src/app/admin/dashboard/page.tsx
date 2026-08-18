@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
+import { fetchProfiles, type ProfileItem } from '@/lib/api';
 
 interface Profile {
   id: string;
@@ -507,6 +508,20 @@ interface DirectoryRow {
   moveIn: string;
   status: string;
   ambassador: string;
+  isActive?: boolean;
+  rawStatus?: string;
+  occupation?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  gender?: string | null;
+  ageRange?: string | null;
+  religion?: string | null;
+  marStatus?: string | null;
+  prefLocations?: string[];
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  bio?: string | null;
+  referralCode?: string | null;
 }
 
 const DIRECTORY_ROWS: DirectoryRow[] = [
@@ -741,10 +756,16 @@ const EXTRA_MOCK_ROWS: DirectoryRow[] = EXTRA_NAMES.map(([first, last], i) => {
 const DIRECTORY_ALL_ROWS: DirectoryRow[] = [...DIRECTORY_ROWS, ...EXTRA_MOCK_ROWS];
 
 const STATUS_BADGE: Record<string, string> = {
+  New: 'bg-[#E0F2FE] text-[#0369A1]',
+  Matched: 'bg-[#D1FAE5] text-[#047857]',
+  'Pending Payment': 'bg-[#FEF3C7] text-[#B45309]',
+  Paid: 'bg-[#D1FAE5] text-[#047857]',
+  Rematch: 'bg-error-container text-on-error-container',
   Seeking: 'bg-[#E0F2FE] text-[#0369A1]',
   'Matched & Paid': 'bg-[#D1FAE5] text-[#047857]',
-  'Pending Payment': 'bg-[#FEF3C7] text-[#B45309]',
   'Rematch Requested': 'bg-error-container text-on-error-container',
+  Active: 'bg-[#D1FAE5] text-[#047857]',
+  Inactive: 'bg-slate-100 text-slate-600',
 };
 
 interface UserDetailData {
@@ -821,12 +842,124 @@ function getUserDetail(row: DirectoryRow): UserDetailData {
   return FALLBACK_USER_DETAILS(row, idx >= 0 ? idx : 0);
 }
 
+function profileStatus(p: ProfileItem): string {
+  const s = (p.status || '').toLowerCase();
+  if (s === 'new') return 'New';
+  if (s === 'matched') return 'Matched';
+  if (s === 'pending payment' || s === 'pending') return 'Pending Payment';
+  if (s === 'paid') return 'Paid';
+  if (s === 'rematch') return 'Rematch';
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : 'New';
+}
+
+function initialsFromName(name: string): string {
+  return name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'U';
+}
+
+function shortId(id: string): string {
+  return id.replace(/-/g, '').slice(0, 8).toUpperCase();
+}
+
+function formatBudget(p: ProfileItem): string {
+  if (p.budget_min == null && p.budget_max == null) return 'N/A';
+  const lo = p.budget_min ?? 0;
+  const hi = p.budget_max ?? lo;
+  return `₦${lo.toLocaleString()} - ₦${hi.toLocaleString()}`;
+}
+
+const MOVE_IN_MONTHS = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec',
+];
+
+function formatMoveIn(date: string | null): string {
+  if (!date) return '—';
+  const [y, m] = date.split('-');
+  const month = MOVE_IN_MONTHS[(Number(m) || 12) - 1] ?? '';
+  return `${month} ${y}`;
+}
+
+const BUDGET_TIERS: { label: string; min: number; max: number }[] = [
+  { label: 'Under ₦150,000 / year', min: 0, max: 150000 },
+  { label: '₦150,000 – ₦300,000 / year', min: 150000, max: 300000 },
+  { label: '₦300,000 – ₦500,000 / year', min: 300000, max: 500000 },
+  { label: '₦500,000 – ₦800,000 / year', min: 500000, max: 800000 },
+  { label: '₦800,000 – ₦1,200,000 / year', min: 800000, max: 1200000 },
+  { label: '₦1,200,000 – ₦2,000,000 / year', min: 1200000, max: 2000000 },
+  { label: '₦2,000,000+ / year', min: 2000000, max: Infinity },
+];
+
+function toDirectoryRow(p: ProfileItem): DirectoryRow {
+  return {
+    id: p.id,
+    initials: initialsFromName(p.full_name),
+    name: p.full_name,
+    seekerId: `#${shortId(p.id)}`,
+    state: p.state || '—',
+    location: p.preferred_locations?.[0] || '—',
+    budget: formatBudget(p),
+    moveIn: formatMoveIn(p.expected_move_in_date),
+    status: profileStatus(p),
+    ambassador: p.referred_by_code ? `Ref: ${p.referred_by_code}` : 'Direct',
+    isActive: p.is_active ?? false,
+    rawStatus: p.status ?? '',
+    occupation: p.occupation,
+    email: p.email,
+    phone: p.phone_number,
+    gender: p.gender,
+    ageRange: p.age_range,
+    religion: p.religion,
+    marStatus: p.marital_status,
+    prefLocations: p.preferred_locations ?? [],
+    budgetMin: p.budget_min,
+    budgetMax: p.budget_max,
+    bio: p.personal_bio,
+    referralCode: p.referred_by_code,
+  };
+}
+
+function accountPill(isActive: boolean): { label: string; cls: string; dot: string } {
+  return isActive
+    ? { label: 'Account Active', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100/50', dot: 'bg-emerald-400' }
+    : { label: 'Account Inactive', cls: 'bg-slate-100 text-slate-500 border-slate-200', dot: 'bg-slate-400' };
+}
+
+function statusPill(rawStatus: string): { label: string; cls: string; dot: string } {
+  const s = (rawStatus || '').toLowerCase();
+  if (s === 'paid') {
+    return { label: 'Roommate Connected', cls: 'bg-emerald-50 text-emerald-700 border-emerald-100/50', dot: 'bg-emerald-400' };
+  }
+  if (s === 'matched') {
+    return { label: 'Matched', cls: 'bg-blue-50 text-blue-600 border-blue-100/50', dot: 'bg-sky-400' };
+  }
+  if (s === 'pending payment' || s === 'pending') {
+    return { label: 'Pending Payment', cls: 'bg-amber-50 text-amber-700 border-amber-100/50', dot: 'bg-amber-400' };
+  }
+  return { label: 'Seeking Roommate', cls: 'bg-amber-50 text-amber-700 border-amber-100/50', dot: 'bg-amber-400' };
+}
+
 function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void }) {
+  const { session } = useAuth();
   const [query, setQuery] = useState('');
   const [stateFilter, setStateFilter] = useState('State: Lagos');
   const [statusFilter, setStatusFilter] = useState('Status: All Statuses');
+  const [budgetFilter, setBudgetFilter] = useState('Any Range');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const [users, setUsers] = useState<DirectoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [limit] = useState(20);
+  const [offset, setOffset] = useState(0);
+  const [total, setTotal] = useState(0);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -838,33 +971,86 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, []);
 
-  const filteredRows = DIRECTORY_ALL_ROWS.filter((row) => {
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await fetchProfiles(token, { limit, offset });
+        if (active) {
+          setUsers(data.items.map(toDirectoryRow));
+          setTotal(data.pagination.total);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Failed to load users.');
+          setUsers([]);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken, limit, offset]);
+
+  const filteredRows = users.filter((row) => {
     const q = query.toLowerCase();
     const matchesSearch =
       row.name.toLowerCase().includes(q) ||
-      row.seekerId.toLowerCase().includes(q);
+      row.seekerId.toLowerCase().includes(q) ||
+      row.state.toLowerCase().includes(q);
     const matchesState = stateFilter.includes(row.state);
     return matchesSearch && matchesState;
   });
 
   const buildStatus = (row: DirectoryRow) => {
-    if (statusFilter === 'Status: Seeking') return row.status === 'Seeking';
-    if (statusFilter === 'Status: Matched & Paid') return row.status === 'Matched & Paid';
+    if (statusFilter === 'Status: New') return row.status === 'New';
+    if (statusFilter === 'Status: Matched') return row.status === 'Matched';
+    if (statusFilter === 'Status: Pending Payment') return row.status === 'Pending Payment';
+    if (statusFilter === 'Status: Paid') return row.status === 'Paid';
+    if (statusFilter === 'Status: Rematch') return row.status === 'Rematch';
     return true;
   };
 
-  const rows = filteredRows.filter(buildStatus);
+  const buildBudget = (row: DirectoryRow) => {
+    if (budgetFilter === 'Any Range') return true;
+    const tier = BUDGET_TIERS.find((t) => t.label === budgetFilter);
+    if (!tier) return true;
+    if (row.budgetMin == null || row.budgetMax == null) return false;
+    return row.budgetMax >= tier.min && row.budgetMin <= tier.max;
+  };
+
+  const rows = filteredRows.filter(buildStatus).filter(buildBudget);
+
+  const totalPages = Math.max(1, Math.ceil(total / limit));
+  const currentPage = Math.floor(offset / limit) + 1;
+  const pageStart = Math.max(2, currentPage - 1);
+  const pageEnd = Math.min(totalPages - 1, currentPage + 1);
+  const statusCounts = users.reduce(
+    (acc, row) => {
+      acc[row.status] = (acc[row.status] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const metrics = [
+    { label: 'Total Profiles', value: total, icon: 'group', iconBg: 'bg-surface-container', iconColor: 'text-on-surface-variant' },
+    { label: 'New Profiles', value: statusCounts.New ?? 0, icon: 'search', iconBg: 'bg-[#E0F2FE]', iconColor: 'text-[#0369A1]' },
+    { label: 'Pending Payment', value: statusCounts['Pending Payment'] ?? 0, icon: 'payments', iconBg: 'bg-[#FEF3C7]', iconColor: 'text-[#B45309]' },
+    { label: 'Matched', value: statusCounts.Matched ?? 0, icon: 'task_alt', iconBg: 'bg-[#D1FAE5]', iconColor: 'text-[#047857]' },
+  ];
 
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Profiles', value: 254, icon: 'group', iconBg: 'bg-surface-container', iconColor: 'text-on-surface-variant' },
-          { label: 'Seeking Unmatched', value: 48, icon: 'search', iconBg: 'bg-[#E0F2FE]', iconColor: 'text-[#0369A1]' },
-          { label: 'Pending Payment', value: 12, icon: 'payments', iconBg: 'bg-[#FEF3C7]', iconColor: 'text-[#B45309]' },
-          { label: 'Matched & Paid', value: 194, icon: 'task_alt', iconBg: 'bg-[#D1FAE5]', iconColor: 'text-[#047857]' },
-        ].map((c) => (
+        {metrics.map((c) => (
           <div
             key={c.label}
             className="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow"
@@ -904,10 +1090,12 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
             onChange={(e) => setStateFilter(e.target.value)}
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
           >
-            <option>State: Lagos</option>
-            <option>State: Abuja</option>
-            <option>State: Oyo</option>
-            <option>State: Kano</option>
+            {(Array.from(new Set(users.map((u) => u.state).filter(Boolean))).length > 0
+              ? Array.from(new Set(users.map((u) => u.state).filter(Boolean)))
+              : ['Lagos', 'Abuja', 'Oyo', 'Kano']
+            ).map((s) => (
+              <option key={s}>State: {s}</option>
+            ))}
           </select>
           <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan">
             <option>Loc: All</option>
@@ -921,15 +1109,21 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
           >
             <option>Status: All Statuses</option>
-            <option>Status: Seeking</option>
-            <option>Status: Matched & Paid</option>
+            <option>Status: New</option>
+            <option>Status: Matched</option>
             <option>Status: Pending Payment</option>
-            <option>Status: Rematch Requested</option>
+            <option>Status: Paid</option>
+            <option>Status: Rematch</option>
           </select>
-          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan">
-            <option>Budget: Any Range</option>
-            <option>Budget: &lt; 100k</option>
-            <option>Budget: 100k - 300k</option>
+          <select
+            value={budgetFilter}
+            onChange={(e) => setBudgetFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-[13px] text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>Any Range</option>
+            {BUDGET_TIERS.map((t) => (
+              <option key={t.label}>{t.label}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -953,7 +1147,32 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.map((row) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="w-6 h-6 border-2 border-slate-200 border-t-bright-cyan rounded-full animate-spin" />
+                      <span className="text-xs text-slate-400">Loading users...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="material-symbols-outlined text-2xl text-red-500">error_outline</span>
+                      <span className="text-xs text-red-600">{error}</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-4 py-10 text-center">
+                    <span className="text-xs text-slate-400">No users found.</span>
+                  </td>
+                </tr>
+              ) : (
+                rows.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => onSelect(row)}
@@ -1036,7 +1255,8 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
                     )}
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -1045,38 +1265,56 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-xs text-slate-400">
-                Showing <span className="font-medium text-dark-slate">1</span> to{' '}
-                <span className="font-medium text-dark-slate">{rows.length}</span> of{' '}
-                <span className="font-medium text-dark-slate">{DIRECTORY_ALL_ROWS.length}</span> results
+                Showing <span className="font-medium text-dark-slate">{total === 0 ? 0 : offset + 1}</span> to{' '}
+                <span className="font-medium text-dark-slate">{Math.min(offset + users.length, total)}</span> of{' '}
+                <span className="font-medium text-dark-slate">{total}</span> results
               </p>
             </div>
             <div>
               <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <a className="relative inline-flex items-center px-2 py-1.5 rounded-l-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
+                <button
+                  type="button"
+                  disabled={currentPage === 1 || loading}
+                  onClick={() => setOffset(Math.max(0, offset - limit))}
+                  className="relative inline-flex items-center px-2 py-1.5 rounded-l-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </a>
-                {[1, 2, 3].map((n) => (
-                  <a
-                    key={n}
-                    href="#"
-                    className={`relative inline-flex items-center px-3.5 py-1.5 border text-xs font-medium ${
-                      n === 1
-                        ? 'z-10 bg-[#E0F2FE] border-sky-400 text-[#0369A1]'
-                        : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-100'
-                    }`}
-                  >
-                    {n}
-                  </a>
-                ))}
-                <span className="relative inline-flex items-center px-3.5 py-1.5 border border-slate-200 bg-white text-xs font-medium text-slate-400">
-                  ...
-                </span>
-                <a className="relative inline-flex items-center px-3.5 py-1.5 border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
-                  25
-                </a>
-                <a className="relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100" href="#">
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((n) => n === 1 || n === totalPages || (n >= pageStart && n <= pageEnd))
+                  .reduce<(number | 'ellipsis')[]>((acc, n, idx, arr) => {
+                    if (idx > 0 && n - (arr[idx - 1] as number) > 1) acc.push('ellipsis');
+                    acc.push(n);
+                    return acc;
+                  }, [])
+                  .map((n, i) =>
+                    n === 'ellipsis' ? (
+                      <span key={`e${i}`} className="relative inline-flex items-center px-3.5 py-1.5 border border-slate-200 bg-white text-xs font-medium text-slate-400">
+                        ...
+                      </span>
+                    ) : (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setOffset((n - 1) * limit)}
+                        className={`relative inline-flex items-center px-3.5 py-1.5 border text-xs font-medium ${
+                          n === currentPage
+                            ? 'z-10 bg-[#E0F2FE] border-sky-400 text-[#0369A1]'
+                            : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-100'
+                        }`}
+                      >
+                        {n}
+                      </button>
+                    )
+                  )}
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages || loading}
+                  onClick={() => setOffset(offset + limit)}
+                  className="relative inline-flex items-center px-2 py-1.5 rounded-r-md border border-slate-200 bg-white text-xs font-medium text-slate-400 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
                   <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </a>
+                </button>
               </nav>
             </div>
           </div>
@@ -2003,15 +2241,15 @@ function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <h2 className="font-bold text-xl text-primary tracking-tight">{d.fullName}</h2>
+              <h2 className="font-bold text-xl text-primary tracking-tight">{user.name}</h2>
               <span className="bg-slate-100 text-slate-500 font-bold text-xs px-2.5 py-1 rounded-md">{user.seekerId}</span>
             </div>
             <div className="flex flex-wrap gap-2">
-              <span className="bg-amber-50 text-amber-700 font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-amber-100/50">
-                <span className="w-2 h-2 rounded-full bg-amber-400" /> Seeking Roommate
+              <span className={`font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border ${statusPill(user.rawStatus ?? '').cls}`}>
+                <span className={`w-2 h-2 rounded-full ${statusPill(user.rawStatus ?? '').dot}`} /> {statusPill(user.rawStatus ?? '').label}
               </span>
-              <span className="bg-emerald-50 text-emerald-700 font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-emerald-100/50">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" /> Account Active
+              <span className={`font-semibold text-[13px] px-3 py-1.5 rounded-full flex items-center gap-1.5 border ${accountPill(user.isActive ?? false).cls}`}>
+                <span className={`w-2 h-2 rounded-full ${accountPill(user.isActive ?? false).dot}`} /> {accountPill(user.isActive ?? false).label}
               </span>
             </div>
           </div>
@@ -2044,8 +2282,8 @@ function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }
             <span className="font-bold text-[11px] uppercase tracking-widest text-slate-400">Referral Source</span>
             <span className="material-symbols-outlined text-[#38BDF8] text-[20px]">share</span>
           </div>
-          <div className="font-bold text-3xl text-primary">{d.referralSource}</div>
-          <div className="text-slate-600 font-medium text-[13px] bg-slate-100 self-start px-3 py-1 rounded-md">{d.referralAttribution}</div>
+          <div className="font-bold text-3xl text-primary">{user.referralCode ? `Ref: ${user.referralCode}` : 'Direct'}</div>
+          <div className="text-slate-600 font-medium text-[13px] bg-slate-100 self-start px-3 py-1 rounded-md">{user.referralCode ? 'Attributed to referral code' : 'No referral attribution'}</div>
         </div>
         <div className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-3 border border-slate-100">
           <div className="flex justify-between items-center text-slate-500">
@@ -2068,26 +2306,26 @@ function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }
           <div className="flex flex-col gap-6">
             <h3 className="font-bold text-lg text-primary border-b border-slate-100 pb-4">Demographics &amp; Contact</h3>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
-              <Field label="Phone/WhatsApp" value={d.phone} />
-              <Field label="Email" value={d.email} />
-              <Field label="Gender" value={d.gender} />
-              <Field label="Age Bracket" value={d.ageBracket} />
-              <Field label="Religion" value={d.religion} />
-              <Field label="Status" value={d.marStatus} />
-              <Field label="Occupation" value={d.occupation} />
-              <Field label="Schedule" value={d.schedule} />
+              <Field label="Phone/WhatsApp" value={user.phone ?? '—'} />
+              <Field label="Email" value={user.email ?? '—'} />
+              <Field label="Gender" value={user.gender ?? '—'} />
+              <Field label="Age Bracket" value={user.ageRange ?? '—'} />
+              <Field label="Religion" value={user.religion ?? '—'} />
+              <Field label="Status" value={user.marStatus ?? '—'} />
+              <Field label="Occupation" value={user.occupation ?? d.occupation} />
+              <Field label="Schedule" value="Official" />
             </dl>
           </div>
           <div className="flex flex-col gap-6">
             <h3 className="font-bold text-lg text-primary border-b border-slate-100 pb-4">Location, Budget &amp; Co-living</h3>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-y-6 gap-x-6">
               <Field label="State" value={user.state} />
-              <Field label="Preferred Areas" value={d.prefAreas} />
+              <Field label="Preferred Areas" value={user.prefLocations?.length ? user.prefLocations.join(', ') : '—'} />
               <Field label="Target Budget" value={user.budget} strong />
-              <Field label="Budget Range" value={d.budgetRange} />
+              <Field label="Budget Range" value={`₦${(user.budgetMin ?? 0).toLocaleString()} - ₦${(user.budgetMax ?? user.budgetMin ?? 0).toLocaleString()}`} />
               <div className="col-span-full flex flex-col gap-1">
                 <dt className="text-slate-500 font-medium text-[13px]">Target Move-in Date</dt>
-                <dd className="text-primary font-semibold text-[15px]">{d.moveInDate}</dd>
+                <dd className="text-primary font-semibold text-[15px]">{user.moveIn}</dd>
               </div>
             </dl>
             <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 mt-2">
@@ -2095,7 +2333,7 @@ function UserDetail({ user, onBack }: { user: DirectoryRow; onBack: () => void }
                 <span className="material-symbols-outlined text-[18px] text-slate-400">format_quote</span>
                 User Bio
               </h4>
-              <p className="font-medium text-[15px] leading-relaxed text-slate-600 italic">{d.bio}</p>
+              <p className="font-medium text-[15px] leading-relaxed text-slate-600 italic">{user.bio ?? '—'}</p>
             </div>
           </div>
         </div>
@@ -2855,11 +3093,11 @@ export default function AdminDashboard() {
       {/* Sidebar */}
       <aside className="bg-primary text-white w-64 fixed left-0 top-0 bottom-0 z-40 hidden md:flex flex-col py-6 px-4">
         <div className="px-2 mb-8">
-          <Link href="/" className="font-display font-extrabold text-2xl text-white block">
-            Roommate NG
+          <Link href="/" className="font-display font-extrabold text-2xl text-white block whitespace-nowrap">
+            Admin Console
           </Link>
           <span className="text-[10px] text-bright-cyan uppercase tracking-widest font-bold">
-            Matchmaking Control
+            Roommate NG
           </span>
         </div>
 
