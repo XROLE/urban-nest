@@ -111,6 +111,47 @@ export async function fetchProfiles(
   return data.data;
 }
 
+export interface MatchBreakdown {
+  location: number;
+  state: number;
+  budget: number;
+  moveIn: number;
+  gender: number;
+  religion: number;
+  occupation: number;
+  smoking: number;
+  pets: number;
+}
+
+export interface MatchItem {
+  score: number;
+  breakdown: MatchBreakdown;
+  profiles: ProfileItem[];
+}
+
+export interface MatchesResponse {
+  data: {
+    items: MatchItem[];
+    pagination: PaginationMeta;
+  };
+}
+
+export async function fetchMatches(
+  token: string,
+  { limit = 20, offset = 0 }: { limit?: number; offset?: number } = {}
+): Promise<MatchesResponse['data']> {
+  const res = await fetch(`${BASE_URL}/matches?limit=${limit}&offset=${offset}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const data = (await res.json()) as MatchesResponse;
+  return data.data;
+}
+
 export async function parseApiError(res: Response): Promise<string> {
   let message = 'Something went wrong. Please try again.';
   try {

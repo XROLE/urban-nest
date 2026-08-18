@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
-import { fetchProfiles, fetchAmbassadors, type ProfileItem, type AmbassadorItem } from '@/lib/api';
+import {
+  fetchProfiles,
+  fetchAmbassadors,
+  fetchMatches,
+  type ProfileItem,
+  type AmbassadorItem,
+  type MatchItem,
+} from '@/lib/api';
 
 interface Profile {
   id: string;
@@ -39,127 +46,13 @@ interface MatchPairTrack {
   userB: MatchUserFace;
 }
 
-const DEFAULT_MATCH_PAIRS: MatchPairTrack[] = [
-  {
-    id: 'pair-102',
-    pairNumber: 'PAIR #102',
-    matchPercent: 92,
-    userA: {
-      name: 'Chidi O.',
-      id: '#RM-104',
-      imageUrl:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuBmWymzKQGmfTmpp5c9tS__Djk4KikXzuuGd1wBBtec-QosHtlBohmqwrpC_m6OUhvFM1E5CY46lzVTHYR9pcBr-P5aySlW8S-Tvo4HKr9C8-T293ViuhEbFNQkgEXUuUXxx0sJs1V6FBdv-WdvKZzYQJUK0OdpDrZnf9g6Y3ceJhTtOcuGfz8a90K2clle5c4Ewx_226Y9fPmJFBfJus73FRHbJ13RKojZzlpL5_kc14Fu7ZvQg4WkNw',
-      initials: 'CO',
-      avatarBg: '',
-      avatarText: '',
-      location: 'UNILAG Akoka, Yaba',
-      budget: '₦200,000 / yr',
-      moveIn: 'Immediate (Within 7 days)',
-      lifestyle: ['Early Riser', 'Non-Smoker', 'Very Clean'],
-    },
-    userB: {
-      name: 'Emeka K.',
-      id: '#RM-208',
-      imageUrl:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuDBtXUSFPcOZ7yF7QDJXXCobop4sR36SZj7iFZAy45ZxC-7_ouzbz7Lbm-CU6doAKtuMk7Wftw0YJPk9HcS_VVekGwgfh0dAKG_Aj5b9vX0dUH7D_wcNceKNGEHdHYqqLyWmC-c3lCevGWbNZL_dVm22tIOn8oWBKBbIq82_xwEMb3YqWymu9p8yGBXrDfTMeB8EEXGGFC2TQQYbw-29UKQ8xXlgI1S4w89m5DM-4XgnrAnz1IVj5cfJA',
-      initials: 'EK',
-      avatarBg: '',
-      avatarText: '',
-      location: 'UNILAG Akoka, Abule Oja',
-      budget: '₦220,000 / yr',
-      moveIn: 'Flexible (Oct 15 - Oct 30)',
-      lifestyle: ['Early Riser', 'Non-Smoker', 'Clean'],
-    },
-  },
-  {
-    id: 'pair-103',
-    pairNumber: 'PAIR #103',
-    matchPercent: 88,
-    userA: {
-      name: 'Tunde A.',
-      id: '#RM-512',
-      initials: 'TA',
-      avatarBg: 'bg-secondary-fixed text-on-secondary-fixed border-secondary-fixed-dim',
-      avatarText: '',
-      location: 'Yaba, Alagomeji',
-      budget: '₦350,000 / yr',
-      moveIn: 'Immediate',
-      lifestyle: ['Night Owl', 'Non-Smoker'],
-    },
-    userB: {
-      name: 'Samuel B.',
-      id: '#RM-633',
-      imageUrl:
-        'https://lh3.googleusercontent.com/aida-public/AB6AXuBiTXA3PDZ1QUffP-fl2WBklZzlvnVThWKDputjLVz1iVpLFajkJmAGp0_J9q62WH4fXJUWEHw8t1EP3j7JohC47vepRA3ysEKn3cthABV39Q4mHpOuvqMxkC_dIQpi1Uv5QID4qxB9ZLwvUeYgSrcL6XGDhvRJjoXlU840C2ugGrUKwDgDLYN0rilWyLdadOvk-vL65iDM_89sdGr-HDn__Z_bw3IkCwj6u1vW03jE1Cyd7bpxkczo4Q',
-      initials: 'SB',
-      avatarBg: '',
-      avatarText: '',
-      location: 'Yaba, Sabo',
-      budget: '₦300,000 / yr',
-      moveIn: 'Immediate',
-      lifestyle: ['Early Riser', 'Non-Smoker'],
-    },
-  },
-  {
-    id: 'pair-104',
-    pairNumber: 'PAIR #104',
-    matchPercent: 85,
-    userA: {
-      name: 'Femi D.',
-      id: '#RM-421',
-      initials: 'FD',
-      avatarBg: 'bg-primary-fixed text-on-primary-fixed border-primary-fixed-dim',
-      avatarText: '',
-      location: 'Surulere, Adeniran Ogunsanya',
-      budget: '₦400,000 / yr',
-      moveIn: 'Flexible (Nov 1)',
-      lifestyle: ['Social Drinker', 'Very Clean'],
-    },
-    userB: {
-      name: 'Bisi L.',
-      id: '#RM-710',
-      initials: 'BL',
-      avatarBg: 'bg-tertiary-fixed text-on-tertiary-fixed border-tertiary-fixed-dim',
-      avatarText: '',
-      location: 'Surulere, Bode Thomas',
-      budget: '₦450,000 / yr',
-      moveIn: 'Flexible (Nov 15)',
-      lifestyle: ['Early Riser', 'Very Clean'],
-    },
-  },
-  {
-    id: 'pair-105',
-    pairNumber: 'PAIR #105',
-    matchPercent: 82,
-    userA: {
-      name: 'Ada M.',
-      id: '#RM-912',
-      initials: 'AM',
-      avatarBg: 'bg-error-container text-on-error-container border-error-container/50',
-      avatarText: '',
-      location: 'Lekki Phase 1',
-      budget: '₦1,200,000 / yr',
-      moveIn: 'Immediate',
-      lifestyle: ['Pet Friendly', 'Non-Smoker'],
-    },
-    userB: {
-      name: 'Nnamdi C.',
-      id: '#RM-944',
-      initials: 'NC',
-      avatarBg: 'bg-secondary-container text-on-secondary-container border-secondary-container/50',
-      avatarText: '',
-      location: 'Lekki Phase 1',
-      budget: '₦1,500,000 / yr',
-      moveIn: 'Flexible (Next Month)',
-      lifestyle: ['Pet Friendly', 'Very Clean'],
-    },
-  },
-];
-
 interface MatchWorkspaceProps {
   pairs: MatchPairTrack[];
+  loading?: boolean;
+  error?: string | null;
   onReject: (pairId: string) => void;
   onConfirm: (pairId: string) => void;
+  onRunAutoMatch: () => void;
   onOpenSettings: () => void;
 }
 
@@ -279,8 +172,11 @@ function MatchCard({
 
 function MatchWorkspace({
   pairs,
+  loading,
+  error,
   onReject,
   onConfirm,
+  onRunAutoMatch,
   onOpenSettings,
 }: MatchWorkspaceProps) {
   return (
@@ -303,11 +199,14 @@ function MatchWorkspace({
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={() => onConfirm(pairs[0]?.id ?? '')}
-            className="flex items-center gap-2 bg-sky-blue/90 text-white px-5 py-2 rounded-lg font-label-md text-sm shadow-sm hover:bg-secondary transition-colors"
+            onClick={onRunAutoMatch}
+            disabled={loading}
+            className="flex items-center gap-2 bg-sky-blue/90 text-white px-5 py-2 rounded-lg font-label-md text-sm shadow-sm hover:bg-secondary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className="material-symbols-outlined fill-icon text-[17px]">model_training</span>
-            Run Global Auto-Match
+            <span className={`material-symbols-outlined fill-icon text-[17px] ${loading ? 'animate-spin' : ''}`}>
+              {loading ? 'progress_activity' : 'model_training'}
+            </span>
+            {loading ? 'Running Auto-Match...' : 'Run Global Auto-Match'}
           </button>
         </div>
       </div>
@@ -337,7 +236,15 @@ function MatchWorkspace({
       </div>
 
       <div className="flex-1 flex flex-col gap-4 pb-4 w-full relative z-10">
-        {pairs.length === 0 ? (
+        {loading ? (
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-8 text-center">
+            <p className="font-label-md text-sm text-on-surface-variant">Loading matches...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-surface-container-lowest rounded-xl border border-error/30 p-8 text-center">
+            <p className="font-label-md text-sm text-error">{error}</p>
+          </div>
+        ) : pairs.length === 0 ? (
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/20 p-8 text-center">
             <p className="font-label-md text-sm text-on-surface-variant">
               All proposed pairs have been reviewed. Run auto-match to generate new pairs.
@@ -2752,7 +2659,7 @@ function PaymentControl() {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { user, isAuthenticated, hydrated, logout } = useAuth();
+  const { user, isAuthenticated, hydrated, session, logout } = useAuth();
   const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const [matchSettingsOpen, setMatchSettingsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -2761,7 +2668,9 @@ export default function AdminDashboard() {
   const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail' | 'user-detail' | 'payments'>('dashboard');
   const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
   const [selectedUser, setSelectedUser] = useState<DirectoryRow | null>(null);
-  const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>(DEFAULT_MATCH_PAIRS);
+  const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>([]);
+  const [matchesLoading, setMatchesLoading] = useState(false);
+  const [matchesError, setMatchesError] = useState<string | null>(null);
 
   const handleRejectMatch = (pairId: string) => {
     setProposedPairs((prev) => prev.filter((p) => p.id !== pairId));
@@ -2772,6 +2681,95 @@ export default function AdminDashboard() {
     setTimeout(() => setMatchTriggered(false), 3000);
     handleRejectMatch(pairId);
   };
+
+  const AVATAR_PALETTE = [
+    { avatarBg: 'bg-bright-cyan/20 text-dark-blue', avatarText: '' },
+    { avatarBg: 'bg-mint/20 text-mint-strong', avatarText: '' },
+    { avatarBg: 'bg-violet/20 text-violet-strong', avatarText: '' },
+    { avatarBg: 'bg-amber/20 text-amber-strong', avatarText: '' },
+    { avatarBg: 'bg-pink/20 text-pink-strong', avatarText: '' },
+  ];
+
+  const toMatchPairTrack = (item: MatchItem, index: number): MatchPairTrack | null => {
+    if (!Array.isArray(item.profiles) || item.profiles.length < 2) return null;
+    const [a, b] = item.profiles;
+
+    const toUserFace = (p: ProfileItem, idx: number): MatchUserFace => {
+      const parts = (p.full_name || 'Roommate').trim().split(/\s+/);
+      const initials = parts
+        .map((part) => part[0] || '')
+        .slice(0, 2)
+        .join('')
+        .toUpperCase() || 'RM';
+      const budgetMin = p.budget_min ?? 0;
+      const budgetMax = p.budget_max ?? 0;
+      const location = p.preferred_locations?.[0] || p.state || 'Not specified';
+      const moveIn = p.expected_move_in_date
+        ? new Date(p.expected_move_in_date + 'T00:00:00').toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })
+        : 'Not specified';
+      const lifestyle: string[] = [];
+      if (p.smoking_habit === 'non_smoker') lifestyle.push('Non-Smoker');
+      else if (p.smoking_habit) lifestyle.push('Smoker');
+      if (p.occupation) lifestyle.push(p.occupation.replace(/_/g, ' '));
+      if (p.marital_status) lifestyle.push(p.marital_status.charAt(0).toUpperCase() + p.marital_status.slice(1));
+
+      const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
+      return {
+        name: p.full_name || 'Roommate',
+        id: idx === 0 ? 'USER A' : 'USER B',
+        initials,
+        avatarBg: palette.avatarBg,
+        avatarText: palette.avatarText,
+        location,
+        budget: `₦${budgetMin.toLocaleString()} - ₦${budgetMax.toLocaleString()}`,
+        moveIn,
+        lifestyle,
+      };
+    };
+
+    return {
+      id: `${a.id}-match`,
+      pairNumber: `PAIR #${index + 1}`,
+      matchPercent: Math.round(item.score),
+      userA: toUserFace(a, 0),
+      userB: toUserFace(b, 1),
+    };
+  };
+
+  const loadMatches = useCallback(async () => {
+    const token = session?.accessToken;
+    if (!token) return;
+    setMatchesLoading(true);
+    setMatchesError(null);
+    try {
+      const data = await fetchMatches(token, { limit: 20, offset: 0 });
+      const pairs = data.items
+        .map((item, index) => toMatchPairTrack(item, index))
+        .filter((p): p is MatchPairTrack => p !== null);
+      setProposedPairs(pairs);
+    } catch (err) {
+      setMatchesError(err instanceof Error ? err.message : 'Failed to load matches.');
+    } finally {
+      setMatchesLoading(false);
+    }
+  }, [session?.accessToken]);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      await loadMatches();
+      return () => {
+        active = false;
+      };
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.accessToken]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -3324,8 +3322,11 @@ export default function AdminDashboard() {
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
+            loading={matchesLoading}
+            error={matchesError}
             onReject={handleRejectMatch}
             onConfirm={handleConfirmMatch}
+            onRunAutoMatch={loadMatches}
             onOpenSettings={() => setMatchSettingsOpen(true)}
           />
         )}
