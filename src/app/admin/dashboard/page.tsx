@@ -35,6 +35,8 @@ interface MatchUserFace {
   location: string;
   budget: string;
   moveIn: string;
+  gender: string;
+  ageRange: string;
   lifestyle: string[];
 }
 
@@ -98,6 +100,22 @@ function MatchUserSide({ user }: { user: MatchUserFace }) {
             </div>
           </div>
         ))}
+        <div className="flex items-start gap-2.5">
+          <span className="material-symbols-outlined text-on-primary-container text-[16px] mt-0.5">
+            wc
+          </span>
+          <div className="flex-1">
+            <p className="text-[10px] text-on-surface-variant mb-1">Gender &amp; Age</p>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="bg-surface-container-low border border-surface-container-high px-2.5 py-0.5 rounded-md text-[12px] font-medium text-primary">
+                {user.gender}
+              </span>
+              <span className="bg-surface-container-low border border-surface-container-high px-2.5 py-0.5 rounded-md text-[12px] font-medium text-primary">
+                {user.ageRange}
+              </span>
+            </div>
+          </div>
+        </div>
         <div className="flex items-start gap-2.5">
           <span className="material-symbols-outlined text-on-primary-container text-[16px] mt-0.5">
             psychology
@@ -221,7 +239,11 @@ function MatchWorkspace({
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low text-on-surface hover:bg-surface-container-high rounded-lg font-label-md text-xs transition-colors border border-outline-variant/30">
+          <button
+            onClick={onRunAutoMatch}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low text-on-surface hover:bg-surface-container-high rounded-lg font-label-md text-xs transition-colors border border-outline-variant/30 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
             <span className="material-symbols-outlined text-[17px]">refresh</span>
             Re-run Algorithm
           </button>
@@ -2694,6 +2716,12 @@ export default function AdminDashboard() {
     if (!Array.isArray(item.profiles) || item.profiles.length < 2) return null;
     const [a, b] = item.profiles;
 
+    const formatGender = (value?: string | null): string => {
+      if (!value) return 'Not specified';
+      if (value === 'no_preference') return 'No Preference';
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    };
+
     const toUserFace = (p: ProfileItem, idx: number): MatchUserFace => {
       const parts = (p.full_name || 'Roommate').trim().split(/\s+/);
       const initials = parts
@@ -2716,6 +2744,7 @@ export default function AdminDashboard() {
       else if (p.smoking_habit) lifestyle.push('Smoker');
       if (p.occupation) lifestyle.push(p.occupation.replace(/_/g, ' '));
       if (p.marital_status) lifestyle.push(p.marital_status.charAt(0).toUpperCase() + p.marital_status.slice(1));
+      if (p.religion) lifestyle.push(p.religion.replace(/_/g, ' '));
 
       const palette = AVATAR_PALETTE[idx % AVATAR_PALETTE.length];
       return {
@@ -2727,6 +2756,8 @@ export default function AdminDashboard() {
         location,
         budget: `₦${budgetMin.toLocaleString()} - ₦${budgetMax.toLocaleString()}`,
         moveIn,
+        gender: formatGender(p.gender),
+        ageRange: p.age_range?.replace(/_/g, ' ') || 'Not specified',
         lifestyle,
       };
     };
