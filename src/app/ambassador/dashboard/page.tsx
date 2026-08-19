@@ -1374,8 +1374,8 @@ Fill out the short form here to get started:
   const handlePayoutAmountChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const raw = e.target.value.replace(/[^\d.]/g, '');
-    const cleaned = raw.replace(/(\..*)\./g, '$1');
+    // Backend requires a whole number of Naira, so allow digits only.
+    const cleaned = e.target.value.replace(/\D/g, '');
     setPayoutAmount(cleaned);
     const amount = Number(cleaned);
     if (
@@ -4645,10 +4645,10 @@ Fill out the short form here to get started:
               <input
                 id="withdrawal_amount"
                 type="text"
-                inputMode="decimal"
+                inputMode="numeric"
                 value={payoutAmount}
                 onChange={handlePayoutAmountChange}
-                placeholder="0.00"
+                placeholder="0"
                 className={`w-full bg-white border rounded-xl py-2.5 pl-8 pr-4 font-body text-sm text-dark-slate focus:outline-none transition-all placeholder:text-slate-300 ${
                   payoutError
                     ? 'border-error focus:border-error focus:ring-1 focus:ring-error'

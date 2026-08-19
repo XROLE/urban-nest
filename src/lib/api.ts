@@ -199,6 +199,17 @@ export async function createMatch(
   return data.data;
 }
 
+export async function fetchPayoutBalance(token: string): Promise<number> {
+  const res = await fetch(`${BASE_URL}/payments/balance`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const json = (await res.json()) as {
+    data?: { currency: string; balanceKobo: number; balanceNgn: number }[];
+  };
+  return json?.data?.[0]?.balanceNgn ?? 0;
+}
+
 export async function parseApiError(res: Response): Promise<string> {
   let message = 'Something went wrong. Please try again.';
   try {

@@ -11,6 +11,7 @@ import {
   fetchAmbassadors,
   fetchMatches,
   createMatch,
+  fetchPayoutBalance,
   type ProfileItem,
   type AmbassadorItem,
   type MatchItem,
@@ -2235,10 +2236,29 @@ const REFUND_ROWS: RefundRow[] = [
 ];
 
 function PaymentControl() {
+  const { session } = useAuth();
   const [tab, setTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
   const [query, setQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [payoutBalance, setPayoutBalance] = useState<number | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const balance = await fetchPayoutBalance(token);
+        if (active) setPayoutBalance(balance);
+      } catch {
+        if (active) setPayoutBalance(0);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -2265,7 +2285,7 @@ function PaymentControl() {
           </div>
           <div>
             <p className="text-xs text-slate-400 mb-1">Paystack Payout Balance</p>
-            <h3 className="font-display text-xl font-bold">₦520,000</h3>
+            <h3 className="font-display text-xl font-bold">{payoutBalance === null ? '—' : `₦${payoutBalance.toLocaleString()}`}</h3>
           </div>
           <div className="mt-auto self-start">
             <button className="bg-[#40c2fd] hover:bg-[#7bd0ff] text-white text-xs px-3 py-1 rounded-md font-bold shadow-sm transition-all">
