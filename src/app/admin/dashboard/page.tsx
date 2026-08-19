@@ -2332,7 +2332,7 @@ function PaymentControl() {
     setProcessingPayout(true);
     setProcessError(null);
     try {
-      await processPaymentRequest(token, processTarget.id, processTarget.amount_ngn);
+      await processPaymentRequest(token, processTarget.id);
       setProcessTarget(null);
       setPayoutRefresh((n) => n + 1);
     } catch (err) {

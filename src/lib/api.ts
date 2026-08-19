@@ -301,16 +301,15 @@ export interface PaymentRequestsResponse {
 
 export async function processPaymentRequest(
   token: string,
-  requestId: string,
-  amountNgn: number
+  requestId: string
 ): Promise<void> {
-  const res = await fetch(`${BASE_URL}/payments/requests/${requestId}/process`, {
-    method: 'POST',
+  const res = await fetch(`${BASE_URL}/payments/withdrawals/${requestId}/confirm`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ amount_ngn: amountNgn }),
+    body: JSON.stringify({ action: 'approve' }),
   });
   if (!res.ok) throw new Error(await parseApiError(res));
 }
