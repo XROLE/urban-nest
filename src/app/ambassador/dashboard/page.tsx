@@ -304,7 +304,6 @@ export default function AmbassadorDashboard() {
   const { user, profile, logout, isAuthenticated, session, hydrated } = useAuth();
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
-  const [withdrawn, setWithdrawn] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(
     profile?.profile_picture_url ?? null
   );
@@ -704,6 +703,12 @@ export default function AmbassadorDashboard() {
   const [bankError, setBankError] = useState('');
   const [bankSuccessOpen, setBankSuccessOpen] = useState(false);
 
+  const [payoutModalOpen, setPayoutModalOpen] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState('');
+  const [payoutError, setPayoutError] = useState('');
+  const [payoutSubmitting, setPayoutSubmitting] = useState(false);
+  const [payoutSuccessOpen, setPayoutSuccessOpen] = useState(false);
+
   useEffect(() => {
     let active = true;
     (async () => {
@@ -966,44 +971,43 @@ export default function AmbassadorDashboard() {
     };
   }, [session?.accessToken]);
 
-  useEffect(() => {
+  const fetchPaymentSummary = async () => {
     const token = session?.accessToken;
     if (!token) return;
-    let active = true;
-    (async () => {
-      try {
-        const res = await fetch(`${BASE_URL}/payments/summary`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error(await parseApiError(res));
-        const json = (await res.json()) as {
-          data?: {
-            pendingPayments?: number;
-            totalEarned?: number;
-            availableBalance?: number;
-            successfulPayments?: number;
-          };
+    try {
+      const res = await fetch(`${BASE_URL}/payments/summary`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error(await parseApiError(res));
+      const json = (await res.json()) as {
+        data?: {
+          pendingPayments?: number;
+          totalEarned?: number;
+          availableBalance?: number;
+          successfulPayments?: number;
         };
-        if (!active) return;
-        setPaymentSummary({
-          pendingPayments: json?.data?.pendingPayments ?? 0,
-          totalEarned: json?.data?.totalEarned ?? 0,
-          availableBalance: json?.data?.availableBalance ?? 0,
-          successfulPayments: json?.data?.successfulPayments ?? 0,
-        });
-      } catch {
-        if (!active) return;
-        setPaymentSummary({
-          pendingPayments: 0,
-          totalEarned: 0,
-          availableBalance: 0,
-          successfulPayments: 0,
-        });
-      }
+      };
+      setPaymentSummary({
+        pendingPayments: json?.data?.pendingPayments ?? 0,
+        totalEarned: json?.data?.totalEarned ?? 0,
+        availableBalance: json?.data?.availableBalance ?? 0,
+        successfulPayments: json?.data?.successfulPayments ?? 0,
+      });
+    } catch {
+      setPaymentSummary({
+        pendingPayments: 0,
+        totalEarned: 0,
+        availableBalance: 0,
+        successfulPayments: 0,
+      });
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await fetchPaymentSummary();
     })();
-    return () => {
-      active = false;
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.accessToken]);
 
   useEffect(() => {
@@ -1140,7 +1144,6 @@ Fill out the short form here to get started:
 
   const totalReferrals = profile?.total_referrals ?? 24;
   const totalEarnings = profile?.total_earnings_ngn ?? 6000;
-  const pendingBalance = profile?.pending_balance_ngn ?? 4500;
 
   const maskAccountNumber = (num: string) => {
     const clean = num.replace(/\s+/g, '');
@@ -1352,9 +1355,102 @@ Fill out the short form here to get started:
     }
   };
 
-  const handleWithdraw = () => {
-    setWithdrawn(true);
-    setTimeout(() => setWithdrawn(false), 3000);
+  const MIN_WITHDRAWAL_NGN = 1000;
+
+  const openPayoutModal = () => {
+    setPayoutAmount('');
+    setPayoutError('');
+    setPayoutModalOpen(true);
+  };
+
+  const formatNgn = (value: number) =>
+    value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+
+  const parsePayoutAmount = () => Number(payoutAmount.replace(/,/g, ''));
+
+  const handlePayoutAmountChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const raw = e.target.value.replace(/[^\d.]/g, '');
+    const cleaned = raw.replace(/(\..*)\./g, '$1');
+    setPayoutAmount(cleaned);
+    const amount = Number(cleaned);
+    if (
+      cleaned &&
+      !Number.isNaN(amount) &&
+      amount > paymentSummary.availableBalance
+    ) {
+      setPayoutError(
+        `Amount exceeds your available balance of ₦${formatNgn(paymentSummary.availableBalance)}`
+      );
+    } else {
+      setPayoutError('');
+    }
+  };
+
+  const payoutAmountValid = () => {
+    const amount = parsePayoutAmount();
+    return (
+      payoutAmount.trim() !== '' &&
+      !Number.isNaN(amount) &&
+      amount >= MIN_WITHDRAWAL_NGN &&
+      amount <= paymentSummary.availableBalance
+    );
+  };
+
+  const parsedPayoutAmount = parsePayoutAmount();
+  const payoutBelowMinimum =
+    payoutAmount.trim() !== '' &&
+    !Number.isNaN(parsedPayoutAmount) &&
+    parsedPayoutAmount < MIN_WITHDRAWAL_NGN;
+
+  const submitPayout = async () => {
+    const amount = parsePayoutAmount();
+    if (payoutAmount.trim() === '' || Number.isNaN(amount)) {
+      setPayoutError('Enter a valid withdrawal amount.');
+      return;
+    }
+    if (amount < MIN_WITHDRAWAL_NGN) {
+      setPayoutError(
+        `Minimum withdrawal is ₦${MIN_WITHDRAWAL_NGN.toLocaleString()}.00`
+      );
+      return;
+    }
+    if (amount > paymentSummary.availableBalance) {
+      setPayoutError(
+        `Amount exceeds your available balance of ₦${formatNgn(paymentSummary.availableBalance)}`
+      );
+      return;
+    }
+
+    setPayoutError('');
+    setPayoutSubmitting(true);
+    try {
+      const res = await fetch(`${BASE_URL}/payments/withdrawals`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.accessToken}`,
+        },
+        body: JSON.stringify({ amountNg: amount }),
+      });
+
+      if (!res.ok) {
+        setPayoutError(await parseApiError(res));
+        return;
+      }
+
+      setPayoutModalOpen(false);
+      setPayoutSuccessOpen(true);
+      fetchPaymentSummary();
+    } catch {
+      setPayoutError('Something went wrong. Please try again.');
+    } finally {
+      setPayoutSubmitting(false);
+    }
   };
 
   const openEditContact = () => {
@@ -1955,15 +2051,6 @@ Fill out the short form here to get started:
           </div>
         )}
 
-        {withdrawn && (
-          <div className="fixed top-20 right-8 bg-bright-cyan text-white px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-            <span className="material-symbols-outlined text-lg">payments</span>
-            <span className="font-semibold text-sm">
-              Withdrawal request for ₦{pendingBalance.toLocaleString()} submitted!
-            </span>
-          </div>
-        )}
-
         {view === 'dashboard' ? (
           <>
             {/* Header Section */}
@@ -2075,7 +2162,7 @@ Fill out the short form here to get started:
                     })}
                   </p>
                   <button
-                    onClick={handleWithdraw}
+                    onClick={openPayoutModal}
                     className="bg-bright-cyan text-white text-[11px] font-semibold px-3 py-1.5 rounded-full hover:bg-bright-cyan/90 transition-colors"
                   >
                     Request
@@ -2502,7 +2589,7 @@ Fill out the short form here to get started:
                     </div>
                   </div>
                   <button
-                    onClick={handleWithdraw}
+                    onClick={openPayoutModal}
                     className="bg-mint text-white font-body text-sm font-semibold py-2.5 px-5 rounded-lg hover:brightness-110 transition-all shadow-sm flex items-center gap-2 whitespace-nowrap"
                   >
                     <span className="material-symbols-outlined text-base">
@@ -3510,6 +3597,7 @@ Fill out the short form here to get started:
                       </div>
                       <button
                         type="button"
+                        onClick={openPayoutModal}
                         className="w-full bg-bright-cyan text-white font-body text-sm py-2.5 rounded-lg hover:brightness-110 transition-all shadow-sm"
                       >
                         Request Withdrawal
@@ -4505,6 +4593,149 @@ Fill out the short form here to get started:
         </div>
       </Modal>
 
+      {/* Request Payout Modal */}
+      <Modal
+        open={payoutModalOpen}
+        onClose={() => setPayoutModalOpen(false)}
+        title="Request Payout"
+        size="md"
+      >
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="font-display text-lg font-bold text-dark-slate flex items-center gap-2">
+            <span className="material-symbols-outlined text-mint">
+              account_balance_wallet
+            </span>
+            Request Payout
+          </h2>
+          <button
+            type="button"
+            onClick={() => setPayoutModalOpen(false)}
+            className="text-slate-500 hover:text-dark-slate rounded-full p-1 hover:bg-slate-100 transition-colors"
+            aria-label="Close"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="p-6 flex flex-col gap-5">
+          {/* Available Balance Badge */}
+          <div className="flex items-center justify-between bg-dark-slate rounded-xl px-4 py-3">
+            <span className="font-body text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Available Balance
+            </span>
+            <span className="font-display text-lg font-bold text-mint">
+              ₦{formatNgn(paymentSummary.availableBalance)}
+            </span>
+          </div>
+
+          {/* Withdrawal Amount */}
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="withdrawal_amount"
+              className="font-body text-xs font-bold text-dark-slate uppercase tracking-wide"
+            >
+              Withdrawal Amount
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span className="font-body text-sm text-slate-400">₦</span>
+              </div>
+              <input
+                id="withdrawal_amount"
+                type="text"
+                inputMode="decimal"
+                value={payoutAmount}
+                onChange={handlePayoutAmountChange}
+                placeholder="0.00"
+                className={`w-full bg-white border rounded-xl py-2.5 pl-8 pr-4 font-body text-sm text-dark-slate focus:outline-none transition-all placeholder:text-slate-300 ${
+                  payoutError
+                    ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
+                    : 'border-slate-200 focus:border-bright-cyan focus:ring-1 focus:ring-bright-cyan'
+                }`}
+              />
+            </div>
+            {payoutError ? (
+              <p className="font-body text-sm text-error flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">
+                  error
+                </span>
+                {payoutError}
+              </p>
+            ) : payoutBelowMinimum ? (
+              <p className="font-body text-xs font-semibold text-amber-600 flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">
+                  info
+                </span>
+                Minimum withdrawal is ₦{MIN_WITHDRAWAL_NGN.toLocaleString()}.00
+              </p>
+            ) : (
+              <p className="font-body text-xs text-slate-400">
+                Minimum withdrawal: ₦{MIN_WITHDRAWAL_NGN.toLocaleString()}.00
+              </p>
+            )}
+          </div>
+
+          {/* Destination Bank */}
+          <div className="flex items-center gap-3 p-3 border border-slate-200 rounded-xl bg-slate-50">
+            <div className="w-10 h-10 rounded-full bg-mint/10 flex items-center justify-center text-mint shrink-0">
+              <span
+                className="material-symbols-outlined"
+                style={{ fontVariationSettings: "'FILL' 1" }}
+              >
+                account_balance
+              </span>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-body text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                Destination
+              </span>
+              {savedBank.accountNumber ? (
+                <span className="font-body text-sm text-dark-slate font-semibold">
+                  {savedBank.bankName} •{' '}
+                  {maskAccountNumber(savedBank.accountNumber)}
+                </span>
+              ) : (
+                <span className="font-body text-sm text-error font-semibold">
+                  No bank account added yet
+                </span>
+              )}
+            </div>
+          </div>
+
+          <p className="font-body text-xs text-slate-400 text-center">
+            Your withdrawal will be processed within 24 hours.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => setPayoutModalOpen(false)}
+            className="px-5 py-2.5 rounded-lg border border-slate-300 text-dark-slate font-body text-sm hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={submitPayout}
+            disabled={
+              payoutSubmitting ||
+              !payoutAmountValid() ||
+              !savedBank.accountNumber
+            }
+            className="px-5 py-2.5 rounded-lg bg-mint text-white font-body text-sm font-semibold hover:brightness-110 transition-all shadow-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {payoutSubmitting && (
+              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            )}
+            {payoutSubmitting ? 'Submitting…' : 'Confirm Request'}
+          </button>
+        </div>
+      </Modal>
+
       {/* Edit Contact Details Modal */}
       {editContactOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -4844,6 +5075,15 @@ Fill out the short form here to get started:
           onClose={() => setBankSuccessOpen(false)}
           details="Your bank account details have been updated successfully."
           onPrimary={() => setBankSuccessOpen(false)}
+        />
+      )}
+
+      {payoutSuccessOpen && (
+        <SuccessModal
+          open={payoutSuccessOpen}
+          onClose={() => setPayoutSuccessOpen(false)}
+          details="Your withdrawal request has been submitted successfully. It will be processed within 24 hours."
+          onPrimary={() => setPayoutSuccessOpen(false)}
         />
       )}
 
