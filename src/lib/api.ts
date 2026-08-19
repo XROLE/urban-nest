@@ -299,6 +299,22 @@ export interface PaymentRequestsResponse {
   pagination: { total: number; limit: number; offset: number };
 }
 
+export async function processPaymentRequest(
+  token: string,
+  requestId: string,
+  amountNgn: number
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/payments/requests/${requestId}/process`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ amount_ngn: amountNgn }),
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+}
+
 export async function fetchPaymentRequests(
   token: string,
   params: { status?: string; limit?: number; offset?: number } = {}

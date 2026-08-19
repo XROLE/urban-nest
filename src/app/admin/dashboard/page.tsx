@@ -15,6 +15,7 @@ import {
   createMatch,
   fetchFinancialOverview,
   fetchPaymentRequests,
+  processPaymentRequest,
   type FinancialOverview,
   type ProfileStats,
   type AmbassadorStats,
@@ -2268,6 +2269,10 @@ function PaymentControl() {
   const [payoutOffset, setPayoutOffset] = useState(0);
   const [payoutLoading, setPayoutLoading] = useState(true);
   const [payoutError, setPayoutError] = useState<string | null>(null);
+  const [payoutRefresh, setPayoutRefresh] = useState(0);
+  const [processTarget, setProcessTarget] = useState<PaymentRequest | null>(null);
+  const [processingPayout, setProcessingPayout] = useState(false);
+  const [processError, setProcessError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2309,7 +2314,7 @@ function PaymentControl() {
     return () => {
       active = false;
     };
-  }, [session?.accessToken, tab, payoutOffset]);
+  }, [session?.accessToken, tab, payoutOffset, payoutRefresh]);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -2320,6 +2325,22 @@ function PaymentControl() {
     document.addEventListener('mousedown', onMouseDown);
     return () => document.removeEventListener('mousedown', onMouseDown);
   }, []);
+
+  const handleProcessPayout = async () => {
+    const token = session?.accessToken;
+    if (!token || !processTarget) return;
+    setProcessingPayout(true);
+    setProcessError(null);
+    try {
+      await processPaymentRequest(token, processTarget.id, processTarget.amount_ngn);
+      setProcessTarget(null);
+      setPayoutRefresh((n) => n + 1);
+    } catch (err) {
+      setProcessError(err instanceof Error ? err.message : 'Failed to process payout.');
+    } finally {
+      setProcessingPayout(false);
+    }
+  };
 
   const filteredRows = PAYMENT_ROWS.filter((r) =>
     r.ref.toLowerCase().includes(query.toLowerCase())
@@ -2650,7 +2671,13 @@ function PaymentControl() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
-                        <button className="px-3 py-1 bg-[#10B981] hover:opacity-90 text-white text-xs font-bold rounded transition-colors">
+                        <button
+                          onClick={() => {
+                            setProcessError(null);
+                            setProcessTarget(row);
+                          }}
+                          className="px-3 py-1 bg-[#10B981] hover:opacity-90 text-white text-xs font-bold rounded transition-colors"
+                        >
                           Process
                         </button>
                         <button className="px-3 py-1 bg-[#EF4444] hover:opacity-90 text-white text-xs font-bold rounded transition-colors">
@@ -2811,6 +2838,104 @@ function PaymentControl() {
         </div>
         )}
       </section>
+
+      {/* Confirm Payout Modal */}
+      <Modal
+        open={processTarget !== null}
+        onClose={() => {
+          if (!processingPayout) setProcessTarget(null);
+        }}
+        title="Process payout"
+        size="xs"
+        preventDismiss={processingPayout}
+      >
+        <div className="p-6 sm:p-7">
+          <div className="flex flex-col items-center text-center">
+            <span className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+              <span className="material-symbols-outlined text-2xl">payments</span>
+            </span>
+            <h3 className="font-display text-lg font-extrabold text-dark-slate">
+              Process payout
+            </h3>
+            <p className="mt-1 text-xs text-slate-500">
+              Review the details below before confirming.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center rounded-xl bg-slate-50 border border-slate-200 py-4 px-4">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Amount to pay
+            </span>
+            <span className="mt-1 font-display text-3xl font-extrabold text-emerald-600">
+              ₦{processTarget?.amount_ngn.toLocaleString()}
+            </span>
+          </div>
+
+          <dl className="mt-6 space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-xs font-medium text-slate-400">Recipient</dt>
+              <dd className="text-sm font-semibold text-dark-slate text-right">
+                {processTarget?.ambassador.user.full_name}
+              </dd>
+            </div>
+            <div className="border-t border-slate-100" />
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-xs font-medium text-slate-400">Referral</dt>
+              <dd className="text-sm font-medium text-dark-slate">
+                {processTarget?.ambassador.referral_code}
+              </dd>
+            </div>
+            <div className="border-t border-slate-100" />
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-xs font-medium text-slate-400">Bank</dt>
+              <dd className="text-sm font-medium text-dark-slate">
+                {processTarget?.bank_name} • {processTarget?.account_number}
+              </dd>
+            </div>
+            <div className="border-t border-slate-100" />
+            <div className="flex items-center justify-between gap-4">
+              <dt className="text-xs font-medium text-slate-400">Account name</dt>
+              <dd className="text-sm font-medium text-dark-slate">{processTarget?.account_name}</dd>
+            </div>
+          </dl>
+
+          <div className="mt-5 flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <span className="material-symbols-outlined text-[14px]">lock</span>
+            Paid securely via Paystack
+          </div>
+
+          {processError && (
+            <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2">
+              <span className="material-symbols-outlined text-[14px] mt-0.5">error_outline</span>
+              <span>{processError}</span>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setProcessTarget(null)}
+              disabled={processingPayout}
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleProcessPayout}
+              disabled={processingPayout}
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm bg-emerald-600/90 text-white hover:bg-emerald-600/80 transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {processingPayout && (
+                <span className="material-symbols-outlined animate-spin text-base">
+                  progress_activity
+                </span>
+              )}
+              {processingPayout ? 'Processing...' : 'Confirm & Pay'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
