@@ -8,12 +8,14 @@ import { useAuth } from '@/components/providers/AuthProvider';
 import Modal from '@/components/Modal';
 import {
   fetchProfiles,
+  fetchProfileStats,
   fetchAmbassadors,
   fetchMatches,
   createMatch,
   fetchFinancialOverview,
   fetchPaymentRequests,
   type FinancialOverview,
+  type ProfileStats,
   type PaymentRequest,
   type ProfileItem,
   type AmbassadorItem,
@@ -912,6 +914,25 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
 
+  const [stats, setStats] = useState<ProfileStats | null>(null);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const data = await fetchProfileStats(token);
+        if (active) setStats(data);
+      } catch {
+        if (active) setStats(null);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
+
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -992,10 +1013,10 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
   );
 
   const metrics = [
-    { label: 'Total Profiles', value: total, icon: 'group', iconBg: 'bg-surface-container', iconColor: 'text-on-surface-variant' },
-    { label: 'New Profiles', value: statusCounts.New ?? 0, icon: 'search', iconBg: 'bg-[#E0F2FE]', iconColor: 'text-[#0369A1]' },
-    { label: 'Pending Payment', value: statusCounts['Pending Payment'] ?? 0, icon: 'payments', iconBg: 'bg-[#FEF3C7]', iconColor: 'text-[#B45309]' },
-    { label: 'Matched', value: statusCounts.Matched ?? 0, icon: 'task_alt', iconBg: 'bg-[#D1FAE5]', iconColor: 'text-[#047857]' },
+    { label: 'Total Profiles', value: stats?.totalProfiles ?? total, icon: 'group', iconBg: 'bg-surface-container', iconColor: 'text-on-surface-variant' },
+    { label: 'New Profiles', value: stats?.totalNewProfiles ?? statusCounts.New ?? 0, icon: 'search', iconBg: 'bg-[#E0F2FE]', iconColor: 'text-[#0369A1]' },
+    { label: 'Pending Payment', value: stats?.totalPendingPayments ?? statusCounts['Pending Payment'] ?? 0, icon: 'payments', iconBg: 'bg-[#FEF3C7]', iconColor: 'text-[#B45309]' },
+    { label: 'Connected', value: stats?.totalConnectedProfiles ?? statusCounts.Matched ?? 0, icon: 'task_alt', iconBg: 'bg-[#D1FAE5]', iconColor: 'text-[#047857]' },
   ];
 
   return (

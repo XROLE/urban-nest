@@ -124,6 +124,27 @@ export async function fetchProfiles(
   return data.data;
 }
 
+export interface ProfileStats {
+  totalProfiles: number;
+  totalNewProfiles: number;
+  totalPendingPayments: number;
+  totalConnectedProfiles: number;
+}
+
+export async function fetchProfileStats(token: string): Promise<ProfileStats> {
+  const res = await fetch(`${BASE_URL}/profiles/stats`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const json = (await res.json()) as { data?: ProfileStats };
+  if (!json?.data) throw new Error('No profile stats returned');
+  return json.data;
+}
+
 export interface MatchBreakdown {
   location: number;
   state: number;
