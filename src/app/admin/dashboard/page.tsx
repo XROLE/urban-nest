@@ -10,12 +10,14 @@ import {
   fetchProfiles,
   fetchProfileStats,
   fetchAmbassadors,
+  fetchAmbassadorStats,
   fetchMatches,
   createMatch,
   fetchFinancialOverview,
   fetchPaymentRequests,
   type FinancialOverview,
   type ProfileStats,
+  type AmbassadorStats,
   type PaymentRequest,
   type ProfileItem,
   type AmbassadorItem,
@@ -1414,6 +1416,25 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  const [stats, setStats] = useState<AmbassadorStats | null>(null);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      try {
+        const data = await fetchAmbassadorStats(token);
+        if (active) setStats(data);
+      } catch {
+        if (active) setStats(null);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken]);
+
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -1491,12 +1512,12 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
       {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
-          { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: `${total}` },
-          { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: '412', badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
-          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: '₦240,000', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
-          { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: '₦1.2M', badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
-          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: '12' },
-          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: '5', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: stats?.totalAmbassadors ?? total },
+          { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: stats?.totalReferrals ?? '412', badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
+          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: `₦${stats?.totalPendingPayouts ?? '240,000'}`, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: `₦${stats?.totalPayoutsPaid ?? '1.2M'}`, badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
+          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: stats?.unverifiedAmbassadors ?? '12' },
+          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: stats?.verificationRequestsPending ?? '5', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
         ].map((c) => (
           <div
             key={c.label}

@@ -145,6 +145,29 @@ export async function fetchProfileStats(token: string): Promise<ProfileStats> {
   return json.data;
 }
 
+export interface AmbassadorStats {
+  totalAmbassadors: number;
+  totalReferrals: number;
+  totalPendingPayouts: number;
+  totalPayoutsPaid: number;
+  unverifiedAmbassadors: number;
+  verificationRequestsPending: number;
+}
+
+export async function fetchAmbassadorStats(token: string): Promise<AmbassadorStats> {
+  const res = await fetch(`${BASE_URL}/ambassadors/stats`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const json = (await res.json()) as { data?: AmbassadorStats };
+  if (!json?.data) throw new Error('No ambassador stats returned');
+  return json.data;
+}
+
 export interface MatchBreakdown {
   location: number;
   state: number;
