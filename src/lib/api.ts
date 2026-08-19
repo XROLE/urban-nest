@@ -229,6 +229,49 @@ export async function fetchFinancialOverview(token: string): Promise<FinancialOv
   return json.data;
 }
 
+export interface PaymentRequest {
+  id: string;
+  ambassador_user_id: string;
+  amount_ngn: number;
+  status: string;
+  bank_code: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  paystack_recipient_code: string | null;
+  paystack_transfer_code: string | null;
+  reference: string;
+  created_at: string;
+  processed_at: string | null;
+  ambassador: {
+    user_id: string;
+    referral_code: string;
+    user: { id: string; email: string; full_name: string };
+  };
+}
+
+export interface PaymentRequestsResponse {
+  items: PaymentRequest[];
+  pagination: { total: number; limit: number; offset: number };
+}
+
+export async function fetchPaymentRequests(
+  token: string,
+  params: { status?: string; limit?: number; offset?: number } = {}
+): Promise<PaymentRequestsResponse> {
+  const query = new URLSearchParams();
+  if (params.status) query.set('status', params.status);
+  if (params.limit != null) query.set('limit', String(params.limit));
+  if (params.offset != null) query.set('offset', String(params.offset));
+  const res = await fetch(`${BASE_URL}/payments/requests?${query}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const json = (await res.json()) as { data?: PaymentRequestsResponse };
+  if (!json?.data) throw new Error('No payment requests returned');
+  return json.data;
+}
+
 export async function parseApiError(res: Response): Promise<string> {
   let message = 'Something went wrong. Please try again.';
   try {

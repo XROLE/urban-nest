@@ -12,7 +12,9 @@ import {
   fetchMatches,
   createMatch,
   fetchFinancialOverview,
+  fetchPaymentRequests,
   type FinancialOverview,
+  type PaymentRequest,
   type ProfileItem,
   type AmbassadorItem,
   type MatchItem,
@@ -2193,29 +2195,6 @@ const PAYMENT_ROWS: PaymentRow[] = [
   { id: 'p8', ref: 'T902183917', date: '14 Aug 2026', seeker: 'Musa B.', seekerId: '#RM-111', match: 'Ngozi P.', matchId: '#RM-215', fee: '₦2,000', attribution: 'Ref: AMB-MARK', split: '(₦1,000 Split)', status: 'Pending' },
 ];
 
-interface PayoutRow {
-  id: string;
-  name: string;
-  code: string;
-  campus: string;
-  bank: string;
-  account: string;
-  verified: string;
-  balance: string;
-  amount: string;
-}
-
-const PAYOUT_ROWS: PayoutRow[] = [
-  { id: 'out1', name: 'Jide Adeshina', code: 'AMB-JIDE', campus: 'Unilag', bank: 'Kuda Bank', account: '2012345678', verified: 'JIDE ADESHINA', balance: '₦12,500', amount: '₦8,000' },
-  { id: 'out2', name: 'Mark Tunde', code: 'AMB-MARK', campus: 'Lasu', bank: 'Wema Bank', account: '8123456789', verified: 'MARK TUNDE', balance: '₦15,200', amount: '₦8,000' },
-  { id: 'out3', name: 'Chris Okoro', code: 'AMB-CHRIS', campus: 'OAU', bank: 'GTBank', account: '0123456789', verified: 'CHRIS OKORO', balance: '₦9,800', amount: '₦6,000' },
-  { id: 'out4', name: 'Sarah Bello', code: 'AMB-SARAH', campus: 'UI', bank: 'UBA', account: '2123456789', verified: 'SARAH BELLO', balance: '₦18,300', amount: '₦10,000' },
-  { id: 'out5', name: 'Ibrahim Musa', code: 'AMB-IBRAHIM', campus: 'ABU', bank: 'Zenith Bank', account: '7123456789', verified: 'IBRAHIM MUSA', balance: '₦11,000', amount: '₦7,500' },
-  { id: 'out6', name: 'Linda Ojo', code: 'AMB-LINDA', campus: 'Covenant', bank: 'Access Bank', account: '3123456789', verified: 'LINDA OJO', balance: '₦13,700', amount: '₦9,000' },
-  { id: 'out7', name: 'Femi Ade', code: 'AMB-FEMI', campus: 'FUTO', bank: 'Fidelity Bank', account: '4123456789', verified: 'FEMI ADE', balance: '₦8,400', amount: '₦5,000' },
-  { id: 'out8', name: 'Grace Eke', code: 'AMB-GRACE', campus: 'UNN', bank: 'Kuda Bank', account: '5123456789', verified: 'GRACE EKE', balance: '₦16,600', amount: '₦12,000' },
-];
-
 type RefundStatus = 'Pending Review' | 'Disputed' | 'Refunded';
 
 interface RefundRow {
@@ -2242,6 +2221,11 @@ function PaymentControl() {
   const [query, setQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [overview, setOverview] = useState<FinancialOverview | null>(null);
+  const [payouts, setPayouts] = useState<PaymentRequest[]>([]);
+  const [payoutTotal, setPayoutTotal] = useState(0);
+  const [payoutOffset, setPayoutOffset] = useState(0);
+  const [payoutLoading, setPayoutLoading] = useState(true);
+  const [payoutError, setPayoutError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2260,6 +2244,30 @@ function PaymentControl() {
       active = false;
     };
   }, [session?.accessToken]);
+
+  useEffect(() => {
+    const token = session?.accessToken;
+    if (!token || tab !== 'payout') return;
+    let active = true;
+    (async () => {
+      setPayoutLoading(true);
+      setPayoutError(null);
+      try {
+        const data = await fetchPaymentRequests(token, { status: 'pending', limit: 20, offset: payoutOffset });
+        if (active) {
+          setPayouts(data.items);
+          setPayoutTotal(data.pagination.total);
+        }
+      } catch (err) {
+        if (active) setPayoutError(err instanceof Error ? err.message : 'Failed to load payment requests.');
+      } finally {
+        if (active) setPayoutLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken, tab, payoutOffset]);
 
   useEffect(() => {
     const onMouseDown = (e: MouseEvent) => {
@@ -2544,7 +2552,7 @@ function PaymentControl() {
           <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-slate-700">
               <span className="material-symbols-outlined text-primary text-sm">info</span>
-              <span className="text-sm font-medium">8 Withdrawal Requests Selected</span>
+              <span className="text-sm font-medium">{payoutTotal} Withdrawal Requests Selected</span>
               <span className="text-xs text-slate-400">• pending admin approval</span>
             </div>
             <button className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-[#27a3e0] transition-colors">
@@ -2567,18 +2575,31 @@ function PaymentControl() {
                 </tr>
               </thead>
               <tbody>
-                {PAYOUT_ROWS.map((row) => (
+                {payoutLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500">Loading payment requests...</td>
+                  </tr>
+                ) : payoutError ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-red-500">{payoutError}</td>
+                  </tr>
+                ) : payouts.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-sm text-slate-500">No pending requests.</td>
+                  </tr>
+                ) : (
+                  payouts.map((row) => (
                   <tr key={row.id} className="border-b border-slate-100 hover:bg-slate-50/60 transition-colors">
                     <td className="px-4 py-3">
-                      <div className="text-sm font-semibold text-slate-800">{row.name}</div>
-                      <div className="text-xs text-slate-500">{row.code} • {row.campus}</div>
+                      <div className="text-sm font-semibold text-slate-800">{row.ambassador.user.full_name}</div>
+                      <div className="text-xs text-slate-500">{row.ambassador.referral_code}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-sm text-slate-700">{row.bank} — {row.account}</div>
-                      <div className="text-xs font-medium text-emerald-600">Verified: {row.verified}</div>
+                      <div className="text-sm text-slate-700">{row.bank_name} — {row.account_number}</div>
+                      <div className="text-xs font-medium text-emerald-600">Verified: {row.account_name}</div>
                     </td>
-                    <td className="px-4 py-3 text-right text-sm text-slate-600">{row.balance}</td>
-                    <td className="px-4 py-3 text-right text-sm font-bold text-slate-800">{row.amount}</td>
+                    <td className="px-4 py-3 text-right text-sm text-slate-600">—</td>
+                    <td className="px-4 py-3 text-right text-sm font-bold text-slate-800">₦{row.amount_ngn.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full border border-amber-200">
                         <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
@@ -2599,20 +2620,29 @@ function PaymentControl() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Payout Footer */}
           <div className="p-4 border-t border-slate-200 bg-white flex items-center justify-between">
-            <span className="text-sm text-slate-500">Showing 8 of 8 pending requests</span>
+            <span className="text-sm text-slate-500">Showing {Math.min(payoutOffset + payouts.length, payoutTotal)} of {payoutTotal} pending requests</span>
             <div className="flex items-center gap-1">
-              <button disabled className="p-1 rounded text-slate-400 disabled:opacity-50 transition-colors">
+              <button
+                disabled={payoutOffset === 0}
+                onClick={() => setPayoutOffset((o) => Math.max(0, o - 20))}
+                className="p-1 rounded text-slate-400 disabled:opacity-50 transition-colors"
+              >
                 <span className="material-symbols-outlined text-sm">chevron_left</span>
               </button>
-              <button className="w-8 h-8 rounded bg-[#40c2fd] text-white text-sm flex items-center justify-center">1</button>
-              <button disabled className="p-1 rounded text-slate-400 disabled:opacity-50 transition-colors">
+              <button className="w-8 h-8 rounded bg-[#40c2fd] text-white text-sm flex items-center justify-center">{Math.floor(payoutOffset / 20) + 1}</button>
+              <button
+                disabled={payoutOffset + 20 >= payoutTotal}
+                onClick={() => setPayoutOffset((o) => o + 20)}
+                className="p-1 rounded text-slate-400 disabled:opacity-50 transition-colors"
+              >
                 <span className="material-symbols-outlined text-sm">chevron_right</span>
               </button>
             </div>
