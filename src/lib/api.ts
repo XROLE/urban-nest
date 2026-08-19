@@ -40,10 +40,23 @@ export interface ProfilesResponse {
   };
 }
 
+export interface AmbassadorUserInfo {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  whatsapp_number: string | null;
+  role: string | null;
+  is_active: boolean | null;
+  email_verified: boolean | null;
+  whatsapp_verified: boolean | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AmbassadorItem {
   id: string;
   user_id: string;
-  full_name?: string | null;
+  user: AmbassadorUserInfo | null;
   referral_code: string;
   total_referrals: number | null;
   total_earnings_ngn: number | null;

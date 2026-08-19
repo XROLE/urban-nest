@@ -1295,7 +1295,7 @@ function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
   const tier = (titleCase(item.ambassador_ranking) as AmbassadorRow['tier']) || 'Bronze';
   return {
     id: item.id,
-    name: item.full_name?.trim() || item.referral_code || 'Ambassador',
+    name: item.user?.full_name?.trim() || item.referral_code || 'Ambassador',
     tier: ['Gold', 'Silver', 'Bronze'].includes(tier) ? tier : 'Bronze',
     state: item.state_covering?.[0] ?? '—',
     location:
@@ -1328,15 +1328,17 @@ function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
 }
 
 
-const AMBASSADOR_AVATARS: Record<string, string> = {
-  'amb-1': 'https://lh3.googleusercontent.com/aida/AP1WRLu55m5g8d6QBQiBic9Lr7CDc5r2BqvinbLI9RJiyLI3LouQWwKiOOu3_1Ra0qFYVJrsFwZcp5Engo8pclem6vm4ZqlMkvPBcDzqdT-AIO_0ru_suBD9gupkLA3SlOt5qVAU3XobM7agm_eaOCY0g_8YET_7FeVJ1lLMZDK8jc04fAXZgDhY-mSSDYPWV9GHnw8VqQ56Hm8-306s1wzuCvd9zRNSwF4VH5HWsJ-Tk8nN3d_8wOB5fk3c3iJ5',
-  'amb-2': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-  'amb-3': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-  'amb-4': 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&q=80&w=150',
-  'amb-5': 'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&q=80&w=150',
-  'amb-6': 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
-  'amb-7': 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=150',
-};
+function getInitials(name: string, code: string): string {
+  const source = name === 'Ambassador' ? code : name;
+  return (
+    source
+      .split(/\s+/)
+      .map((p) => p[0])
+      .slice(0, 2)
+      .join('')
+      .toUpperCase() || code.slice(0, 2).toUpperCase()
+  );
+}
 
 const TIER_BADGE: Record<AmbassadorRow['tier'], string> = {
   Gold: 'bg-amber-100 text-amber-800',
@@ -1572,11 +1574,17 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
                     <td className="p-4">
                       <div className="flex items-center gap-4">
                         <div className="relative shrink-0">
-                          <img
-                            src={row.imageUrl ?? AMBASSADOR_AVATARS[row.id] ?? `https://i.pravatar.cc/100?u=${row.id}`}
-                            className="w-12 h-12 rounded-full object-cover border border-slate-200"
-                            alt={row.name}
-                          />
+                          {row.imageUrl ? (
+                            <img
+                              src={row.imageUrl}
+                              className="w-12 h-12 rounded-full object-cover border border-slate-200"
+                              alt={row.name}
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center font-display text-sm font-bold border border-slate-200">
+                              {getInitials(row.name, row.code)}
+                            </div>
+                          )}
                           {row.status === 'Verified' && (
                             <span className="material-symbols-outlined icon-filled absolute -bottom-1 -right-1 bg-white rounded-full text-[#00668a] text-sm p-0.5">
                               verified
@@ -1741,12 +1749,7 @@ function AmbassadorDetail({
     { label: 'Operating Areas Assigned', done: ambassador.operating !== 'Not provided' },
   ];
 
-  const initials = (ambassador.name === 'Ambassador' ? ambassador.code : ambassador.name)
-    .split(/\s+/)
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase() || ambassador.code.slice(0, 2).toUpperCase();
+  const initials = getInitials(ambassador.name, ambassador.code);
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -1763,9 +1766,17 @@ function AmbassadorDetail({
       {/* Profile Header */}
       <section className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center font-display text-2xl font-bold shadow-sm">
-            {initials}
-          </div>
+          {ambassador.imageUrl ? (
+            <img
+              src={ambassador.imageUrl}
+              className="w-20 h-20 rounded-full object-cover shadow-sm"
+              alt={ambassador.name}
+            />
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-primary text-white flex items-center justify-center font-display text-2xl font-bold shadow-sm">
+              {initials}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-3 mb-1">
               <h1 className="font-display text-3xl font-bold text-dark-slate tracking-tight">
