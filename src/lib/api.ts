@@ -165,6 +165,40 @@ export async function fetchMatches(
   return data.data;
 }
 
+export interface ConfirmedMatch {
+  id: string;
+  roommate_profile_a_id?: string;
+  roommate_profile_b_id?: string;
+  status?: string;
+  created_at?: string;
+  updated_at?: string;
+  [key: string]: unknown;
+}
+
+export interface CreateMatchResponse {
+  data: {
+    match: ConfirmedMatch;
+    profiles: ProfileItem[];
+  };
+}
+
+export async function createMatch(
+  token: string,
+  body: { roommateProfileAId: string; roommateProfileBId: string }
+): Promise<CreateMatchResponse['data']> {
+  const res = await fetch(`${BASE_URL}/matches`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const data = (await res.json()) as CreateMatchResponse;
+  return data.data;
+}
+
 export async function parseApiError(res: Response): Promise<string> {
   let message = 'Something went wrong. Please try again.';
   try {

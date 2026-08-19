@@ -10,6 +10,7 @@ import {
   fetchProfiles,
   fetchAmbassadors,
   fetchMatches,
+  createMatch,
   type ProfileItem,
   type AmbassadorItem,
   type MatchItem,
@@ -45,6 +46,8 @@ interface MatchPairTrack {
   id: string;
   pairNumber: string;
   matchPercent: number;
+  profileAId: string;
+  profileBId: string;
   userA: MatchUserFace;
   userB: MatchUserFace;
 }
@@ -53,6 +56,7 @@ interface MatchWorkspaceProps {
   pairs: MatchPairTrack[];
   loading?: boolean;
   error?: string | null;
+  confirmingPairId?: string | null;
   onReject: (pairId: string) => void;
   onConfirm: (pairId: string) => void;
   onRunAutoMatch: () => void;
@@ -142,10 +146,12 @@ function MatchUserSide({ user }: { user: MatchUserFace }) {
 
 function MatchCard({
   pair,
+  confirming,
   onReject,
   onConfirm,
 }: {
   pair: MatchPairTrack;
+  confirming?: boolean;
   onReject: (id: string) => void;
   onConfirm: (id: string) => void;
 }) {
@@ -172,16 +178,20 @@ function MatchCard({
         <div className="flex items-center gap-3">
           <button
             onClick={() => onReject(pair.id)}
-            className="text-on-surface-variant hover:text-error px-3 py-1.5 rounded-lg font-label-md text-xs transition-colors"
+            disabled={confirming}
+            className="text-on-surface-variant hover:text-error px-3 py-1.5 rounded-lg font-label-md text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Reject
           </button>
           <button
             onClick={() => onConfirm(pair.id)}
-            className="bg-primary text-white px-4 py-1.5 rounded-lg font-label-md text-xs transition-all flex items-center gap-2 shadow-sm hover:bg-dark-slate"
+            disabled={confirming}
+            className="bg-primary text-white px-4 py-1.5 rounded-lg font-label-md text-xs transition-all flex items-center gap-2 shadow-sm hover:bg-dark-slate disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <span className="material-symbols-outlined fill-icon text-[16px]">check_circle</span>
-            Confirm Match
+            <span className={`material-symbols-outlined fill-icon text-[16px] ${confirming ? 'animate-spin' : ''}`}>
+              {confirming ? 'progress_activity' : 'check_circle'}
+            </span>
+            {confirming ? 'Confirming...' : 'Confirm Match'}
           </button>
         </div>
       </div>
@@ -193,6 +203,7 @@ function MatchWorkspace({
   pairs,
   loading,
   error,
+  confirmingPairId,
   onReject,
   onConfirm,
   onRunAutoMatch,
@@ -275,7 +286,13 @@ function MatchWorkspace({
           </div>
         ) : (
           pairs.map((pair) => (
-            <MatchCard key={pair.id} pair={pair} onReject={onReject} onConfirm={onConfirm} />
+            <MatchCard
+              key={pair.id}
+              pair={pair}
+              confirming={confirmingPairId === pair.id}
+              onReject={onReject}
+              onConfirm={onConfirm}
+            />
           ))
         )}
       </div>
@@ -2719,15 +2736,51 @@ export default function AdminDashboard() {
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [matchesError, setMatchesError] = useState<string | null>(null);
+  const [confirmingPairId, setConfirmingPairId] = useState<string | null>(null);
+  const [pairToConfirm, setPairToConfirm] = useState<MatchPairTrack | null>(null);
+  const [matchToast, setMatchToast] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   const handleRejectMatch = (pairId: string) => {
     setProposedPairs((prev) => prev.filter((p) => p.id !== pairId));
   };
 
   const handleConfirmMatch = (pairId: string) => {
-    setMatchTriggered(true);
-    setTimeout(() => setMatchTriggered(false), 3000);
-    handleRejectMatch(pairId);
+    const pair = proposedPairs.find((p) => p.id === pairId);
+    if (!pair || confirmingPairId) return;
+    setPairToConfirm(pair);
+  };
+
+  const confirmMatch = async () => {
+    const token = session?.accessToken;
+    const pair = pairToConfirm;
+    if (!token || !pair || confirmingPairId) return;
+
+    setConfirmingPairId(pair.id);
+    setMatchToast(null);
+    try {
+      await createMatch(token, {
+        roommateProfileAId: pair.profileAId,
+        roommateProfileBId: pair.profileBId,
+      });
+      setProposedPairs((prev) => prev.filter((p) => p.id !== pair.id));
+      setPairToConfirm(null);
+      setMatchToast({
+        type: 'success',
+        message: `Match confirmed between ${pair.userA.name} and ${pair.userB.name}!`,
+      });
+    } catch (err) {
+      setPairToConfirm(null);
+      setMatchToast({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to confirm match.',
+      });
+    } finally {
+      setConfirmingPairId(null);
+      setTimeout(() => setMatchToast(null), 4000);
+    }
   };
 
   const AVATAR_PALETTE = [
@@ -2792,6 +2845,8 @@ export default function AdminDashboard() {
       id: `${a.id}-match`,
       pairNumber: `PAIR #${index + 1}`,
       matchPercent: Math.round(item.score),
+      profileAId: a.id,
+      profileBId: b.id,
       userA: toUserFace(a, 0),
       userB: toUserFace(b, 1),
     };
@@ -3090,6 +3145,19 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {matchToast && (
+          <div
+            className={`fixed top-20 right-8 px-5 py-3 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top-4 duration-300 text-white ${
+              matchToast.type === 'success' ? 'bg-mint' : 'bg-red-600'
+            }`}
+          >
+            <span className="material-symbols-outlined text-lg">
+              {matchToast.type === 'success' ? 'check_circle' : 'error_outline'}
+            </span>
+            <span className="font-semibold text-sm">{matchToast.message}</span>
+          </div>
+        )}
+
         {activeView === 'dashboard' ? (
           <>
         <div className="mb-6">
@@ -3381,6 +3449,7 @@ export default function AdminDashboard() {
             pairs={proposedPairs}
             loading={matchesLoading}
             error={matchesError}
+            confirmingPairId={confirmingPairId}
             onReject={handleRejectMatch}
             onConfirm={handleConfirmMatch}
             onRunAutoMatch={loadMatches}
@@ -3393,6 +3462,57 @@ export default function AdminDashboard() {
         open={matchSettingsOpen}
         onClose={() => setMatchSettingsOpen(false)}
       />
+
+      {/* Confirm Match Modal */}
+      <Modal
+        open={pairToConfirm !== null}
+        onClose={() => setPairToConfirm(null)}
+        title="Confirm match"
+        size="md"
+        preventDismiss={confirmingPairId !== null}
+      >
+        <div className="p-6 sm:p-8">
+          <div className="flex flex-col items-center text-center">
+            <span className="flex items-center justify-center w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 mb-4">
+              <span className="material-symbols-outlined text-3xl">handshake</span>
+            </span>
+            <h3 className="font-display text-xl font-extrabold text-dark-slate mb-2">
+              Confirm this match?
+            </h3>
+            <p className="font-body text-sm text-slate-500 max-w-sm">
+              You&apos;re about to match{' '}
+              <span className="font-semibold text-dark-slate">{pairToConfirm?.userA.name}</span>{' '}
+              with{' '}
+              <span className="font-semibold text-dark-slate">{pairToConfirm?.userB.name}</span>.
+              Both roommates will be connected. Are you sure you want to proceed?
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-8">
+            <button
+              type="button"
+              onClick={() => setPairToConfirm(null)}
+              disabled={confirmingPairId !== null}
+              className="flex-1 py-3 rounded-full font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={confirmMatch}
+              disabled={confirmingPairId !== null}
+              className="flex-1 py-3 rounded-full font-display font-semibold text-sm bg-emerald-600/90 text-white hover:bg-emerald-600/80 transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {confirmingPairId !== null && (
+                <span className="material-symbols-outlined animate-spin text-base">
+                  progress_activity
+                </span>
+              )}
+              {confirmingPairId !== null ? 'Confirming...' : 'Yes, Confirm Match'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Logout Confirmation Modal */}
       <Modal
