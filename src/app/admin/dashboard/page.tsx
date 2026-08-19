@@ -11,7 +11,8 @@ import {
   fetchAmbassadors,
   fetchMatches,
   createMatch,
-  fetchPayoutBalance,
+  fetchFinancialOverview,
+  type FinancialOverview,
   type ProfileItem,
   type AmbassadorItem,
   type MatchItem,
@@ -2240,7 +2241,7 @@ function PaymentControl() {
   const [tab, setTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
   const [query, setQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  const [payoutBalance, setPayoutBalance] = useState<number | null>(null);
+  const [overview, setOverview] = useState<FinancialOverview | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2249,10 +2250,10 @@ function PaymentControl() {
     let active = true;
     (async () => {
       try {
-        const balance = await fetchPayoutBalance(token);
-        if (active) setPayoutBalance(balance);
+        const data = await fetchFinancialOverview(token);
+        if (active) setOverview(data);
       } catch {
-        if (active) setPayoutBalance(0);
+        if (active) setOverview(null);
       }
     })();
     return () => {
@@ -2285,7 +2286,7 @@ function PaymentControl() {
           </div>
           <div>
             <p className="text-xs text-slate-400 mb-1">Paystack Payout Balance</p>
-            <h3 className="font-display text-xl font-bold">{payoutBalance === null ? '—' : `₦${payoutBalance.toLocaleString()}`}</h3>
+            <h3 className="font-display text-xl font-bold">{overview?.paystackBalance?.balanceNgn == null ? '—' : `₦${overview.paystackBalance.balanceNgn.toLocaleString()}`}</h3>
           </div>
           <div className="mt-auto self-start">
             <button className="bg-[#40c2fd] hover:bg-[#7bd0ff] text-white text-xs px-3 py-1 rounded-md font-bold shadow-sm transition-all">
@@ -2297,7 +2298,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Total Gross Revenue</p>
-            <h3 className="font-display text-xl font-bold text-dark-slate">₦58,500,000</h3>
+            <h3 className="font-display text-xl font-bold text-dark-slate">{overview?.totalGrossRevenue == null ? '—' : `₦${overview.totalGrossRevenue.toLocaleString()}`}</h3>
           </div>
           <div className="mt-auto">
             <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md text-xs font-semibold">
@@ -2310,7 +2311,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Pending Match Payments</p>
-            <h3 className="font-display text-xl font-bold text-dark-slate">45 Seekers</h3>
+            <h3 className="font-display text-xl font-bold text-dark-slate">{overview ? `${overview.pendingAmbassadorCount} Seekers` : '—'}</h3>
           </div>
           <div className="mt-auto">
             <span className="inline-flex items-center gap-1 bg-sky-50 text-sky-800 px-2 py-0.5 rounded-md text-xs font-semibold border border-sky-100">
@@ -2323,12 +2324,12 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Pending Ambassador Payouts</p>
-            <h3 className="font-display text-xl font-bold text-dark-slate">₦240,000</h3>
+            <h3 className="font-display text-xl font-bold text-dark-slate">{overview?.totalPendingPayout == null ? '—' : `₦${overview.totalPendingPayout.toLocaleString()}`}</h3>
           </div>
           <div className="mt-auto">
             <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-xs font-semibold">
               <span className="material-symbols-outlined text-[14px]">people</span>
-              8 pending
+              {overview ? `${overview.pendingAmbassadorCount} pending` : '—'}
             </span>
           </div>
         </div>
@@ -2336,7 +2337,7 @@ function PaymentControl() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between h-28 relative overflow-hidden">
           <div>
             <p className="text-xs text-slate-500 mb-1">Net Platform Earnings</p>
-            <h3 className="font-display text-xl font-bold text-emerald-700">₦36,500,000</h3>
+            <h3 className="font-display text-xl font-bold text-emerald-700">{overview?.netPlatformEarnings == null ? '—' : `₦${overview.netPlatformEarnings.toLocaleString()}`}</h3>
           </div>
           <div className="mt-auto">
             <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">

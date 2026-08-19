@@ -199,6 +199,15 @@ export async function createMatch(
   return data.data;
 }
 
+export interface FinancialOverview {
+  paystackBalance: { currency: string; balanceKobo: number; balanceNgn: number };
+  totalGrossRevenue: number;
+  totalCommissions: number;
+  totalPendingPayout: number;
+  pendingAmbassadorCount: number;
+  netPlatformEarnings: number;
+}
+
 export async function fetchPayoutBalance(token: string): Promise<number> {
   const res = await fetch(`${BASE_URL}/payments/balance`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -208,6 +217,16 @@ export async function fetchPayoutBalance(token: string): Promise<number> {
     data?: { currency: string; balanceKobo: number; balanceNgn: number }[];
   };
   return json?.data?.[0]?.balanceNgn ?? 0;
+}
+
+export async function fetchFinancialOverview(token: string): Promise<FinancialOverview> {
+  const res = await fetch(`${BASE_URL}/payments/overview`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+  const json = (await res.json()) as { data?: FinancialOverview };
+  if (!json?.data) throw new Error('No financial overview data returned');
+  return json.data;
 }
 
 export async function parseApiError(res: Response): Promise<string> {
