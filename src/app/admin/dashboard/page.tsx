@@ -2620,7 +2620,7 @@ function PaymentControl() {
             </div>
             <button className="flex items-center gap-2 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-[#27a3e0] transition-colors">
               <span className="material-symbols-outlined text-sm">payments</span>
-              Approve Selected (Bulk Paystack Transfer)
+              Always cross check before approval
             </button>
           </div>
 
