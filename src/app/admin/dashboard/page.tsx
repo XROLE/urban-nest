@@ -14,6 +14,7 @@ import {
   type AmbassadorItem,
   type MatchItem,
 } from '@/lib/api';
+import { LAGOS_AREAS } from '@/lib/lagosLocations';
 
 interface Profile {
   id: string;
@@ -1260,6 +1261,7 @@ interface AmbassadorRow {
   name: string;
   tier: 'Gold' | 'Silver' | 'Bronze';
   state: string;
+  states: string[];
   location: string;
   status: 'Verified' | 'Pending' | 'Unverified';
   seekers: number;
@@ -1298,6 +1300,7 @@ function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
     name: item.user?.full_name?.trim() || item.referral_code || 'Ambassador',
     tier: ['Gold', 'Silver', 'Bronze'].includes(tier) ? tier : 'Bronze',
     state: item.state_covering?.[0] ?? '—',
+    states: item.state_covering ?? [],
     location:
       item.primary_operating ??
       item.campus_or_region ??
@@ -1340,6 +1343,8 @@ function getInitials(name: string, code: string): string {
   );
 }
 
+const AMBASSADOR_STATES = ['Lagos', 'Abuja', 'Port Harcourt'];
+
 const TIER_BADGE: Record<AmbassadorRow['tier'], string> = {
   Gold: 'bg-amber-100 text-amber-800',
   Silver: 'bg-slate-200 text-slate-700',
@@ -1361,6 +1366,8 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
   const [offset, setOffset] = useState(0);
   const [total, setTotal] = useState(0);
   const [query, setQuery] = useState('');
+  const [stateFilter, setStateFilter] = useState('State: All');
+  const [locationFilter, setLocationFilter] = useState('Location: All');
   const [verification, setVerification] = useState('Verification: All');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -1408,9 +1415,13 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
       row.name.toLowerCase().includes(q) ||
       row.location.toLowerCase().includes(q) ||
       row.id.toLowerCase().includes(q);
+    const matchesState =
+      stateFilter === 'State: All' || row.states.includes(stateFilter);
+    const matchesLocation =
+      locationFilter === 'Location: All' || row.location === locationFilter;
     const matchesVerification =
       verification === 'Verification: All' || row.status === verification;
-    return matchesSearch && matchesVerification;
+    return matchesSearch && matchesState && matchesLocation && matchesVerification;
   });
 
   const totalPages = Math.max(1, Math.ceil(total / limit));
@@ -1482,21 +1493,25 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
           />
         </div>
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
-            <option>State (Lagos)</option>
-            <option>State (Abuja)</option>
-            <option>State (Kano)</option>
-            <option>State (Oyo)</option>
+          <select
+            value={stateFilter}
+            onChange={(e) => setStateFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>State: All</option>
+            {AMBASSADOR_STATES.map((s) => (
+              <option key={s}>{s}</option>
+            ))}
           </select>
-          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
-            <option>Location (UNILAG / Akoka)</option>
-            <option>Location (Gwarinpa)</option>
-            <option>Location (Ikeja)</option>
-          </select>
-          <select className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan">
-            <option>All Payout States</option>
-            <option>Pending</option>
-            <option>Cleared</option>
+          <select
+            value={locationFilter}
+            onChange={(e) => setLocationFilter(e.target.value)}
+            className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan"
+          >
+            <option>Location: All</option>
+            {LAGOS_AREAS.map((area) => (
+              <option key={area}>{area}</option>
+            ))}
           </select>
           <select
             value={verification}
