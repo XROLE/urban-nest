@@ -16,6 +16,7 @@ import {
   fetchFinancialOverview,
   fetchPaymentRequests,
   processPaymentRequest,
+  rejectPaymentRequest,
   type FinancialOverview,
   type ProfileStats,
   type AmbassadorStats,
@@ -2273,6 +2274,10 @@ function PaymentControl() {
   const [processTarget, setProcessTarget] = useState<PaymentRequest | null>(null);
   const [processingPayout, setProcessingPayout] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<PaymentRequest | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingPayout, setRejectingPayout] = useState(false);
+  const [rejectError, setRejectError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2339,6 +2344,24 @@ function PaymentControl() {
       setProcessError(err instanceof Error ? err.message : 'Failed to process payout.');
     } finally {
       setProcessingPayout(false);
+    }
+  };
+
+  const handleRejectPayout = async () => {
+    const token = session?.accessToken;
+    const reason = rejectReason.trim();
+    if (!token || !rejectTarget || !reason) return;
+    setRejectingPayout(true);
+    setRejectError(null);
+    try {
+      await rejectPaymentRequest(token, rejectTarget.id, reason);
+      setRejectTarget(null);
+      setRejectReason('');
+      setPayoutRefresh((n) => n + 1);
+    } catch (err) {
+      setRejectError(err instanceof Error ? err.message : 'Failed to reject payout.');
+    } finally {
+      setRejectingPayout(false);
     }
   };
 
@@ -2680,7 +2703,14 @@ function PaymentControl() {
                         >
                           Process
                         </button>
-                        <button className="px-3 py-1 bg-[#EF4444] hover:opacity-90 text-white text-xs font-bold rounded transition-colors">
+                        <button
+                          onClick={() => {
+                            setRejectError(null);
+                            setRejectReason('');
+                            setRejectTarget(row);
+                          }}
+                          className="px-3 py-1 bg-[#EF4444] hover:opacity-90 text-white text-xs font-bold rounded transition-colors"
+                        >
                           Reject
                         </button>
                         <button className="p-1 rounded hover:bg-slate-100 text-slate-400 transition-colors">
@@ -2932,6 +2962,91 @@ function PaymentControl() {
                 </span>
               )}
               {processingPayout ? 'Processing...' : 'Confirm & Pay'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Reject Payout Modal */}
+      <Modal
+        open={rejectTarget !== null}
+        onClose={() => {
+          if (!rejectingPayout) setRejectTarget(null);
+        }}
+        title="Reject payout"
+        size="xs"
+        preventDismiss={rejectingPayout}
+      >
+        <div className="p-6 sm:p-7">
+          <div className="flex flex-col items-center text-center">
+            <span className="flex items-center justify-center w-12 h-12 rounded-full bg-red-100 text-red-600 mb-4">
+              <span className="material-symbols-outlined text-2xl">cancel</span>
+            </span>
+            <h3 className="font-display text-lg font-extrabold text-dark-slate">
+              Reject payout
+            </h3>
+            <p className="mt-1 text-xs text-slate-500">
+              The ambassador will be notified with the reason below.
+            </p>
+          </div>
+
+          <div className="mt-6 flex flex-col items-center rounded-xl bg-slate-50 border border-slate-200 py-4 px-4">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Amount requested
+            </span>
+            <span className="mt-1 font-display text-3xl font-extrabold text-red-600">
+              ₦{rejectTarget?.amount_ngn.toLocaleString()}
+            </span>
+            <span className="mt-1 text-xs font-medium text-dark-slate">
+              {rejectTarget?.ambassador.user.full_name}
+            </span>
+          </div>
+
+          <div className="mt-6">
+            <label
+              htmlFor="reject-reason"
+              className="block text-xs font-bold text-dark-slate mb-1.5 uppercase tracking-wide"
+            >
+              Reason for rejection <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="reject-reason"
+              rows={4}
+              placeholder="e.g. You can only withdraw once your eligibility is confirmed"
+              className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate placeholder:text-slate-400 transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan resize-none"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+            />
+          </div>
+
+          {rejectError && (
+            <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2">
+              <span className="material-symbols-outlined text-[14px] mt-0.5">error_outline</span>
+              <span>{rejectError}</span>
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => setRejectTarget(null)}
+              disabled={rejectingPayout}
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleRejectPayout}
+              disabled={rejectingPayout || rejectReason.trim() === ''}
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm bg-[#EF4444] text-white hover:opacity-90 transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {rejectingPayout && (
+                <span className="material-symbols-outlined animate-spin text-base">
+                  progress_activity
+                </span>
+              )}
+              {rejectingPayout ? 'Rejecting...' : 'Reject Payout'}
             </button>
           </div>
         </div>

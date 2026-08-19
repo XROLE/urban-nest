@@ -287,6 +287,7 @@ export interface PaymentRequest {
   reference: string;
   created_at: string;
   processed_at: string | null;
+  rejection_reason?: string | null;
   ambassador: {
     user_id: string;
     referral_code: string;
@@ -310,6 +311,22 @@ export async function processPaymentRequest(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({ action: 'approve' }),
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+}
+
+export async function rejectPaymentRequest(
+  token: string,
+  requestId: string,
+  reason: string
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/payments/withdrawals/${requestId}/reject`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error(await parseApiError(res));
 }
