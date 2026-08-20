@@ -3868,14 +3868,43 @@ Fill out the short form here to get started:
                   </div>
                   {/* Step 4 */}
                   <div className="flex flex-col items-center gap-2 relative px-4">
-                    <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[16px]">
-                        lock
-                      </span>
-                    </div>
-                    <span className="font-body text-xs font-semibold text-on-surface-variant">
-                      Final Approval
-                    </span>
+                    {verificationStatus === 'approved' ? (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center">
+                          <span
+                            className="material-symbols-outlined text-[16px]"
+                            style={{ fontVariationSettings: `'FILL' 1` }}
+                          >
+                            check
+                          </span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-primary">
+                          Final Approval
+                        </span>
+                      </>
+                    ) : verificationStatus === 'rejected' ? (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-error/10 text-error flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[16px]">
+                            cancel
+                          </span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-error">
+                          Final Approval
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-8 h-8 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[16px]">
+                            lock
+                          </span>
+                        </div>
+                        <span className="font-body text-xs font-semibold text-on-surface-variant">
+                          Final Approval
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
@@ -4141,11 +4170,16 @@ Fill out the short form here to get started:
                         </span>
                       </div>
                       <h4 className="font-display text-lg font-semibold text-primary mb-1">
-                        Metrics Locked
+                        {verificationStatus === 'approved'
+                          ? 'Metrics Unlocked'
+                          : 'Metrics Locked'}
                       </h4>
                       <p className="font-body text-sm text-primary-container max-w-[220px] font-medium">
-                        You will be able to access your dashboard once your
-                        ambassadorship status is approved.
+                        {verificationStatus === 'rejected'
+                          ? 'Unfortunately your ambassadorship profile was not approved, kindly check your notification / email for detailed reason or Contact support'
+                          : verificationStatus === 'approved'
+                          ? 'Navigate to Your dashboard for full control'
+                          : 'You will be able to access your dashboard once your ambassadorship status is approved.'}
                       </p>
                     </div>
                   </div>
