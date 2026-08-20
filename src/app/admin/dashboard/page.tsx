@@ -919,17 +919,21 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
   const [total, setTotal] = useState(0);
 
   const [stats, setStats] = useState<ProfileStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const token = session?.accessToken;
     if (!token) return;
     let active = true;
+    setStatsLoading(true);
     (async () => {
       try {
         const data = await fetchProfileStats(token);
         if (active) setStats(data);
       } catch {
         if (active) setStats(null);
+      } finally {
+        if (active) setStatsLoading(false);
       }
     })();
     return () => {
@@ -1036,9 +1040,13 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
               {c.label}
             </span>
             <div className="mt-3 flex items-end justify-between">
-              <span className="font-headline-xl text-2xl font-extrabold text-dark-slate">
-                {c.value}
-              </span>
+              {statsLoading ? (
+                <span className="w-16 h-7 bg-slate-200 rounded-md animate-pulse" />
+              ) : (
+                <span className="font-headline-xl text-2xl font-extrabold text-dark-slate">
+                  {c.value}
+                </span>
+              )}
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${c.iconBg} ${c.iconColor}`}>
                 <span className="material-symbols-outlined text-[18px]">{c.icon}</span>
               </div>
@@ -1309,7 +1317,7 @@ interface AmbassadorRow {
   state: string;
   states: string[];
   location: string;
-  status: 'Approved' | 'Pending' | 'Unverified';
+  status: 'Approved' | 'Pending' | 'Unverified' | 'Rejected';
   seekers: number;
   matches: number;
   commission: string;
@@ -1339,7 +1347,7 @@ function titleCase(s: string | null | undefined): string {
 function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
   const rawStatus = (item.verification_status || '').toLowerCase();
   const status: AmbassadorRow['status'] =
-    rawStatus === 'approved' ? 'Approved' : rawStatus === 'pending' ? 'Pending' : 'Unverified';
+    rawStatus === 'approved' ? 'Approved' : rawStatus === 'pending' ? 'Pending' : rawStatus === 'rejected' ? 'Rejected' : 'Unverified';
   const tier = (titleCase(item.ambassador_ranking) as AmbassadorRow['tier']) || 'Bronze';
   return {
     id: item.id,
@@ -1401,6 +1409,7 @@ const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: str
   Approved: { icon: 'check_circle', cls: 'text-[#00a472]', label: 'Approved' },
   Pending: { icon: 'pending', cls: 'text-amber-500', label: 'Pending' },
   Unverified: { icon: 'error', cls: 'text-outline', label: 'Unverified' },
+  Rejected: { icon: 'cancel', cls: 'text-error', label: 'Rejected' },
 };
 
 function AmbassadorDirectory({
@@ -1425,17 +1434,21 @@ function AmbassadorDirectory({
   const menuRef = useRef<HTMLDivElement>(null);
 
   const [stats, setStats] = useState<AmbassadorStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => {
     const token = session?.accessToken;
     if (!token) return;
     let active = true;
+    setStatsLoading(true);
     (async () => {
       try {
         const data = await fetchAmbassadorStats(token);
         if (active) setStats(data);
       } catch {
         if (active) setStats(null);
+      } finally {
+        if (active) setStatsLoading(false);
       }
     })();
     return () => {
@@ -1539,10 +1552,14 @@ function AmbassadorDirectory({
               <span className="text-[12px] font-medium">{c.label}</span>
             </div>
             <div className="flex items-end justify-between gap-2">
-              <span className="font-display text-2xl font-extrabold text-dark-slate leading-none">
-                {c.value}
-              </span>
-              {c.badge && (
+              {statsLoading ? (
+                <span className="w-16 h-7 bg-slate-200 rounded-md animate-pulse" />
+              ) : (
+                <span className="font-display text-2xl font-extrabold text-dark-slate leading-none">
+                  {c.value}
+                </span>
+              )}
+              {!statsLoading && c.badge && (
                 <span className={`inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded-full text-[10px] font-bold ${c.badgeCls}`}>
                   {c.badge}
                 </span>
@@ -1596,6 +1613,7 @@ function AmbassadorDirectory({
             <option>Approved</option>
             <option>Unverified</option>
             <option>Pending</option>
+            <option>Rejected</option>
           </select>
           <div className="h-8 border-l border-slate-200 mx-1" />
           <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1">
@@ -1827,7 +1845,10 @@ function AmbassadorDetail({
   ambassador: AmbassadorRow;
   onBack: () => void;
 }) {
-  const [verified, setVerified] = useState(ambassador.status === 'Approved');
+  const [detailStatus, setDetailStatus] = useState<AmbassadorRow['status']>(ambassador.status);
+  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const verified = detailStatus === 'Approved';
 
   const hasBank =
     ambassador.bankName !== 'Not provided' && ambassador.bankAccount !== 'Not provided';
@@ -1881,9 +1902,33 @@ function AmbassadorDetail({
                 Joined: {ambassador.createdAt}
               </span>
               <span className="w-1 h-1 rounded-full bg-slate-300" />
-              <span className={`flex items-center gap-1.5 font-medium ${verified ? 'text-[#00a472]' : 'text-amber-600'}`}>
-                <span className="material-symbols-outlined text-[16px]">{verified ? 'check_circle' : 'pending'}</span>
-                {verified ? 'Approved Account' : 'Unverified Account'}
+              <span
+                className={`flex items-center gap-1.5 font-medium ${
+                  detailStatus === 'Approved'
+                    ? 'text-[#00a472]'
+                    : detailStatus === 'Pending'
+                    ? 'text-amber-600'
+                    : detailStatus === 'Rejected'
+                    ? 'text-error'
+                    : 'text-slate-500'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  {detailStatus === 'Approved'
+                    ? 'check_circle'
+                    : detailStatus === 'Pending'
+                    ? 'pending'
+                    : detailStatus === 'Rejected'
+                    ? 'cancel'
+                    : 'error'}
+                </span>
+                {detailStatus === 'Approved'
+                  ? 'Approved Account'
+                  : detailStatus === 'Pending'
+                  ? 'Pending Account'
+                  : detailStatus === 'Rejected'
+                  ? 'Rejected Account'
+                  : 'Unverified Account'}
               </span>
             </div>
           </div>
@@ -1898,11 +1943,20 @@ function AmbassadorDetail({
             Contact
           </button>
           <button
-            onClick={() => setVerified((v) => !v)}
-            className="flex items-center justify-center gap-2 px-5 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition-all shadow-sm"
+            onClick={() => setConfirmAction('approve')}
+            disabled={detailStatus !== 'Pending'}
+            className="flex items-center justify-center gap-2 px-5 py-2 bg-[#00a472] text-white rounded-lg font-medium text-sm hover:bg-[#008f62] transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-[#00a472]"
           >
             <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            {verified ? 'Mark as Unverified' : 'Mark as Approved'}
+            Approve
+          </button>
+          <button
+            onClick={() => setConfirmAction('reject')}
+            disabled={detailStatus !== 'Pending'}
+            className="flex items-center justify-center gap-2 px-5 py-2 bg-error text-white rounded-lg font-medium text-sm hover:bg-error/90 transition-colors shadow-sm disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-error"
+          >
+            <span className="material-symbols-outlined text-[18px]">cancel</span>
+            Reject
           </button>
         </div>
       </section>
@@ -2087,6 +2141,91 @@ function AmbassadorDetail({
           </div>
         </div>
       </section>
+
+      {/* Approve / Reject Confirmation Modal */}
+      <Modal
+        open={confirmAction !== null}
+        onClose={() => setConfirmAction(null)}
+        title={confirmAction === 'reject' ? 'Reject ambassador' : 'Approve ambassador'}
+        size="xs"
+      >
+        <div className="p-6 sm:p-7">
+          <div className="flex flex-col items-center text-center">
+            <span
+              className={`flex items-center justify-center w-12 h-12 rounded-full mb-4 ${
+                confirmAction === 'reject'
+                  ? 'bg-bright-cyan/15 text-bright-cyan'
+                  : 'bg-mint/15 text-[#00a472]'
+              }`}
+            >
+              <span className="material-symbols-outlined text-2xl">
+                {confirmAction === 'reject' ? 'cancel' : 'check_circle'}
+              </span>
+            </span>
+            <h3 className="font-display text-lg font-extrabold text-dark-slate">
+              {confirmAction === 'reject'
+                ? 'Reject ambassador?'
+                : 'Approve ambassador?'}
+            </h3>
+            <p className="mt-1 text-xs text-slate-500 max-w-xs">
+              You are about to {confirmAction === 'reject' ? 'reject' : 'approve'}{' '}
+              <span className="font-semibold text-dark-slate">{ambassador.name}</span> (
+              <span className="font-semibold text-dark-slate">{ambassador.code}</span>).{' '}
+              {confirmAction === 'reject'
+                ? 'Their dashboard will stay locked.'
+                : 'They will get full access to their dashboard.'}
+            </p>
+          </div>
+
+          {confirmAction === 'reject' && (
+            <div className="mt-6">
+              <label
+                htmlFor="reject-reason"
+                className="block text-xs font-bold text-dark-slate mb-1.5 uppercase tracking-wide"
+              >
+                Reason for rejection <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="reject-reason"
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={4}
+                placeholder="e.g. Incomplete documentation provided during onboarding"
+                className="w-full rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-dark-slate placeholder:text-slate-400 transition-all outline-none focus:ring-2 focus:ring-bright-cyan/30 focus:border-bright-cyan resize-none"
+              />
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <button
+              type="button"
+              onClick={() => {
+                setConfirmAction(null);
+                setRejectReason('');
+              }}
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={confirmAction === 'reject' && !rejectReason.trim()}
+              onClick={() => {
+                setDetailStatus(confirmAction === 'reject' ? 'Rejected' : 'Approved');
+                setRejectReason('');
+                setConfirmAction(null);
+              }}
+              className={`flex-1 py-2.5 rounded-lg font-display font-semibold text-sm text-white transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed ${
+                confirmAction === 'reject'
+                  ? 'bg-error hover:opacity-90'
+                  : 'bg-[#00a472] hover:opacity-90'
+              }`}
+            >
+              {confirmAction === 'reject' ? 'Reject ambassador' : 'Approve ambassador'}
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
