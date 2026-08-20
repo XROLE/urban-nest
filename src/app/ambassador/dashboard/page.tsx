@@ -318,7 +318,7 @@ export default function AmbassadorDashboard() {
   const [settingsTab, setSettingsTab] =
     useState<SettingsTab>('Personal Details');
   const [view, setView] = useState<View>(
-    (profile?.verification_status ?? 'unverified').toLowerCase() === 'unverified'
+    (profile?.verification_status ?? 'unverified').toLowerCase() !== 'approved'
       ? 'checkings'
       : 'dashboard'
   );
@@ -1119,7 +1119,7 @@ export default function AmbassadorDashboard() {
   const status =
     VERIFICATION_STATUS_CONFIG[verificationStatus] ??
     VERIFICATION_STATUS_CONFIG.unverified;
-  const isUnverified = verificationStatus === 'unverified';
+  const isLocked = verificationStatus !== 'approved';
 
   const emailVerified =
     Boolean(profile?.email_verified ?? user?.email_verified) || sessionVerified.email;
@@ -1668,7 +1668,7 @@ Fill out the short form here to get started:
 
   const applyView = (next: View) => {
     const locked =
-      isUnverified &&
+      isLocked &&
       (next === 'dashboard' ||
         next === 'referrals' ||
         next === 'earnings' ||
@@ -1893,12 +1893,12 @@ Fill out the short form here to get started:
           <nav className="flex-1 space-y-1">
             <button
               onClick={() => applyView('dashboard')}
-              disabled={isUnverified}
+              disabled={isLocked}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'dashboard'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
+              } ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -1908,7 +1908,7 @@ Fill out the short form here to get started:
                 dashboard
               </span>
               <span className="font-body text-sm">Dashboard</span>
-              {isUnverified && (
+              {isLocked && (
                 <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
                   lock
                 </span>
@@ -1916,12 +1916,12 @@ Fill out the short form here to get started:
             </button>
             <button
               onClick={() => applyView('referrals')}
-              disabled={isUnverified}
+              disabled={isLocked}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'referrals'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
+              } ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -1931,7 +1931,7 @@ Fill out the short form here to get started:
                 group
               </span>
               <span className="font-body text-sm">Referrals</span>
-              {isUnverified && (
+              {isLocked && (
                 <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
                   lock
                 </span>
@@ -1939,12 +1939,12 @@ Fill out the short form here to get started:
             </button>
             <button
               onClick={() => applyView('earnings')}
-              disabled={isUnverified}
+              disabled={isLocked}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'earnings' || view === 'activity'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
+              } ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -1954,7 +1954,7 @@ Fill out the short form here to get started:
                 payments
               </span>
               <span className="font-body text-sm">Earnings</span>
-              {isUnverified && (
+              {isLocked && (
                 <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
                   lock
                 </span>
@@ -1962,12 +1962,12 @@ Fill out the short form here to get started:
             </button>
             <button
               onClick={() => applyView('settings')}
-              disabled={isUnverified}
+              disabled={isLocked}
               className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all rounded-lg ${
                 view === 'settings'
                   ? 'text-bright-cyan bg-slate-800/80 border-r-4 border-bright-cyan font-bold'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              } ${isUnverified ? 'cursor-not-allowed opacity-60' : ''}`}
+              } ${isLocked ? 'cursor-not-allowed opacity-60' : ''}`}
             >
               <span
                 className={`material-symbols-outlined ${
@@ -1977,7 +1977,7 @@ Fill out the short form here to get started:
                 settings
               </span>
               <span className="font-body text-sm">Settings</span>
-              {isUnverified && (
+              {isLocked && (
                 <span className="material-symbols-outlined text-[8px] text-slate-400 ml-auto">
                   lock
                 </span>
@@ -2006,11 +2006,11 @@ Fill out the short form here to get started:
           <div className="mt-auto border-t border-slate-800 pt-4 space-y-2">
             <button
               onClick={handleCopy}
-              disabled={isUnverified}
+              disabled={isLocked}
               className="w-full bg-bright-cyan text-white font-display font-semibold py-2.5 rounded-xl hover:bg-bright-cyan/90 transition-all flex justify-center items-center gap-2 text-sm shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-bright-cyan"
             >
               <span className="material-symbols-outlined text-[8px]">
-                {isUnverified ? 'lock' : 'content_copy'}
+                {isLocked ? 'lock' : 'content_copy'}
               </span>
               Copy Invite Link
             </button>
@@ -4143,9 +4143,9 @@ Fill out the short form here to get started:
                       <h4 className="font-display text-lg font-semibold text-primary mb-1">
                         Metrics Locked
                       </h4>
-                      <p className="font-body text-sm text-primary-container max-w-[200px] font-medium">
-                        Complete verification to view your performance and
-                        earnings.
+                      <p className="font-body text-sm text-primary-container max-w-[220px] font-medium">
+                        You will be able to access your dashboard once your
+                        ambassadorship status is approved.
                       </p>
                     </div>
                   </div>
