@@ -332,6 +332,23 @@ export async function rejectPaymentRequest(
   if (!res.ok) throw new Error(await parseApiError(res));
 }
 
+export async function updateAmbassadorVerification(
+  token: string,
+  ambassadorId: string,
+  action: 'approve' | 'reject',
+  reason?: string
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/ambassadors/${ambassadorId}/approval`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(action === 'reject' ? { action, reason } : { action }),
+  });
+  if (!res.ok) throw new Error(await parseApiError(res));
+}
+
 export async function fetchPaymentRequests(
   token: string,
   params: { status?: string; limit?: number; offset?: number } = {}

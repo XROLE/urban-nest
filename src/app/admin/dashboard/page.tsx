@@ -17,6 +17,7 @@ import {
   fetchPaymentRequests,
   processPaymentRequest,
   rejectPaymentRequest,
+  updateAmbassadorVerification,
   type FinancialOverview,
   type ProfileStats,
   type AmbassadorStats,
@@ -925,8 +926,8 @@ function RoommateDirectory({ onSelect }: { onSelect: (row: DirectoryRow) => void
     const token = session?.accessToken;
     if (!token) return;
     let active = true;
-    setStatsLoading(true);
     (async () => {
+      setStatsLoading(true);
       try {
         const data = await fetchProfileStats(token);
         if (active) setStats(data);
@@ -1415,9 +1416,11 @@ const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: str
 function AmbassadorDirectory({
   onSelect,
   onOpenPayouts,
+  refreshToken,
 }: {
   onSelect: (row: AmbassadorRow) => void;
   onOpenPayouts: () => void;
+  refreshToken?: number;
 }) {
   const { session } = useAuth();
   const [ambassadors, setAmbassadors] = useState<AmbassadorRow[]>([]);
@@ -1440,8 +1443,8 @@ function AmbassadorDirectory({
     const token = session?.accessToken;
     if (!token) return;
     let active = true;
-    setStatsLoading(true);
     (async () => {
+      setStatsLoading(true);
       try {
         const data = await fetchAmbassadorStats(token);
         if (active) setStats(data);
@@ -1491,7 +1494,7 @@ function AmbassadorDirectory({
     return () => {
       active = false;
     };
-  }, [session?.accessToken, limit, offset]);
+  }, [session?.accessToken, limit, offset, refreshToken]);
 
   const filteredRows = ambassadors.filter((row) => {
     const q = query.toLowerCase();
@@ -1841,14 +1844,42 @@ function AmbassadorDirectory({
 function AmbassadorDetail({
   ambassador,
   onBack,
+  onStatusChanged,
 }: {
   ambassador: AmbassadorRow;
   onBack: () => void;
+  onStatusChanged: (updated: AmbassadorRow) => void;
 }) {
+  const { session } = useAuth();
+  const token = session?.accessToken;
   const [detailStatus, setDetailStatus] = useState<AmbassadorRow['status']>(ambassador.status);
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const verified = detailStatus === 'Approved';
+
+  const handleConfirm = async () => {
+    if (!token || !confirmAction) return;
+    if (confirmAction === 'reject' && !rejectReason.trim()) return;
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      await updateAmbassadorVerification(token, ambassador.id, confirmAction, rejectReason.trim());
+      const updated: AmbassadorRow = {
+        ...ambassador,
+        status: confirmAction === 'reject' ? 'Rejected' : 'Approved',
+      };
+      onStatusChanged(updated);
+      setDetailStatus(updated.status);
+      setRejectReason('');
+      setConfirmAction(null);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to update verification status.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const hasBank =
     ambassador.bankName !== 'Not provided' && ambassador.bankAccount !== 'Not provided';
@@ -2145,9 +2176,15 @@ function AmbassadorDetail({
       {/* Approve / Reject Confirmation Modal */}
       <Modal
         open={confirmAction !== null}
-        onClose={() => setConfirmAction(null)}
+        onClose={() => {
+          if (!submitting) {
+            setConfirmAction(null);
+            setRejectReason('');
+          }
+        }}
         title={confirmAction === 'reject' ? 'Reject ambassador' : 'Approve ambassador'}
         size="xs"
+        preventDismiss={submitting}
       >
         <div className="p-6 sm:p-7">
           <div className="flex flex-col items-center text-center">
@@ -2196,32 +2233,47 @@ function AmbassadorDetail({
             </div>
           )}
 
+          {submitError && (
+            <div className="mt-4 flex items-start gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2">
+              <span className="material-symbols-outlined text-[14px] mt-0.5">error_outline</span>
+              <span>{submitError}</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <button
               type="button"
+              disabled={submitting}
               onClick={() => {
                 setConfirmAction(null);
                 setRejectReason('');
               }}
-              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors"
+              className="flex-1 py-2.5 rounded-lg font-display font-semibold text-sm border border-slate-300 text-dark-slate hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
             <button
               type="button"
-              disabled={confirmAction === 'reject' && !rejectReason.trim()}
-              onClick={() => {
-                setDetailStatus(confirmAction === 'reject' ? 'Rejected' : 'Approved');
-                setRejectReason('');
-                setConfirmAction(null);
-              }}
-              className={`flex-1 py-2.5 rounded-lg font-display font-semibold text-sm text-white transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed ${
+              disabled={submitting || (confirmAction === 'reject' && !rejectReason.trim())}
+              onClick={handleConfirm}
+              className={`flex-1 py-2.5 rounded-lg font-display font-semibold text-sm text-white transition-colors shadow-md active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                 confirmAction === 'reject'
                   ? 'bg-error hover:opacity-90'
                   : 'bg-[#00a472] hover:opacity-90'
               }`}
             >
-              {confirmAction === 'reject' ? 'Reject ambassador' : 'Approve ambassador'}
+              {submitting && (
+                <span className="material-symbols-outlined animate-spin text-base">
+                  progress_activity
+                </span>
+              )}
+              {submitting
+                ? confirmAction === 'reject'
+                  ? 'Rejecting...'
+                  : 'Approving...'
+                : confirmAction === 'reject'
+                ? 'Reject ambassador'
+                : 'Approve ambassador'}
             </button>
           </div>
         </div>
@@ -3229,6 +3281,7 @@ export default function AdminDashboard() {
   const [paymentTab, setPaymentTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
   const [paymentsFromAmbassador, setPaymentsFromAmbassador] = useState(false);
   const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
+  const [ambassadorVersion, setAmbassadorVersion] = useState(0);
   const [selectedUser, setSelectedUser] = useState<DirectoryRow | null>(null);
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
@@ -3939,9 +3992,17 @@ export default function AdminDashboard() {
           <AmbassadorDirectory
             onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }}
             onOpenPayouts={() => { setPaymentsFromAmbassador(true); setPaymentTab('payout'); setActiveView('payments'); }}
+            refreshToken={ambassadorVersion}
           />
         ) : activeView === 'ambassador-detail' && selectedAmbassador ? (
-          <AmbassadorDetail ambassador={selectedAmbassador} onBack={() => setActiveView('ambassadors')} />
+          <AmbassadorDetail
+            ambassador={selectedAmbassador}
+            onBack={() => setActiveView('ambassadors')}
+            onStatusChanged={(updated) => {
+              setSelectedAmbassador(updated);
+              setAmbassadorVersion((v) => v + 1);
+            }}
+          />
         ) : activeView === 'payments' ? (
           <PaymentControl initialTab={paymentTab} onBack={paymentsFromAmbassador ? () => setActiveView('ambassadors') : undefined} />
         ) : (
