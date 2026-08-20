@@ -1309,7 +1309,7 @@ interface AmbassadorRow {
   state: string;
   states: string[];
   location: string;
-  status: 'Verified' | 'Pending' | 'Unverified';
+  status: 'Approved' | 'Pending' | 'Unverified';
   seekers: number;
   matches: number;
   commission: string;
@@ -1339,7 +1339,7 @@ function titleCase(s: string | null | undefined): string {
 function toAmbassadorRow(item: AmbassadorItem): AmbassadorRow {
   const rawStatus = (item.verification_status || '').toLowerCase();
   const status: AmbassadorRow['status'] =
-    rawStatus === 'verified' ? 'Verified' : rawStatus === 'pending' ? 'Pending' : 'Unverified';
+    rawStatus === 'approved' ? 'Approved' : rawStatus === 'pending' ? 'Pending' : 'Unverified';
   const tier = (titleCase(item.ambassador_ranking) as AmbassadorRow['tier']) || 'Bronze';
   return {
     id: item.id,
@@ -1398,7 +1398,7 @@ const TIER_BADGE: Record<AmbassadorRow['tier'], string> = {
 };
 
 const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: string; label: string }> = {
-  Verified: { icon: 'check_circle', cls: 'text-[#00a472]', label: 'Verified' },
+  Approved: { icon: 'check_circle', cls: 'text-[#00a472]', label: 'Approved' },
   Pending: { icon: 'pending', cls: 'text-amber-500', label: 'Pending' },
   Unverified: { icon: 'error', cls: 'text-outline', label: 'Unverified' },
 };
@@ -1593,7 +1593,7 @@ function AmbassadorDirectory({
             className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-2 text-sm text-dark-slate focus:outline-none focus:border-bright-cyan"
           >
             <option>Verification: All</option>
-            <option>Verified</option>
+            <option>Approved</option>
             <option>Unverified</option>
             <option>Pending</option>
           </select>
@@ -1674,7 +1674,7 @@ function AmbassadorDirectory({
                               {getInitials(row.name, row.code)}
                             </div>
                           )}
-                          {row.status === 'Verified' && (
+                          {row.status === 'Approved' && (
                             <span className="material-symbols-outlined icon-filled absolute -bottom-1 -right-1 bg-white rounded-full text-[#00668a] text-sm p-0.5">
                               verified
                             </span>
@@ -1827,12 +1827,12 @@ function AmbassadorDetail({
   ambassador: AmbassadorRow;
   onBack: () => void;
 }) {
-  const [verified, setVerified] = useState(ambassador.status === 'Verified');
+  const [verified, setVerified] = useState(ambassador.status === 'Approved');
 
   const hasBank =
     ambassador.bankName !== 'Not provided' && ambassador.bankAccount !== 'Not provided';
   const checklist = [
-    { label: 'Account Verified', done: verified },
+    { label: 'Account Approved', done: verified },
     { label: 'Bank Account Provided', done: hasBank },
     { label: 'Institution / Organization', done: ambassador.institution !== 'Not provided' },
     { label: 'Operating Areas Assigned', done: ambassador.operating !== 'Not provided' },
@@ -1883,7 +1883,7 @@ function AmbassadorDetail({
               <span className="w-1 h-1 rounded-full bg-slate-300" />
               <span className={`flex items-center gap-1.5 font-medium ${verified ? 'text-[#00a472]' : 'text-amber-600'}`}>
                 <span className="material-symbols-outlined text-[16px]">{verified ? 'check_circle' : 'pending'}</span>
-                {verified ? 'Verified Account' : 'Unverified Account'}
+                {verified ? 'Approved Account' : 'Unverified Account'}
               </span>
             </div>
           </div>
@@ -1902,7 +1902,7 @@ function AmbassadorDetail({
             className="flex items-center justify-center gap-2 px-5 py-2 bg-primary text-white rounded-lg font-medium text-sm hover:bg-primary/90 transition-all shadow-sm"
           >
             <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            {verified ? 'Mark as Unverified' : 'Mark as Verified'}
+            {verified ? 'Mark as Unverified' : 'Mark as Approved'}
           </button>
         </div>
       </section>

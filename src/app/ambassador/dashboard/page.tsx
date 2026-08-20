@@ -41,8 +41,8 @@ const VERIFICATION_STATUS_CONFIG: Record<string, StatusCfg> = {
     icon: 'hourglass_bottom',
     className: 'bg-amber-50 text-amber-600 border-amber-200',
   },
-  verified: {
-    label: 'Verified',
+  approved: {
+    label: 'Approved',
     icon: 'verified',
     className: 'bg-mint/10 text-mint border-mint/20',
   },
@@ -301,7 +301,8 @@ const mapActivityRow = (t: ApiTransaction): EarningsActivityRow => {
 
 export default function AmbassadorDashboard() {
   const router = useRouter();
-  const { user, profile, logout, isAuthenticated, session, hydrated } = useAuth();
+  const { user, profile, logout, isAuthenticated, session, hydrated, refreshProfile } =
+    useAuth();
   const [copied, setCopied] = useState(false);
   const [captionCopied, setCaptionCopied] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(
@@ -680,6 +681,7 @@ export default function AmbassadorDashboard() {
 
       setVettingSuccessOpen(true);
       setSavedVetting({ ...vettingDraft });
+      await refreshProfile();
     } catch {
       setVettingError('Something went wrong. Please try again.');
     } finally {

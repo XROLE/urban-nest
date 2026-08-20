@@ -79,6 +79,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<AmbassadorUser | null>;
   register: (payload: RegisterPayload) => Promise<AmbassadorUser | null>;
   logout: () => void;
+  refreshProfile: () => Promise<void>;
 }
 
 const STORAGE_KEY = 'rmts_ambassador_auth';
@@ -187,6 +188,31 @@ export default function AuthProvider({
     }
   }, []);
 
+  const refreshProfile = useCallback(async () => {
+    const token = stored?.session?.accessToken;
+    if (!token) return;
+    const res = await fetch(`${BASE_URL}/ambassadors/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as {
+      success?: boolean;
+      data?: AmbassadorProfile;
+    };
+    const profile = data?.data;
+    if (!profile) return;
+    setStored((prev) => {
+      if (!prev) return prev;
+      const next: StoredAuth = { ...prev, profile };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, [stored?.session?.accessToken]);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: stored?.user ?? null,
@@ -197,8 +223,9 @@ export default function AuthProvider({
       login,
       register,
       logout,
+      refreshProfile,
     }),
-    [stored, hydrated, login, register, logout]
+    [stored, hydrated, login, register, logout, refreshProfile]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
