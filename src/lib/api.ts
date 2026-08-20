@@ -277,6 +277,7 @@ export interface PaymentRequest {
   id: string;
   ambassador_user_id: string;
   amount_ngn: number;
+  withdrawableBalance: number;
   status: string;
   bank_code: string;
   bank_name: string;

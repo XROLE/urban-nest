@@ -2684,7 +2684,7 @@ function PaymentControl() {
                       <div className="text-sm text-slate-700">{row.bank_name} — {row.account_number}</div>
                       <div className="text-xs font-medium text-emerald-600">Verified: {row.account_name}</div>
                     </td>
-                    <td className="px-4 py-3 text-right text-sm text-slate-600">—</td>
+                    <td className="px-4 py-3 text-right text-sm font-semibold text-slate-700">{formatNaira(row.withdrawableBalance)}</td>
                     <td className="px-4 py-3 text-right text-sm font-bold text-slate-800">₦{row.amount_ngn.toLocaleString()}</td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-medium rounded-full border border-amber-200">
