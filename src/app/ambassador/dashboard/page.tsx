@@ -215,11 +215,9 @@ interface EarningsFeedItem {
   direction: 'credit' | 'debit';
 }
 
-const shortName = (fullName: string | null | undefined): string => {
-  const name = fullName?.trim() ?? '';
-  if (!name) return 'Referral';
-  const parts = name.split(/\s+/);
-  if (parts.length < 2) return parts[0] ?? name;
+const shortName = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length < 2) return parts[0] ?? fullName;
   const last = parts[parts.length - 1];
   return `${parts[0]} ${last.charAt(0).toUpperCase()}.`;
 };
@@ -1031,17 +1029,7 @@ export default function AmbassadorDashboard() {
         };
         const list = json?.data?.transactions ?? [];
         if (active) {
-          setTransactions(
-            list
-              .map((t) => {
-                try {
-                  return mapTransaction(t);
-                } catch {
-                  return null;
-                }
-              })
-              .filter((x): x is EarningsFeedItem => x !== null),
-          );
+          setTransactions(list.map(mapTransaction));
           setActivityRows(list.map(mapActivityRow));
         }
       } catch {
