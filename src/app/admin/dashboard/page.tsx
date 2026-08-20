@@ -1515,11 +1515,11 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {[
           { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: stats?.totalAmbassadors ?? total },
-          { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: stats?.totalReferrals ?? '412', badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
-          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: `₦${stats?.totalPendingPayouts ?? '240,000'}`, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
-          { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: `₦${stats?.totalPayoutsPaid ?? '1.2M'}`, badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
-          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: stats?.unverifiedAmbassadors ?? '12' },
-          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: stats?.verificationRequestsPending ?? '5', badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: stats?.totalReferrals ?? 0, badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
+          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: `₦${stats?.totalPendingPayouts ?? 0}`, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: `₦${stats?.totalPayoutsPaid ?? 0}`, badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
+          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: stats?.unverifiedAmbassadors ?? 0 },
+          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: stats?.verificationRequestsPending ?? 0, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
         ].map((c) => (
           <div
             key={c.label}
