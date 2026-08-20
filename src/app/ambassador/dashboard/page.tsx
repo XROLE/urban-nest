@@ -257,18 +257,46 @@ function formatTransactionTime(value: string): string {
   })}`;
 }
 
-interface PayoutRow {
-  date: string;
-  ref: string;
-  amount: number;
+interface ApiPayout {
+  id: string;
+  amount_ngn: number;
+  status: string;
+  bank_code: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  reference: string;
+  created_at: string;
+  processed_at: string | null;
+  rejection_reason: string | null;
 }
 
-const SAMPLE_PAYOUT_HISTORY: PayoutRow[] = [
-  { date: 'Aug 10, 2023', ref: 'TRF_9823719', amount: 15000 },
-  { date: 'Jul 28, 2023', ref: 'TRF_7451902', amount: 22500 },
-  { date: 'Jul 15, 2023', ref: 'TRF_3391004', amount: 10000 },
-  { date: 'Jun 30, 2023', ref: 'TRF_1102934', amount: 5500 },
-];
+interface PayoutHistoryRow {
+  id: string;
+  date: string;
+  amount: number;
+  status: 'paid' | 'pending' | 'rejected';
+  rejectionReason: string | null;
+}
+
+const mapPayout = (p: ApiPayout): PayoutHistoryRow => {
+  const d = new Date(p.created_at);
+  return {
+    id: p.id,
+    date: Number.isNaN(d.getTime())
+      ? p.created_at
+      : d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        }),
+    amount: p.amount_ngn,
+    status: String(p.status ?? '')
+      .trim()
+      .toLowerCase() as PayoutHistoryRow['status'],
+    rejectionReason: p.rejection_reason ?? null,
+  };
+};
 
 interface EarningsActivityRow {
   id: string;
@@ -336,6 +364,10 @@ export default function AmbassadorDashboard() {
   });
   const [transactions, setTransactions] = useState<EarningsFeedItem[]>([]);
   const [transactionsLoading, setTransactionsLoading] = useState(true);
+  const [payouts, setPayouts] = useState<PayoutHistoryRow[]>([]);
+  const [payoutsLoading, setPayoutsLoading] = useState(true);
+  const [payoutsError, setPayoutsError] = useState('');
+  const [payoutsRefresh, setPayoutsRefresh] = useState(0);
   const [activityRows, setActivityRows] = useState<EarningsActivityRow[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
   const [activitySearch, setActivitySearch] = useState('');
@@ -1050,6 +1082,41 @@ export default function AmbassadorDashboard() {
   }, [session?.accessToken]);
 
   useEffect(() => {
+    const token = session?.accessToken;
+    if (!token) return;
+    let active = true;
+    (async () => {
+      setPayoutsLoading(true);
+      setPayoutsError('');
+      try {
+        const res = await fetch(`${BASE_URL}/ambassadors/me/payouts`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error(await parseApiError(res));
+        const json = (await res.json()) as {
+          data?: { items?: ApiPayout[] };
+        };
+        const list = json?.data?.items ?? [];
+        if (active) setPayouts(list.map(mapPayout));
+      } catch (e) {
+        if (active) {
+          setPayouts([]);
+          setPayoutsError(
+            e instanceof Error
+              ? e.message
+              : 'Failed to load payout history. Please try again.'
+          );
+        }
+      } finally {
+        if (active) setPayoutsLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [session?.accessToken, payoutsRefresh]);
+
+  useEffect(() => {
     if (profile && !networkSeededRef.current) {
       const seeded = {
         audienceCategory:
@@ -1151,21 +1218,6 @@ Fill out the short form here to get started:
     const clean = num.replace(/\s+/g, '');
     if (clean.length <= 6) return clean || '0123456789';
     return `${clean.slice(0, 3)}****${clean.slice(-3)}`;
-  };
-
-  const downloadPayoutCsv = () => {
-    const header = 'Date,Ref ID,Amount (NGN)';
-    const rows = SAMPLE_PAYOUT_HISTORY.map(
-      (r) => `${r.date},${r.ref},${r.amount.toFixed(2)}`
-    );
-    const csv = [header, ...rows].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'payout-history.csv';
-    a.click();
-    URL.revokeObjectURL(url);
   };
 
   const downloadReferralsPdf = () => {
@@ -1448,6 +1500,7 @@ Fill out the short form here to get started:
       setPayoutModalOpen(false);
       setPayoutSuccessOpen(true);
       fetchPaymentSummary();
+      setPayoutsRefresh((n) => n + 1);
     } catch {
       setPayoutError('Something went wrong. Please try again.');
     } finally {
@@ -2747,14 +2800,8 @@ Fill out the short form here to get started:
                   <h4 className="font-display text-base font-bold text-dark-slate">
                     Payout History
                   </h4>
-                  <button
-                    onClick={downloadPayoutCsv}
-                    className="text-slate-400 hover:text-primary transition-colors flex items-center gap-1 font-body text-xs font-bold"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      download
-                    </span>
-                    CSV
+                  <button className="font-body text-xs font-bold text-bright-cyan hover:underline">
+                    View All
                   </button>
                 </div>
                 <div className="overflow-x-auto">
@@ -2763,7 +2810,7 @@ Fill out the short form here to get started:
                       <tr className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                         <th className="pb-2.5 border-b border-slate-200">Date</th>
                         <th className="pb-2.5 border-b border-slate-200">
-                          Ref ID
+                          Status
                         </th>
                         <th className="pb-2.5 border-b border-slate-200 text-right">
                           Amount
@@ -2771,25 +2818,69 @@ Fill out the short form here to get started:
                       </tr>
                     </thead>
                     <tbody className="font-body text-sm">
-                      {SAMPLE_PAYOUT_HISTORY.map((row) => (
-                        <tr
-                          key={row.ref}
-                          className="hover:bg-slate-50 transition-colors"
-                        >
-                          <td className="py-3 border-b border-slate-100 text-slate-500">
-                            {row.date}
-                          </td>
-                          <td className="py-3 border-b border-slate-100 text-dark-slate font-mono">
-                            {row.ref}
-                          </td>
-                          <td className="py-3 border-b border-slate-100 text-dark-slate font-bold text-right">
-                            ₦{row.amount.toLocaleString(undefined, {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
+                      {payoutsLoading ? (
+                        <tr>
+                          <td colSpan={3} className="py-6">
+                            <div className="mx-auto w-6 h-6 border-2 border-slate-200 border-t-bright-cyan rounded-full animate-spin" />
                           </td>
                         </tr>
-                      ))}
+                      ) : payoutsError ? (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="py-6 text-center font-body text-sm text-red-500"
+                          >
+                            {payoutsError}
+                          </td>
+                        </tr>
+                      ) : payouts.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="py-6 text-center font-body text-sm text-slate-400"
+                          >
+                            No payouts yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        payouts.slice(0, 4).map((row) => {
+                          const paid = row.status === 'paid';
+                          const rejected = row.status === 'rejected';
+                          const stateClass = paid
+                            ? 'bg-mint/10 text-mint'
+                            : rejected
+                              ? 'bg-red-50/50 text-red-400'
+                              : 'bg-amber-50 text-amber-600';
+                          return (
+                            <tr
+                              key={row.id}
+                              className="hover:bg-slate-50 transition-colors"
+                            >
+                              <td className="py-3 border-b border-slate-100 text-slate-500">
+                                {row.date}
+                              </td>
+                              <td className="py-3 border-b border-slate-100">
+                                <span
+                                  title={
+                                    rejected && row.rejectionReason
+                                      ? row.rejectionReason
+                                      : undefined
+                                  }
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider capitalize ${stateClass}`}
+                                >
+                                  {row.status}
+                                </span>
+                              </td>
+                              <td className="py-3 border-b border-slate-100 text-dark-slate font-bold text-right">
+                                ₦{row.amount.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
