@@ -1403,7 +1403,13 @@ const AMB_STATUS_BADGE: Record<AmbassadorRow['status'], { icon: string; cls: str
   Unverified: { icon: 'error', cls: 'text-outline', label: 'Unverified' },
 };
 
-function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => void }) {
+function AmbassadorDirectory({
+  onSelect,
+  onOpenPayouts,
+}: {
+  onSelect: (row: AmbassadorRow) => void;
+  onOpenPayouts: () => void;
+}) {
   const { session } = useAuth();
   const [ambassadors, setAmbassadors] = useState<AmbassadorRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1516,14 +1522,17 @@ function AmbassadorDirectory({ onSelect }: { onSelect: (row: AmbassadorRow) => v
         {[
           { icon: 'group', iconCls: 'text-[#00668a]', label: 'Total Ambassadors', value: stats?.totalAmbassadors ?? total },
           { icon: 'person_add', iconCls: 'text-[#40c2fd]', label: 'Total Referrals', value: stats?.totalReferrals ?? 0, badge: 'Seekers', badgeCls: 'bg-[#c4e7ff] text-[#001e2d]' },
-          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: `₦${stats?.totalPendingPayouts ?? 0}`, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'pending_actions', iconCls: 'text-amber-500', label: 'Pending Payouts', value: `₦${stats?.totalPendingPayouts ?? 0}`, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800', action: onOpenPayouts },
           { icon: 'payments', iconCls: 'text-[#00a472]', label: 'Settled Commissions', value: `₦${stats?.totalPayoutsPaid ?? 0}`, badge: 'Cleared', badgeCls: 'bg-[#4edea3] text-[#002113]' },
-          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: stats?.unverifiedAmbassadors ?? 0 },
-          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: stats?.verificationRequestsPending ?? 0, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800' },
+          { icon: 'person_off', iconCls: 'text-outline', label: 'Unverified Ambassadors', value: stats?.unverifiedAmbassadors ?? 0, action: () => setVerification('Unverified') },
+          { icon: 'verified_user', iconCls: 'text-amber-500', label: 'Verification Requests', value: stats?.verificationRequestsPending ?? 0, badge: 'Action Needed', badgeCls: 'bg-amber-100 text-amber-800', action: () => setVerification('Pending') },
         ].map((c) => (
           <div
             key={c.label}
-            className="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col gap-2"
+            onClick={c.action}
+            className={`bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-col gap-2 ${
+              c.action ? 'cursor-pointer hover:shadow-md transition-shadow' : ''
+            }`}
           >
             <div className="flex items-center gap-2 text-slate-500">
               <span className={`material-symbols-outlined text-[17px] ${c.iconCls}`}>{c.icon}</span>
@@ -2259,9 +2268,15 @@ const REFUND_ROWS: RefundRow[] = [
   { id: 'r3', caseId: 'REF-90210', date: '15 Aug 2026', seeker: 'Tunde W.', amount: '₦3,500', reason: 'Technical Issue', impact: '-₦1,750 Split Recovery', impactError: true, status: 'Refunded' },
 ];
 
-function PaymentControl() {
+function PaymentControl({
+  initialTab = 'inbound',
+  onBack,
+}: {
+  initialTab?: 'inbound' | 'payout' | 'refunds';
+  onBack?: () => void;
+}) {
   const { session } = useAuth();
-  const [tab, setTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
+  const [tab, setTab] = useState<'inbound' | 'payout' | 'refunds'>(initialTab);
   const [query, setQuery] = useState('');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [overview, setOverview] = useState<FinancialOverview | null>(null);
@@ -2371,6 +2386,14 @@ function PaymentControl() {
 
   return (
     <div className="flex flex-col gap-6 w-full">
+      {onBack && (
+        <div className="flex items-center gap-2 text-sm text-slate-500">
+          <button onClick={onBack} className="hover:text-primary flex items-center gap-1.5 transition-colors font-medium">
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Ambassadors
+          </button>
+        </div>
+      )}
       {/* Top Financial Metrics */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {/* Card 1: Paystack Payout Balance (Highlighted) */}
@@ -3064,6 +3087,8 @@ export default function AdminDashboard() {
   const [selectedLocation, setSelectedLocation] = useState('All');
   const [matchTriggered, setMatchTriggered] = useState(false);
   const [activeView, setActiveView] = useState<'dashboard' | 'matches' | 'users' | 'ambassadors' | 'ambassador-detail' | 'user-detail' | 'payments'>('dashboard');
+  const [paymentTab, setPaymentTab] = useState<'inbound' | 'payout' | 'refunds'>('inbound');
+  const [paymentsFromAmbassador, setPaymentsFromAmbassador] = useState(false);
   const [selectedAmbassador, setSelectedAmbassador] = useState<AmbassadorRow | null>(null);
   const [selectedUser, setSelectedUser] = useState<DirectoryRow | null>(null);
   const [proposedPairs, setProposedPairs] = useState<MatchPairTrack[]>([]);
@@ -3420,7 +3445,7 @@ export default function AdminDashboard() {
             Match Workspace
           </button>
           <button
-            onClick={() => setActiveView('payments')}
+            onClick={() => { setPaymentsFromAmbassador(false); setPaymentTab('inbound'); setActiveView('payments'); }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-colors cursor-pointer ${
               activeView === 'payments'
                 ? 'bg-slate-800 text-bright-cyan font-bold'
@@ -3772,11 +3797,14 @@ export default function AdminDashboard() {
         ) : activeView === 'user-detail' && selectedUser ? (
           <UserDetail user={selectedUser} onBack={() => setActiveView('users')} />
         ) : activeView === 'ambassadors' ? (
-          <AmbassadorDirectory onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }} />
+          <AmbassadorDirectory
+            onSelect={(row) => { setSelectedAmbassador(row); setActiveView('ambassador-detail'); }}
+            onOpenPayouts={() => { setPaymentsFromAmbassador(true); setPaymentTab('payout'); setActiveView('payments'); }}
+          />
         ) : activeView === 'ambassador-detail' && selectedAmbassador ? (
           <AmbassadorDetail ambassador={selectedAmbassador} onBack={() => setActiveView('ambassadors')} />
         ) : activeView === 'payments' ? (
-          <PaymentControl />
+          <PaymentControl initialTab={paymentTab} onBack={paymentsFromAmbassador ? () => setActiveView('ambassadors') : undefined} />
         ) : (
           <MatchWorkspace
             pairs={proposedPairs}
